@@ -1,3 +1,8 @@
+#------------------
+# Python
+# https://github.com/github/gitignore/blob/main/Python.gitignore
+#------------------
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -173,6 +178,11 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
+#------------------
+# macOS
+# https://github.com/github/gitignore/blob/main/Global/macOS.gitignore
+#------------------
+
 # General
 .DS_Store
 .AppleDouble
@@ -200,3 +210,9 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+
+#------------------
+# Project Related
+#------------------
+database/*.json
