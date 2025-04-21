@@ -145,4 +145,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Custom application settings
 # ------------------------------
 
-PHOTO_BASE_URL = "https://yelp-recommendation-system.s3.ap-southeast-1.amazonaws.com/photos"
+PHOTO_BASE_URL = "https://gastronome-recommendation.s3.us-east-1.amazonaws.com/"
