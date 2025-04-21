@@ -11,7 +11,7 @@ class Review(models.Model):
     user = models.ForeignKey(User, related_name="reviews", on_delete=models.CASCADE, verbose_name="Review Author")
     business = models.ForeignKey(Business, related_name="reviews", on_delete=models.CASCADE,verbose_name="Business Reviewed")
     stars = models.PositiveSmallIntegerField(verbose_name="Star Rating")
-    date = models.DateField(verbose_name="Review Date")
+    date = models.DateTimeField(verbose_name="Review Date")
     text = models.TextField(verbose_name="Review Text")
     useful = models.PositiveIntegerField(default=0, verbose_name="Useful Votes")
     funny = models.PositiveIntegerField(default=0, verbose_name="Funny Votes")
@@ -36,7 +36,7 @@ class Tip(models.Model):
     user = models.ForeignKey(User, related_name="tips", on_delete=models.CASCADE, verbose_name="Tip Author")
     business = models.ForeignKey(Business, related_name="tips", on_delete=models.CASCADE, verbose_name="Business Tipped")
     text = models.TextField(verbose_name="Tip Text")
-    date = models.DateField(verbose_name="Tip Date")
+    date = models.DateTimeField(verbose_name="Tip Date")
     compliment_count = models.PositiveIntegerField(default=0, verbose_name="Compliment Count")
 
     class Meta:
