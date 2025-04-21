@@ -78,7 +78,11 @@ class Photo(models.Model):
     business = models.ForeignKey(Business, related_name='photos', on_delete=models.CASCADE)
     caption = models.CharField(max_length=255, null=True, blank=True)
     label = models.CharField(max_length=50, null=True, blank=True)
-    image_url = models.URLField(max_length=1024, verbose_name="S3 Image URL")
+    
+    @property
+    def image_url(self) -> str:
+        base = settings.PHOTO_BASE_URL.rstrip('/')
+        return f"{base}/{self.photo_id}.jpg"
     
     class Meta:
         indexes = [

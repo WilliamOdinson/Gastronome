@@ -140,3 +140,9 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ------------------------------
+# Custom application settings
+# ------------------------------
+
+PHOTO_BASE_URL = "https://yelp-recommendation-system.s3.ap-southeast-1.amazonaws.com/photos"
