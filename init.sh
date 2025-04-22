@@ -3,17 +3,17 @@ set -e
 PROJECT_NAME="Gastronome"
 DATA_DIR="./database"
 
-echo ">>> Creating Python virtual environment..."
-python3 -m venv venv
-source venv/bin/activate
+# echo ">>> Creating Python virtual environment..."
+# python3 -m venv venv
+# source venv/bin/activate
 
-echo ">>> Upgrading pip and installing requirements..."
-pip install --upgrade pip
-pip install -r requirements.txt
+# echo ">>> Upgrading pip and installing requirements..."
+# pip install --upgrade pip
+# pip install -r requirements.txt
 
-echo ">>> Applying database migrations..."
-python manage.py makemigrations
-python manage.py migrate
+# echo ">>> Applying database migrations..."
+# python manage.py makemigrations
+# python manage.py migrate
 
 # If this is your first time running it, uncomment the line.
 # Skip this step if it's already been created.
@@ -23,10 +23,16 @@ python manage.py migrate
 echo "===The following import may take about 90 minutes (for an 8GB M2 Macbook). ==="
 echo "===If your hardware is better, please adjust the batch size.==="
 echo "===You can comment out line 39 if you read the entire init.sh before executing.==="
-echo ">>> Press any key to continue..." && stty -echo -icanon && dd bs=1 count=1 2>/dev/null < /dev/tty && stty icanon echo
+# echo ">>> Press any key to continue..." && stty -echo -icanon && dd bs=1 count=1 2>/dev/null < /dev/tty && stty icanon echo
 
-echo ">>> Importing business data, 150,346 entires (~22 min for batch = 500)"
+echo ">>> Importing business data, 1,311 entires (~0.1 min for batch = 500)"
+python manage.py import_category "$DATA_DIR/yelp_academic_dataset_business.json"
+
+echo ">>> Importing business data, 150,346 entires (~2 min for batch = 1,000)"
 python manage.py import_business "$DATA_DIR/yelp_academic_dataset_business.json"
+
+echo ">>> Importing hour data, 150,346 entires (~2 min for batch = 500)"
+python manage.py import_hour "$DATA_DIR/yelp_academic_dataset_business.json"
 
 echo ">>> Importing user data, 1,987,897 entires (~4 min for batch = 5,000)"
 python manage.py import_user "$DATA_DIR/yelp_academic_dataset_user.json"
