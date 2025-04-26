@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 from user.models import User
 
-BATCH = 5000
+BATCH = 5_000
 PROGRESS = {"users": 0}
 
 
@@ -57,7 +57,8 @@ class Command(BaseCommand):
             buf.append(
                 User(
                     user_id=row["user_id"],
-                    username=row["name"] or row["user_id"],
+                    username=row["user_id"],
+                    display_name=row["name"] or row["user_id"],
                     yelping_since=parse_datetime(row["yelping_since"]),
                     review_count=row["review_count"],
                     useful=row["useful"],
