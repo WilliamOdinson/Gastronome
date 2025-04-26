@@ -1,0 +1,13 @@
+asgiref==3.8.1
+cffi==1.17.1
+cryptography==44.0.2
+Django==5.2
+django-redis==5.4.0
+dotenv==0.9.9
+numpy==2.2.5
+pycparser==2.22
+PyMySQL==1.1.1
+python-dotenv==1.1.0
+redis==5.2.1
+sqlparse==0.5.3
+tqdm==4.67.1
