@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Profile - {{ user_obj.display_name }}</title>
+</head>
+<body>
+    <h1>Welcome, {{ user_obj.display_name }}!</h1>
+
+    <h2>User Information</h2>
+    <ul>
+        <li><strong>Email:</strong> {{ user_obj.email }}</li>
+        <li><strong>Yelping Since:</strong> {{ user_obj.yelping_since }}</li>
+        <li><strong>Review Count:</strong> {{ user_obj.review_count }}</li>
+        <li><strong>Fans:</strong> {{ user_obj.fans }}</li>
+        <li><strong>Average Stars:</strong> {{ user_obj.average_stars }}</li>
+        <li><strong>Elite Years:</strong> {{ user_obj.elite_years|join:", " }}</li>
+    </ul>
+
+    <h2>Compliments</h2>
+    <ul>
+        <li>Hot: {{ user_obj.compliment_hot }}</li>
+        <li>More: {{ user_obj.compliment_more }}</li>
+        <li>Profile: {{ user_obj.compliment_profile }}</li>
+        <li>Cute: {{ user_obj.compliment_cute }}</li>
+        <li>List: {{ user_obj.compliment_list }}</li>
+        <li>Note: {{ user_obj.compliment_note }}</li>
+        <li>Plain: {{ user_obj.compliment_plain }}</li>
+        <li>Cool: {{ user_obj.compliment_cool }}</li>
+        <li>Funny: {{ user_obj.compliment_funny }}</li>
+        <li>Writer: {{ user_obj.compliment_writer }}</li>
+        <li>Photos: {{ user_obj.compliment_photos }}</li>
+    </ul>
+
+    <h2>Your Reviews</h2>
+    {% if reviews %}
+        <ul>
+            {% for review in reviews %}
+                <li>
+                    <strong>{{ review.business.name }}</strong> — {{ review.stars }} stars<br>
+                    {{ review.date|date:"Y-m-d" }}<br>
+                    {{ review.text|truncatewords:30 }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You have no reviews yet.</p>
+    {% endif %}
+
+    <h2>Your Tips</h2>
+    {% if tips %}
+        <ul>
+            {% for tip in tips %}
+                <li>
+                    <strong>{{ tip.business.name }}</strong><br>
+                    {{ tip.date|date:"Y-m-d" }}<br>
+                    {{ tip.text|truncatewords:20 }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You have no tips yet.</p>
+    {% endif %}
+
+    <form method="post" action="{% url 'user:logout' %}">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
+
+</body>
+</html>

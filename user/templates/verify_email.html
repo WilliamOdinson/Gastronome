@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Verify Your Email - Gastronome</title>
+</head>
+<body>
+    <h1>Verify Your Email</h1>
+
+    {% if error %}
+        <p style="color:red;">{{ error }}</p>
+    {% endif %}
+
+    <p>We've sent a verification code to your email. Please enter it below to complete registration.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <label for="code">Verification Code:</label><br>
+        <input type="text" id="code" name="code" required><br><br>
+
+        <button type="submit">Verify</button>
+    </form>
+
+    <p>If you didn't receive the email, please check your spam folder or <a href="{% url 'user:resend_verification' %}">resend</a> the code.</p>
+</body>
+</html>

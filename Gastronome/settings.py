@@ -48,6 +48,7 @@ INSTALLED_APPS = [
 ]
 
 AUTH_USER_MODEL = 'user.User'
+LOGIN_URL = '/user/login/'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -99,6 +100,15 @@ DATABASES = {
     }
 }
 
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/6",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -146,3 +156,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # ------------------------------
 
 PHOTO_BASE_URL = "https://gastronome-recommendation.s3.us-east-1.amazonaws.com/"
+# While developing, we can use the console backend to print emails to the console cause we don't have a real email server.
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

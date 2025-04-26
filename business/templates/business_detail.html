@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ business.name }} - Details</title>
+</head>
+<body>
+    <h1>{{ business.name }}</h1>
+    <p><strong>Address:</strong> {{ business.address }}, {{ business.city }}, {{ business.state }} {{ business.postal_code }}</p>
+    <p><strong>Rating:</strong> {{ business.stars }} stars ({{ business.review_count }} reviews)</p>
+    <p><strong>Status:</strong> {{ business.is_open|yesno:"Open,Closed" }}</p>
+
+    <h2>Categories</h2>
+    {% if business.categories.exists %}
+    <ul>
+        {% for category in business.categories.all %}
+            <li>{{ category.name }}</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+        <p>No categories listed</p>
+    {% endif %}
+
+    <h2>Hours</h2>
+    {% if business.hours.exists %}
+    <ul>
+        {% for hour in business.hours.all %}
+            <li>{{ hour.day }}: {{ hour.open_time }} - {{ hour.close_time }}</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+        <p>No hours available</p>
+    {% endif %}
+
+    <h2>Photos</h2>
+    {% if business.photos.exists %}
+    <div style="display: flex; flex-wrap: wrap;">
+        {% for photo in business.photos.all %}
+            <div style="margin: 10px;">
+                <img src="{{ photo.image_url }}" alt="{{ photo.label }}" width="200">
+                <p>{{ photo.label }}<br>{{ photo.caption }}</p>
+            </div>
+        {% endfor %}
+    </div>
+    {% else %}
+        <p>No photos available</p>
+    {% endif %}
+
+    <h2>Recent Check-ins</h2>
+    {% if recent_checkins %}
+    <ul>
+        {% for checkin in recent_checkins %}
+            <li>{{ checkin.checkin_time }}</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+        <p>No check-in records</p>
+    {% endif %}
+</body>
+</html>
