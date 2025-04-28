@@ -1,7 +1,11 @@
+import os
+import unittest
+import json
 from django.test import TestCase
 from django.urls import reverse
-import json
 
+
+@unittest.skipIf(os.getenv('DJANGO_TEST_DB') == 'sqlite', "Skip PredictReviewApiTests on Github Actions CI")
 class PredictReviewApiTests(TestCase):
     def test_predict_valid_input(self):
         """
