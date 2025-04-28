@@ -16,7 +16,9 @@ class Review(models.Model):
     useful = models.PositiveIntegerField(default=0, verbose_name="Useful Votes")
     funny = models.PositiveIntegerField(default=0, verbose_name="Funny Votes")
     cool = models.PositiveIntegerField(default=0, verbose_name="Cool Votes")
-
+    
+    # Auto rating based on user review text
+    auto_score = models.FloatField(null=True, blank=True, verbose_name="Model automatic scoring")
     class Meta:
         ordering = ['-date']
         indexes = [

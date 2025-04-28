@@ -20,7 +20,7 @@ DATA_DIR="./database"
 # echo ">>> Creating superuser (optional)..."
 # python manage.py createsuperuser || true
 
-echo "===The following import may take about 90 minutes (for an 8GB M2 Macbook). ==="
+echo "===The following import may take about 280 minutes (for an 8GB M2 Macbook). ==="
 echo "===If your hardware is better, please adjust the batch size.==="
 echo "===You can comment out line 39 if you read the entire init.sh before executing.==="
 echo ">>> Press any key to continue..." && stty -echo -icanon && dd bs=1 count=1 2>/dev/null < /dev/tty && stty icanon echo
@@ -53,11 +53,14 @@ echo ">>> [\!note]: photo.json is in Yelp Photos dataset"
 echo ">>> Press any key to continue..." && stty -echo -icanon && dd bs=1 count=1 2>/dev/null < /dev/tty && stty icanon echo
 python manage.py import_photo "$DATA_DIR/photos.json"
 
-echo ">>> Importing reviews, 6,990,280 entires (~45 min for batch = 10,000)"
+echo ">>> Importing reviews, 6,990,280 entires (~150 min for batch = 10,000)"
 python manage.py import_review "$DATA_DIR/yelp_academic_dataset_review.json"
 
 echo ">>> Importing tips, 908,915 entires (~2 min for batch = 10,000)"
 python manage.py import_tip "$DATA_DIR/yelp_academic_dataset_tip.json"
+
+echo ">>> Importing auto_score scored by our judge, 6,990,280 entires (~60 min for batch = 2,000)"
+python manage.py import_autoscore "$DATA_DIR/review_predictions.json"
 
 echo ">>> All done. Run the server with:"
 echo "    source venv/bin/activate && python manage.py runserver"
