@@ -39,7 +39,7 @@
                 <li>
                     <strong>{{ review.business.name }}</strong> — {{ review.stars }} stars<br>
                     {{ review.date|date:"Y-m-d" }}<br>
-                    {{ review.text|truncatewords:30 }}
+                    {{ review.text }}
                 </li>
             {% endfor %}
         </ul>
@@ -54,7 +54,7 @@
                 <li>
                     <strong>{{ tip.business.name }}</strong><br>
                     {{ tip.date|date:"Y-m-d" }}<br>
-                    {{ tip.text|truncatewords:20 }}
+                    {{ tip.text }}
                 </li>
             {% endfor %}
         </ul>

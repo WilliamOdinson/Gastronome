@@ -20,8 +20,21 @@
         <label for="password">Password:</label><br>
         <input type="password" id="password" name="password" required><br><br>
 
+        <label>Captcha:</label><br>
+        <img id="captchaImg" width="200" height="100" style="cursor:pointer;" onclick="refreshCaptcha()">
+        <input type="text" name="captcha" required><br><br>
+
         <button type="submit">Register</button>
     </form>
     <p>Already have an account? <a href="{% url 'user:login' %}">Login here</a>.</p>
+
+    <script>
+    const img = document.getElementById("captchaImg");
+    function refreshCaptcha() {
+        const ts = Date.now();
+        img.src = "{% url 'api:get_captcha' %}?t=" + ts;
+    }
+    document.addEventListener("DOMContentLoaded", refreshCaptcha);
+    </script>
 </body>
 </html>

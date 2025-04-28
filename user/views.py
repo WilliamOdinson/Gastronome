@@ -14,22 +14,25 @@ from django.utils.crypto import get_random_string
 from review.models import Review, Tip
 from user.models import *
 
+
 @csrf_protect
 def user_login(request):
-    """
-    Handle user login with email and password.
-    """
     if request.method == "POST":
         email = request.POST.get("email")
         password = request.POST.get("password")
+        captcha_input = request.POST.get("captcha", "").upper()
+
+        saved = request.session.pop("captcha_code", None)
+        if not saved or captcha_input != saved[0].upper():
+            return render(request, "login.html",
+                          {"error": "Invalid captcha. Click the image to refresh."})
 
         user = authenticate(request, email=email, password=password)
-        if user is not None:
+        if user:
             login(request, user)
-            return redirect('user:profile')
-        else:
-            return render(request, "login.html", {"error": "Invalid email or password."})
-
+            return redirect("user:profile")
+        return render(request, "login.html",
+                      {"error": "Invalid email or password."})
     return render(request, "login.html")
 
 
@@ -54,11 +57,18 @@ def user_profile(request):
     })
 
 
+@csrf_protect
 def register(request):
     if request.method == "POST":
         email = request.POST.get("email")
         password = request.POST.get("password")
         display_name = request.POST.get("display_name")
+        captcha_input = request.POST.get("captcha", "").upper()
+
+        saved = request.session.pop("captcha_code", None)
+        if not saved or captcha_input != saved[0].upper():
+            return render(request, "register.html",
+                          {"error": "Invalid captcha. Click the image to refresh."})
 
         if not email or not password or not display_name:
             return render(request, "register.html", {"error": "All fields are required."})
@@ -76,7 +86,6 @@ def register(request):
             timeout=1800
         )
 
-        # send verification email
         send_mail(
             'Verify your Gastronome account',
             f'Your verification code is: {verification_code}',
