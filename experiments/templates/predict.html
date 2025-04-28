@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Restaurant Review Star Rating Prediction</title>
+</head>
+<body>
+  <h1>Restaurant Review Star Rating Prediction</h1>
+
+  <form id="predictForm">
+    {% csrf_token %}
+    <div>
+      <label for="review">Please enter your review:</label><br>
+      <textarea id="review" name="review" rows="5" cols="60"></textarea>
+    </div>
+    <button type="submit">Start Prediction</button>
+  </form>
+
+  <div id="result" style="margin-top: 1em;"></div>
+
+  <script>
+    // Read CSRF Token from Cookie
+    function getCookie(name) {
+      const match = document.cookie.match(new RegExp('(^|;\\s*)' + name + '=([^;]*)'));
+      return match ? decodeURIComponent(match[2]) : null;
+    }
+
+    document.getElementById('predictForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const text = document.getElementById('review').value.trim();
+      if (!text) {
+        document.getElementById('result').innerText = 'Please enter your review content.';
+        return;
+      }
+
+      fetch("{% url 'api:predict_review_api' %}", {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ review: text })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.prediction !== undefined) {
+          document.getElementById('result').innerText = 'Predicted Star Rating: ' + data.prediction;
+        } else if (data.error) {
+          document.getElementById('result').innerText = 'Error: ' + data.error;
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        document.getElementById('result').innerText = 'Request failed, please try again later.';
+      });
+    });
+  </script>
+</body>
+</html>

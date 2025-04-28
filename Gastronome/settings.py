@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'business',
     'user',
     'review',
+    'api'
 ]
 
 AUTH_USER_MODEL = 'user.User'
@@ -154,7 +155,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # ------------------------------
 # Custom application settings
 # ------------------------------
-
+FONT_PATH = os.path.join(BASE_DIR, "static", "fonts", "Arial.ttf")
 PHOTO_BASE_URL = "https://gastronome-recommendation.s3.us-east-1.amazonaws.com/"
 # While developing, we can use the console backend to print emails to the console cause we don't have a real email server.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
