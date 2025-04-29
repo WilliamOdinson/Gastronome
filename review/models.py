@@ -1,5 +1,6 @@
 from django.db import models
 from business.models import Business
+from django.utils import timezone
 from user.models import User
 
 
@@ -11,7 +12,7 @@ class Review(models.Model):
     user = models.ForeignKey(User, related_name="reviews", on_delete=models.CASCADE, verbose_name="Review Author")
     business = models.ForeignKey(Business, related_name="reviews", on_delete=models.CASCADE,verbose_name="Business Reviewed")
     stars = models.PositiveSmallIntegerField(verbose_name="Star Rating")
-    date = models.DateTimeField(verbose_name="Review Date")
+    date = models.DateTimeField(default=timezone.now, verbose_name="Review Date")
     text = models.TextField(verbose_name="Review Text")
     useful = models.PositiveIntegerField(default=0, verbose_name="Useful Votes")
     funny = models.PositiveIntegerField(default=0, verbose_name="Funny Votes")

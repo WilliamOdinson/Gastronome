@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'business',
     'user',
     'review',
-    'api'
+    'api',
+    'experiments'
 ]
 
 AUTH_USER_MODEL = 'user.User'

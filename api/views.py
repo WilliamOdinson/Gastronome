@@ -4,12 +4,23 @@ import time
 from io import BytesIO
 
 from django.conf import settings
+from django.db import transaction
+from django.db.models import F
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse, HttpRequest
+from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST
 from PIL import Image, ImageDraw, ImageFont
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from business.models import Business
+from review.models import Review
 from .captcha import generate_captcha_text
 from .inference import predict_score
+from .serializers import ReviewSerializer
 
 
 @require_POST
@@ -82,3 +93,37 @@ def get_captcha_image(request):
     image.save(buffer, "png")
     return HttpResponse(buffer.getvalue(), content_type="image/png")
 
+
+class CreateReviewAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, business_id: str):
+        business = get_object_or_404(Business, pk=business_id)
+
+        if Review.objects.filter(user=request.user, business=business).exists():
+            return Response(
+                {"detail": "You have already reviewed this business."}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        serializer = ReviewSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        with transaction.atomic():
+            review = serializer.save(commit=False)
+            review.user = request.user
+            review.business = business
+            review.auto_score = predict_score(review.text)
+            review.save()
+
+            business.review_count = F("review_count") + 1
+
+            business.stars = (
+                (business.stars * (business.review_count - 1) + review.stars)
+                / business.review_count
+            )
+            business.save(update_fields=["review_count", "stars"])
+
+            request.user.review_count = F("review_count") + 1
+            request.user.save(update_fields=["review_count"])
+
+        return Response(ReviewSerializer(review).data, status=status.HTTP_201_CREATED)

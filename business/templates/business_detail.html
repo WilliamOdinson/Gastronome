@@ -21,6 +21,12 @@
         <p>No categories listed</p>
     {% endif %}
 
+    {% if request.user.is_authenticated %}
+        <a href="{% url 'review:create_review' business.business_id %}" class="btn btn-primary">Write a review</a>
+    {% else %}
+        <a href="{% url 'user:login' %}?next={% url 'review:create_review' business.business_id %}" class="btn btn-secondary">Write a review after logging in!</a>
+    {% endif %}
+
     <h2>Hours</h2>
     {% if business.hours.exists %}
     <ul>
@@ -56,5 +62,25 @@
     {% else %}
         <p>No check-in records</p>
     {% endif %}
+
+    <h2>Reviews</h2>
+    {% if reviews %}
+        <ul>
+        {% for review in reviews %}
+            <li style="margin-bottom: 20px;">
+                <strong>{{ review.user.display_name }}</strong> 
+                rated <strong>{{ review.stars }} stars</strong> 
+                on {{ review.date|date:"Y-m-d" }}<br>
+                <p>{{ review.text|linebreaks }}</p>
+                {% if review.auto_score %}
+                    <small>Model predicted score: {{ review.auto_score|floatformat:1 }}</small>
+                {% endif %}
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No reviews yet. Be the first to review!</p>
+    {% endif %}
+    
 </body>
 </html>
