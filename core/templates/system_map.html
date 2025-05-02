@@ -1,0 +1,119 @@
+{% extends "common/base.html" %}
+
+{% block header %}
+  {% with 'img/logo_white.svg' as logo_path %}
+    {% include "common/nav_sticky.html" %}
+  {% endwith %}
+{% endblock %}
+
+{% block title %}System Map{% endblock %}
+
+{% block sub_header %}
+<div class="sub_header_in sticky_header">
+	<div class="container">
+		<h1>Overview of Gastronome's System Design</h1>
+	</div>
+</div>
+
+{% endblock %}
+
+{% block content %}
+<div class="container margin_60_35">
+	<div class="main_title_2">
+		<span><em></em></span>
+		<h2>Main Django Apps</h2>
+		<p>Cum doctus civibus efficiantur in imperdiet deterruisset.</p>
+	</div>
+	<div class="row">
+		<div class="col-lg-4 col-md-6">
+			<a class="box_topic" href="#0">
+				<span><i class="material-icons">hub</i></span>
+				<h3>Core</h3>
+				<p>Introduction of Core app</p>
+			</a>
+		</div>
+		<div class="col-lg-4 col-md-6">
+			<a class="box_topic" href="#0">
+				<span><i class="material-icons">person</i></span>
+				<h3>Users</h3>
+				<p>Introduction of User app</p>
+			</a>
+		</div>
+		<div class="col-lg-4 col-md-6">
+			<a class="box_topic" href="#0">
+				<span><i class="material-icons">store</i></span>
+				<h3>Business</h3>
+				<p>Introduction of Business app</p>
+			</a>
+		</div>
+		<div class="col-lg-4 col-md-6">
+			<a class="box_topic" href="#0">
+				<span><i class="material-icons">reviews</i></span>
+				<h3>Review</h3>
+				<p>Introduction of Review app</p>
+			</a>
+		</div>
+		<div class="col-lg-4 col-md-6">
+			<a class="box_topic" href="#0">
+				<span><i class="material-icons">recommend</i></span>
+				<h3>Recommend</h3>
+				<p>Introduction of Recommend app</p>
+			</a>
+		</div>
+		<div class="col-lg-4 col-md-6">
+			<a class="box_topic" href="#0">
+				<span><i class="material-icons">api</i></span>
+				<h3>Api</h3>
+				<p>Introduction of Api app</p>
+			</a>
+		</div>
+		<div class="col-lg-4 col-md-6">
+			<a class="box_topic" href="#0">
+				<span><i class="material-icons">science</i></span>
+				<h3>Experiments</h3>
+				<p>Introduction of Experiments app</p>
+			</a>
+		</div>
+		<div class="col-lg-4 col-md-6">
+			<a class="box_topic" href="#0">
+				<span><i class="material-icons">more_horiz</i></span>
+				<h3>More</h3>
+				<p>Comming Soon...</p>
+			</a>
+		</div>
+	</div>
+	<div class="container margin_60_35">
+		<div class="main_title_2">
+			<h2>Select a topic</h2>
+			<p>Cum doctus civibus efficiantur in imperdiet deterruisset.</p>
+		</div>
+		<div class="row">
+			<div class="col-lg-4 col-md-6">
+				<a class="box_topic" href="#0">
+					<span><i class="material-icons">wallet</i></span>
+					<h3>Payments</h3>
+					<p>Id mea congue dictas, nec et summo mazim impedit. Vim te audiam impetus interpretaris.</p>
+				</a>
+			</div>
+		</div>
+	</div>
+
+	<div class="main_title_3 add_top_30">
+			<span><em></em></span>
+			<h2>Popular articles</h2>
+			<p>Cum doctus civibus efficiantur in imperdiet deterruisset.</p>
+		</div>
+		<div class="list_articles add_bottom_30 clearfix">
+			<ul>
+				<li><a href="#0"><i class="icon_documents_alt"></i>Et dicit vidisse epicurei pri</a></li>
+				<li><a href="#0"><i class="icon_documents_alt"></i>Ad sit virtute rationibus efficiantur</a></li>
+				<li><a href="#0"><i class="icon_documents_alt"></i>Partem vocibus omittam pri ne</a></li>
+				<li><a href="#0"><i class="icon_documents_alt"></i>Case debet appareat duo cu</a></li>
+				<li><a href="#0"><i class="icon_documents_alt"></i>Impedit torquatos quo in</a></li>
+				<li><a href="#0"><i class="icon_documents_alt"></i>Nec omnis alienum no</a></li>
+				<li><a href="#0"><i class="icon_documents_alt"></i>Quo eu soleat facilisi menandri</a></li>
+				<li><a href="#0"><i class="icon_documents_alt"></i>Et dicit vidisse epicurei pri</a></li>
+			</ul>
+		</div>
+</div>
+{% endblock %}

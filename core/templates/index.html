@@ -1,0 +1,348 @@
+{% extends "common/base.html" %}
+
+{% block header %}
+  {% with 'img/logo_white.svg' as logo_path %}
+    {% include "common/nav_transparent.html" %}
+  {% endwith %}
+{% endblock %}
+
+{% block title %}Restaurants, Hotels, Bars{% endblock %}
+
+{% block content %}
+<section class="hero_single version_2">
+    <div class="wrapper">
+        <div class="container">
+            <h3>Find what you need!</h3>
+            <p>Discover top hotels, shops, and restaurants around you.</p>
+            <form>
+                <div class="row g-0 custom-search-input-2">
+                    <div class="col-lg-4">
+                        <div class="form-group">
+                            <input class="form-control" type="text" placeholder="What are you looking for...">
+                            <i class="material-icons" style="font-size:24px;">search</i>
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="form-group">
+                            <input class="form-control" type="text" placeholder="Where">
+                            <i class="material-icons" style="font-size:24px;">location_on</i>
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <select class="wide">
+                            <option>All Categories</option>	
+                            <option>Shops</option>
+                            <option>Hotels</option>
+                            <option>Restaurants</option>
+                            <option>Bars</option>
+                            <option>Events</option>
+                            <option>Fitness</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2">
+                        <input type="submit" value="Search">
+                    </div>
+                </div>
+                <!-- /row -->
+            </form>
+        </div>
+    </div>
+</section>
+
+<div class="bg_color_1">
+    <div class="container margin_80_55">
+        <div class="main_title_2">
+            <span><em></em></span>
+            <h2>Categories</h2>
+            <p>Discover great places!</p>
+        </div>
+        <div class="row">
+            <div class="col-lg-4 col-md-6">
+                <a href="" class="grid_item">
+                    <figure>
+                        <img src="" alt="">
+                        <div class="info">
+                            <small>{{ category_counts.Shops }} Locations</small>
+                            <h3>Shops</h3>
+                        </div>
+                    </figure>
+                </a>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <a href="" class="grid_item">
+                    <figure>
+                        <img src="" alt="">
+                        <div class="info">
+                            <small>{{ category_counts.Hotels }} Locations</small>
+                            <h3>Hotels</h3>
+                        </div>
+                    </figure>
+                </a>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <a href="" class="grid_item">
+                    <figure>
+                        <img src="" alt="">
+                        <div class="info">
+                            <small>{{ category_counts.Restaurants }} Locations</small>
+                            <h3>Restaurants</h3>
+                        </div>
+                    </figure>
+                </a>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <a href="" class="grid_item">
+                    <figure>
+                        <img src="" alt="">
+                        <div class="info">
+                            <small>{{ category_counts.Bars }} Locations</small>
+                            <h3>Bars</h3>
+                        </div>
+                    </figure>
+                </a>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <a href="" class="grid_item">
+                    <figure>
+                        <img src="" alt="">
+                        <div class="info">
+                            <small>{{ category_counts.Events }} Locations</small>
+                            <h3>Events</h3>
+                        </div>
+                    </figure>
+                </a>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <a href="" class="grid_item">
+                    <figure>
+                        <img src="" alt="">
+                        <div class="info">
+                            <small>{{ category_counts.Fitness }} Locations</small>
+                            <h3>Fitness</h3>
+                        </div>
+                    </figure>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid margin_80_55">
+    <div class="main_title_2">
+        <span><em></em></span>
+        <h2>Listings</h2>
+        <p>Recommended based on your past records.</p>
+    </div>
+    <div id="reccomended" class="owl-carousel owl-theme">
+        <div class="item">
+            <div class="strip grid">
+                <figure>
+                    <a href="" class="wish_bt"></a>
+                    <a href=""><img src="" class="img-fluid" alt="" width="400" height="266"><div class="read_more"><span>Read more</span></div></a>
+                    <small>Restaurant</small>
+                </figure>
+                <div class="wrapper">
+                    <h3><a href="">Da Alfredo</a></h3>
+                    <p>Id placerat tacimates definitionem sea, prima quidam vim no. Duo nobis persecuti cu.</p>
+                    <a class="address" href="">Get directions</a>
+                </div>
+                <ul>
+                    <li><span class="loc_open">Now Open</span></li>
+                    <li><div class="score"><span>Superb<em>350 Reviews</em></span><strong>8.9</strong></div></li>
+                </ul>
+            </div>
+        </div>
+        <div class="item">
+            <div class="strip grid">
+                <figure>
+                    <a href="" class="wish_bt"></a>
+                    <a href=""><img src="" class="img-fluid" alt="" width="400" height="266"><div class="read_more"><span>Read more</span></div></a>
+                    <small>Bar</small>
+                </figure>
+                <div class="wrapper">
+                    <h3><a href="">Notredam</a></h3>
+                    <p>Id placerat tacimates definitionem sea, prima quidam vim no. Duo nobis persecuti cu.</p>
+                    <a class="address" href="">Get directions</a>
+                </div>
+                <ul>
+                    <li><span class="loc_closed">Now Closed</span></li>
+                    <li><div class="score"><span>Good<em>350 Reviews</em></span><strong>7.0</strong></div></li>
+                </ul>
+            </div>
+        </div>
+        <div class="item">
+            <div class="strip grid">
+                <figure>
+                    <a href="detail-shop.html" class="wish_bt"></a>
+                    <a href="detail-shop.html"><img src="" class="img-fluid" alt="" width="400" height="266"><div class="read_more"><span>Read more</span></div></a>
+                    <small>Shop</small>
+                </figure>
+                <div class="wrapper">
+                    <h3><a href="detail-shop.html">Camden Mark</a></h3>
+                    <p>Id placerat tacimates definitionem sea, prima quidam vim no. Duo nobis persecuti cu.</p>
+                    <a class="address" href="">Get directions</a>
+                </div>
+                <ul>
+                    <li><span class="loc_open">Now Open</span></li>
+                    <li><div class="score"><span>Good<em>350 Reviews</em></span><strong>7.0</strong></div></li>
+                </ul>
+            </div>
+        </div>
+        <div class="item">
+            <div class="strip grid">
+                <figure>
+                    <a href="" class="wish_bt"></a>
+                    <a href=""><img src="" class="img-fluid" alt="" width="400" height="266"><div class="read_more"><span>Read more</span></div></a>
+                    <small>Bar</small>
+                </figure>
+                <div class="wrapper">
+                    <h3><a href="">Bistroter</a></h3>
+                    <p>Id placerat tacimates definitionem sea, prima quidam vim no. Duo nobis persecuti cu.</p>
+                    <a class="address" href="">Get directions</a>
+                </div>
+                <ul>
+                    <li><span class="loc_open">Now Open</span></li>
+                    <li><div class="score"><span>Good<em>350 Reviews</em></span><strong>7.0</strong></div></li>
+                </ul>
+            </div>
+        </div>
+        <div class="item">
+            <div class="strip grid">
+                <figure>
+                    <a href="" class="wish_bt"></a>
+                    <a href=""><img src="" class="img-fluid" alt="" width="400" height="266"><div class="read_more"><span>Read more</span></div></a>
+                    <small>Hotel</small>
+                </figure>
+                <div class="wrapper">
+                    <h3><a href="">Hotel Concorde</a></h3>
+                    <p>Id placerat tacimates definitionem sea, prima quidam vim no. Duo nobis persecuti cu.</p>
+                    <a class="address" href="">Get directions</a>
+                </div>
+                <ul>
+                    <li><span class="loc_closed">Now Closed</span></li>
+                    <li><div class="score"><span>Superb<em>350 Reviews</em></span><strong>9.0</strong></div></li>
+                </ul>
+            </div>
+        </div>
+        <div class="item">
+            <div class="strip grid">
+                <figure>
+                    <a href="" class="wish_bt"></a>
+                    <a href=""><img src="" class="img-fluid" alt="" width="400" height="266"><div class="read_more"><span>Read more</span></div></a>
+                    <small>Bar</small>
+                </figure>
+                <div class="wrapper">
+                    <h3><a href="">Eiffel Bar</a></h3>
+                    <p>Id placerat tacimates definitionem sea, prima quidam vim no. Duo nobis persecuti cu.</p>
+                    <a class="address" href="">Get directions</a>
+                </div>
+                <ul>
+                    <li><span class="loc_closed">Now Closed</span></li>
+                    <li><div class="score"><span>Good<em>350 Reviews</em></span><strong>7.5</strong></div></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="btn_home_align"><a href="" class="btn_1 rounded">View all</a></div>
+    </div>
+</div>
+
+<div class="call_section pattern">
+    <div class="wrapper">
+        <div class="container margin_80_55">
+            <div class="main_title_2">
+                <span><em></em></span>
+                <h2>How it Works</h2>
+                <p>Cum doctus civibus efficiantur in imperdiet deterruisset.</p>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="box_how">
+                        <i class="material-icons">explore</i>
+                        <h3>Search Locations</h3>
+                        <p>An nec placerat repudiare scripserit, temporibus complectitur at sea, vel ignota fierent eloquentiam id.</p>
+                        <span></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="box_how">
+                        <i class="material-icons">info</i>
+                        <h3>View Location Info</h3>
+                        <p>An nec placerat repudiare scripserit, temporibus complectitur at sea, vel ignota fierent eloquentiam id.</p>
+                        <span></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="box_how">
+                        <i class="material-icons">thumb_up</i>
+                        <h3>Book, Reach or Call</h3>
+                        <p>An nec placerat repudiare scripserit, temporibus complectitur at sea, vel ignota fierent eloquentiam id.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="text-center add_top_30 wow bounceIn" data-wow-delay="0.5"><a href="{% url 'user:register' %}" class="btn_1 rounded">Register Now</a></p>
+        </div>
+    </div>
+</div>
+
+<div class="container margin_80_55">
+    <div class="main_title_2">
+        <span><em></em></span>
+        <h2>System Design</h2>
+        <p>Cum doctus civibus efficiantur in imperdiet deterruisset.</p>
+    </div>
+    <div class="row">
+        <div class="col-lg-6">
+            <a class="box_news" href="#0">
+                <figure><img src="" alt="">
+                </figure>
+                <ul>
+                    <li>Restaurants</li>
+                    <li>20.11.2017</li>
+                </ul>
+                <h4>Pri oportere scribentur eu</h4>
+                <p>Cu eum alia elit, usu in eius appareat, deleniti sapientem honestatis eos ex. In ius esse ullum vidisse....</p>
+            </a>
+        </div>
+        <div class="col-lg-6">
+            <a class="box_news" href="#0">
+                <figure><img src="" alt="">
+                </figure>
+                <ul>
+                    <li>Shops</li>
+                    <li>20.11.2017</li>
+                </ul>
+                <h4>Duo eius postea suscipit ad</h4>
+                <p>Cu eum alia elit, usu in eius appareat, deleniti sapientem honestatis eos ex. In ius esse ullum vidisse....</p>
+            </a>
+        </div>
+        <div class="col-lg-6">
+            <a class="box_news" href="#0">
+                <figure><img src="" alt="">
+                </figure>
+                <ul>
+                    <li>Shops</li>
+                    <li>20.11.2017</li>
+                </ul>
+                <h4>Elitr mandamus cu has</h4>
+                <p>Cu eum alia elit, usu in eius appareat, deleniti sapientem honestatis eos ex. In ius esse ullum vidisse....</p>
+            </a>
+        </div>
+        <div class="col-lg-6">
+            <a class="box_news" href="#0">
+                <figure><img src="" alt="">
+                </figure>
+                <ul>
+                    <li>Bars</li>
+                    <li>20.11.2017</li>
+                </ul>
+                <h4>Id est adhuc ignota delenit</h4>
+                <p>Cu eum alia elit, usu in eius appareat, deleniti sapientem honestatis eos ex. In ius esse ullum vidisse....</p>
+            </a>
+        </div>
+    </div>
+    <p class="btn_home_align"><a href="{% url 'core:system_map' %}" class="btn_1 rounded">View all</a></p>
+</div>
+
+{% endblock %}

@@ -1,0 +1,96 @@
+{% load static %}
+
+<footer class="plus_border">
+    <div class="container margin_60_35">
+        <div class="row">
+            <div class="col-lg-3 col-md-6 col-sm-6">
+                <h3 data-bs-target="#collapse_ft_1">Quick Links</h3>
+                <div class="collapse dont-collapse-sm" id="collapse_ft_1">
+                    <ul class="links">
+                        <li><a href="{% url 'core:system_map' %}">System Overview</a></li>
+                        <li><a href="{% url 'core:tech_details' %}">Core Algorithms</a></li>
+                        <li><a href="{% url 'experiments:predict_review' %}">Experiments</a></li>
+                        <li><a href="{% url 'user:register' %}">Create account</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6">
+                <h3 data-bs-target="#collapse_ft_2">Categories</h3>
+                <div class="collapse dont-collapse-sm" id="collapse_ft_2">
+                    <ul class="links">
+                        <li><a href="#0">Shops</a></li>
+                        <li><a href="#0">Hotels</a></li>
+                        <li><a href="#0">Restaurants</a></li>
+                        <li><a href="#0">Bars</a></li>
+                        <li><a href="#0">Fitness</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6">
+                <h3 data-bs-target="#collapse_ft_3">Contacts</h3>
+                <div class="collapse dont-collapse-sm" id="collapse_ft_3">
+                    <ul class="contacts">
+                        <li><i class="material-icons" style="font-size:18px;">location_on</i>5000 Forbes Avenue<br>Pittsburgh, PA 15213</li>
+                        <li><i class="material-icons" style="font-size:18px;">phone_iphone</i>(+1) 123-123-1234 </li>
+                        <li><li><i class="material-icons" style="font-size:18px;">mail</i><a href="mailto:earthsuperman@outlook.com">earthsuperman@outlook.com</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6">
+                <h3 data-bs-target="#collapse_ft_4">Keep in touch</h3>
+					<div class="collapse dont-collapse-sm" id="collapse_ft_4">
+						<div id="newsletter">
+							<div id="message-newsletter"></div>
+								<div class="form-group">
+									<input type="email" name="email_newsletter" id="email_newsletter" class="form-control" placeholder="Your email">
+									<input type="submit" value="Submit" id="submit-newsletter">
+								</div>
+							</form>
+						</div>
+                        <div class="follow_us">
+                        <h3>Follow Us</h5>
+                        <ul>
+                            <li><a href="https://www.linkedin.com/in/williamodinson/"><i class="bi bi-linkedin"></i></a></li>
+                            <li><a href="https://www.github.com/williamodinson/"><i class="bi bi-github"></i></a></li>
+                            <li><a href="#0"><i class="bi bi-tiktok"></i></a></li>
+
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <span style="display: block; text-align: right;">© 2025 Gastronome | The Undergraduate Capstone Project developed by Yiqing Sun <a href="https://github.com/WilliamOdinson/Gastronome">Open source GitHub repository</a></span>
+    </div>
+</footer>
+
+<div id="toTop"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/owl.carousel@2.3.4/dist/owl.carousel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/magnific-popup@1.1.0/dist/jquery.magnific-popup.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/resize-sensor@0.0.6/ResizeSensor.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/theia-sticky-sidebar@1.7.0/js/theia-sticky-sidebar.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sticky-kit@1.1.3/dist/sticky-kit.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.mmenu@6.1.8/dist/jquery.mmenu.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hideshowpassword@2.2.0/hideShowPassword.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery-nice-select@1.1.0/js/jquery.nice-select.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/rangeslider.js@2.3.0/dist/rangeslider.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/wowjs@1.1.3/dist/wow.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@2.18.1/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker@3.0.1/daterangepicker.min.js"></script>
+
+{% block extra_js %}
+<script src="https://maps.googleapis.com/maps/api/js?key=GOOGLE_MAPS_API_KEY"></script>
+<script src="https://cdn.jsdelivr.net/npm/google-maps-utility-library-v3-infobox@1.1.14/dist/infobox.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/isotope-layout@2.2.2/dist/isotope.pkgd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@googlemaps/markerclusterer@2.5.3/dist/index.min.js"></script>
+{% endblock %}
+
+<script src="{% static 'js/functions.js' %}"></script>
+<script src="{% static 'js/validate.js' %}"></script>
+
+</div>
+</body>
+</html>
