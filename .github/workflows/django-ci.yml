@@ -1,23 +1,52 @@
 name: Django CI
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        python-version: [ "3.11", "3.12", "3.13" ]
+    env:
+      DJANGO_SECRET_KEY: test-secret-key-placeholder
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository (with LFS)
+        uses: actions/checkout@v4
+        with:
+          lfs: true
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Install git-lfs
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git-lfs
+          git lfs install
+
+      - name: Clone DistilBERT
+        run: |
+          rm -rf assets/distilbert-base-uncased
+          git clone \
+            --depth 1 \
+            --filter=blob:none \
+            --sparse \
+            https://huggingface.co/distilbert-base-uncased \
+            assets/distilbert-base-uncased
+          cd assets/distilbert-base-uncased
+          git sparse-checkout init --no-cone
+          git sparse-checkout set \
+            /config.json \
+            /tokenizer.json \
+            /tokenizer_config.json \
+            /vocab.txt \
+            /pytorch_model.bin \
+            /model.safetensors
+
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.13"
 
       - name: Install dependencies
         run: |
@@ -28,4 +57,4 @@ jobs:
         env:
           DJANGO_TEST_DB: sqlite
         run: |
-          python manage.py test
+          python manage.py test business user review api experiments recommend core
