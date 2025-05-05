@@ -1,0 +1,31 @@
+from abc import ABC, abstractmethod
+from typing import List, Tuple
+import pandas as pd
+import pathlib
+import joblib
+
+
+class BaseRecommender(ABC):
+    """Unified abstract base class for all recommender models"""
+
+    @abstractmethod
+    def fit(self, ratings_df: pd.DataFrame) -> "BaseRecommender":
+        """Train the model on a ratings DataFrame"""
+        pass
+
+    @abstractmethod
+    def predict(self, user_id: str, n: int = 10) -> List[Tuple[str, float]]:
+        """Return top-n recommendations (business_id, score) for the given user"""
+        pass
+
+    def save(self, path: str | pathlib.Path):
+        """Serialize the entire model to the specified path (.pkl)"""
+        joblib.dump(self, path)
+
+    @classmethod
+    def load(cls, path: str | pathlib.Path):
+        """Deserialize and return a trained model from disk"""
+        obj = joblib.load(path)
+        if not isinstance(obj, cls):
+            raise TypeError(f"The object in the file is not an instance of {cls.__name__}")
+        return obj

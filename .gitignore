@@ -215,4 +215,4 @@ Temporary Items
 #------------------
 # Project Related
 #------------------
-database/*.json
+database/*
