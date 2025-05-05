@@ -1,0 +1,31 @@
+{% load static %}
+
+<header class="header_in is_sticky menu_fixed">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3 col-12">
+                <div id="logo">
+                    <a href="/" title="Gastronome">
+                        <img src="{% static 'img/logo_sticky.svg' %}" width="165" height="35" alt="" class="logo_sticky">
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-9 col-12">
+                <ul id="top_menu">
+                    <li><a href="{% url 'user:profile' %}" class="btn_add">My Account</a></li>
+                    <li><a href="#sign-in-dialog" id="sign-in" class="login" title="Sign In"><i class="material-icons">login</i></a></li>
+                    <li><a href="wishlist.html" class="wishlist_bt_top" title="Your wishlist"><i class="material-icons">favorite</i></a></li>
+                </ul>
+                <a href="#menu" class="btn_mobile">
+                    <div class="hamburger hamburger--spin" id="hamburger">
+                        <div class="hamburger-box">
+                            <div class="hamburger-inner"></div>
+                        </div>
+                    </div>
+                </a>
+                <nav id="menu" class="main-menu">
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
