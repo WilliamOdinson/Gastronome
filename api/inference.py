@@ -1,19 +1,20 @@
 import torch
 import warnings
-from transformers import DistilBertTokenizerFast, DistilBertForSequenceClassification
+from transformers import DistilBertTokenizerFast, DistilBertForSequenceClassification, DistilBertConfig
 
 
 class ReviewScorer:
     def __init__(self, tokenizer_path: str, model_weights_path: str):
         self.tokenizer = DistilBertTokenizerFast.from_pretrained(tokenizer_path, do_lower_case=True)
+
+        config = DistilBertConfig.from_pretrained(tokenizer_path)
+        config.num_labels = 6
+        config.output_attentions = False
+        config.output_hidden_states = False
+
         with warnings.catch_warnings():
             warnings.simplefilter('ignore')
-            self.model = DistilBertForSequenceClassification.from_pretrained(
-                tokenizer_path,
-                num_labels=6,
-                output_attentions=False,
-                output_hidden_states=False,
-            )
+            self.model = DistilBertForSequenceClassification(config)
 
         state_dict = torch.load(model_weights_path, map_location='cpu')
         self.model.load_state_dict(state_dict)
