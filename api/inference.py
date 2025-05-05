@@ -16,7 +16,7 @@ class ReviewScorer:
             warnings.simplefilter('ignore')
             self.model = DistilBertForSequenceClassification(config)
 
-        state_dict = torch.load(model_weights_path, map_location='cpu')
+        state_dict = torch.load(model_weights_path, map_location='cpu', weights_only=False)
         self.model.load_state_dict(state_dict)
         self.model.eval()
 
