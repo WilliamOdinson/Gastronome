@@ -126,3 +126,11 @@ class SGDRecommender(BaseRecommender):
         if not self._item_map_inv:
             raise RuntimeError("Model not fitted.")
         return self._item_map_inv
+
+    def predict_matrix(self) -> np.ndarray:
+        if self.user_vectors is None or self.item_vectors is None:
+            raise RuntimeError("Model has not been fitted.")
+        return (self.global_bias
+                + self.user_bias[:, np.newaxis]
+                + self.item_bias[np.newaxis, :]
+                + self.user_vectors @ self.item_vectors.T)

@@ -3,6 +3,7 @@ from typing import List, Tuple
 import pandas as pd
 import pathlib
 import joblib
+import numpy as np
 
 
 class BaseRecommender(ABC):
@@ -16,6 +17,11 @@ class BaseRecommender(ABC):
     @abstractmethod
     def predict(self, user_id: str, n: int = 10) -> List[Tuple[str, float]]:
         """Return top-n recommendations (business_id, score) for the given user"""
+        pass
+
+    @abstractmethod
+    def predict_matrix(self) -> np.ndarray:
+        """Return the full user-item score prediction matrix"""
         pass
 
     def save(self, path: str | pathlib.Path):

@@ -140,3 +140,9 @@ class ALSRecommender(BaseRecommender):
         if not self._item_map_inv:
             raise RuntimeError("Model not fitted.")
         return self._item_map_inv
+    
+    def predict_matrix(self) -> np.ndarray:
+        if self.user_factors is None or self.item_factors is None:
+            raise RuntimeError("Model has not been fitted.")
+        return self.user_factors @ self.item_factors.T
+

@@ -128,3 +128,16 @@ class SVDRecommender(BaseRecommender):
         if not self._item_map_inv:
             raise RuntimeError("Model not fitted.")
         return self._item_map_inv
+
+
+    def predict_matrix(self) -> np.ndarray:
+        if self._pred_full is None:
+            if self.U_k is None or self.S_k is None or self.Vt_k is None:
+                raise RuntimeError("Model has not been fitted.")
+            self._pred_full = (
+                self.U_k @ self.S_k @ self.Vt_k
+                + self.global_bias
+                + self.user_bias
+                + self.item_bias
+            )
+        return self._pred_full
