@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.core.cache import cache
 from django.db.models import Q
 from business.models import Category
+from django.http import HttpResponse
 
 CATEGORY_KEYWORDS = {
     "Shops": ["shop"],
