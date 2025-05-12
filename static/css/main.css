@@ -919,10 +919,10 @@ ul#top_menu li:last-child {
   }
 }
 ul#top_menu li a {
-  color: #fff;
+  color: #000;
 }
 ul#top_menu li a:hover {
-  color: #fff;
+  color: #333;
   opacity: 0.7;
 }
 ul#top_menu li a.login, ul#top_menu li a.wishlist_bt_top {
@@ -5104,7 +5104,7 @@ a.social_bt.linkedin:before {
   text-align: center;
   font-size: 12px;
   font-size: 0.75rem;
-  padding: 5px 3px 3px 3px;
+  padding:f 5px 3px 3px 3px;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
   -ms-border-radius: 3px;
@@ -8237,8 +8237,54 @@ ul.bullets li:before {
 }
 
 .hideShowPassword-wrapper {
-  width: 100% !important;
+  position:relative;
+  width:100%;
 }
+
+.hideShowPassword-toggle{
+    position:absolute!important;/* override plugin’s default                        */
+    top:50%;
+    right:12px;                 /* same horizontal padding as .form-control         */
+    transform:translateY(-50%);
+    background:transparent;
+    border:0;
+    color:#6c757d;              /* match the native placeholder colour              */
+    cursor:pointer;
+}
+
+.hideShowPassword-toggle:focus{
+    outline:none;
+}
+
+.toggle-password{
+  position:absolute;
+  top:50%;
+  right:0.75rem;
+  transform:translateY(-50%);
+  border:none;
+  background:transparent;
+  padding:0;
+  line-height:1;
+  cursor:pointer;
+  color:#6c757d;
+}
+.toggle-password i{
+  font-size:22px;
+  pointer-events:none;
+}
+
+.captcha-wrapper img{
+  border-radius:4px;
+  box-shadow:0 1px 3px rgba(0,0,0,.1);
+}
+
+.captcha-wrapper{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:.5rem;
+}
+
 
 .checkboxes label {
   color: #999;

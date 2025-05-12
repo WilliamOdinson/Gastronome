@@ -1,0 +1,67 @@
+<form method="post" action="{% url 'user:login' %}" novalidate>
+  {% csrf_token %}
+
+  <!-- email -->
+  <div class="mb-3">
+    <label for="login_email" class="form-label">Email</label>
+    <input type="email"
+           class="form-control required"
+           id="login_email"
+           name="email"
+           autocomplete="email"
+           required>
+  </div>
+
+  <!-- password  -->
+  <div class="mb-3">
+    <label for="login_password" class="form-label">Password</label>
+    <div class="position-relative">
+      <input type="password"
+             class="form-control pe-5 required"
+             id="login_password"
+             name="password"
+             autocomplete="current-password"
+             required>
+      <button type="button"
+              class="toggle-password"
+              data-target="#login_password"
+              aria-label="Show/Hide password">
+        <i class="material-icons align-middle">visibility_off</i>
+      </button>
+    </div>
+  </div>
+
+  <!-- captcha -->
+  <div class="mb-4">
+    <label class="form-label">Captcha</label>
+    <div class="captcha-wrapper">
+      <img id="captchaImgLogin"
+           width="140"
+           height="60"
+           class="shadow-sm rounded"
+           alt="captcha">
+      <button type="button"
+              class="btn btn-outline-secondary btn-sm ms-2"
+              onclick="refreshCaptchaLogin()"
+              aria-label="Refresh captcha">
+        <i class="material-icons fs-6">refresh</i>
+      </button>
+    </div>
+    <input type="text"
+           class="form-control mt-2 required"
+           name="captcha"
+           placeholder="Enter code"
+           required>
+  </div>
+
+  <button type="submit" class="btn_1 full-width">Log In</button>
+</form>
+
+<script>
+function refreshCaptchaLogin () {
+  const ts = Date.now();
+  document.getElementById('captchaImgLogin').src =
+    "{% url 'api:get_captcha' %}?t=" + ts;
+}
+document.addEventListener('DOMContentLoaded', refreshCaptchaLogin);
+</script>

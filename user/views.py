@@ -41,7 +41,7 @@ def user_logout(request):
     Log the user out and redirect to homepage.
     """
     logout(request)
-    return redirect('home')
+    return redirect('core:index')
 
 
 @login_required
@@ -61,7 +61,8 @@ def user_profile(request):
 def register(request):
     if request.method == "POST":
         email = request.POST.get("email")
-        password = request.POST.get("password")
+        password1 = request.POST.get("password1")
+        password2 = request.POST.get("password2")
         display_name = request.POST.get("display_name")
         captcha_input = request.POST.get("captcha", "").upper()
 
@@ -70,11 +71,14 @@ def register(request):
             return render(request, "register.html",
                           {"error": "Invalid captcha. Click the image to refresh."})
 
-        if not email or not password or not display_name:
+        if not email or not password1 or not password2 or not display_name:
             return render(request, "register.html", {"error": "All fields are required."})
+        
+        if password1 != password2:
+            return render(request, "register.html", {"error": "Passwords do not match."})
 
         verification_code = ''.join(str(secrets.randbelow(10)) for _ in range(6))
-        password_hash = make_password(password)
+        password_hash = make_password(password1)
 
         cache.set(
             f"pending_register:{email}",
@@ -124,7 +128,7 @@ def verify_email(request):
             cache.delete(f"pending_register:{email}")
 
             login(request, user)
-            return redirect('home')
+            return redirect('core:index')
         else:
             return render(request, "verify_email.html", {"error": "Invalid verification code."})
     return render(request, "verify_email.html")

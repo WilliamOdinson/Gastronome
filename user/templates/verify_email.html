@@ -1,26 +1,72 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Verify Your Email - Gastronome</title>
-</head>
-<body>
-    <h1>Verify Your Email</h1>
+{% extends "common/base.html" %}
 
-    {% if error %}
-        <p style="color:red;">{{ error }}</p>
-    {% endif %}
+{% block title %}Verify your email{% endblock %}
 
-    <p>We've sent a verification code to your email. Please enter it below to complete registration.</p>
+{% block content %}
+<main class="pattern">
+  <div class="wrapper">
+    <div class="container margin_80_55">
+      <div class="row justify-content-center">
+        <div class="col-lg-6">
 
-    <form method="post">
-        {% csrf_token %}
-        <label for="code">Verification Code:</label><br>
-        <input type="text" id="code" name="code" required><br><br>
+          <div class="card shadow-sm">
+            <div class="card-header bg-light">
+              <h5 class="mb-0">
+                <i class="material-icons align-middle me-1">mark_email_unread</i>
+                Verify your email
+              </h5>
+            </div>
 
-        <button type="submit">Verify</button>
-    </form>
+            <div class="card-body">
 
-    <p>If you didn't receive the email, please check your spam folder or <a href="{% url 'user:resend_verification' %}">resend</a> the code.</p>
-</body>
-</html>
+              {% if error %}
+                <div class="alert alert-danger" role="alert">
+                  {{ error }}
+                </div>
+              {% endif %}
+
+              <p class="mb-4">
+                We’ve sent a 6‑digit verification code to your inbox.
+                Enter it below to complete registration.
+              </p>
+
+              <form method="post" novalidate>
+                {% csrf_token %}
+                <div class="mb-3">
+                  <label for="code" class="form-label">Verification code</label>
+                  <input type="text"
+                         class="form-control required text-center"
+                         id="code"
+                         name="code"
+                         maxlength="6"
+                         pattern="\d{6}"
+                         inputmode="numeric"
+                         required>
+                </div>
+
+                <button type="submit" class="btn_1 full-width">
+                  Verify
+                </button>
+              </form>
+
+              <hr class="my-4">
+
+              <p class="mb-0 text-center small">
+                Didn’t receive the email?
+                <a href="{% url 'user:resend_verification' %}">
+                  Resend code
+                </a>
+                or check your spam folder.
+              </p>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}{% endblock %}

@@ -1,33 +1,51 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-</head>
-<h1>Login</h1>
-{% if error %}
-  <p style="color:red;">{{ error }}</p>
-{% endif %}
-<form method="post">
-  {% csrf_token %}
-  <label>Email:</label><br>
-  <input type="email" name="email" required><br><br>
+{% extends "common/base.html" %}
 
-  <label>Password:</label><br>
-  <input type="password" name="password" required><br><br>
+{% block title %}Login{% endblock %}
 
-  <label>Captcha:</label><br>
-  <img id="captchaImg" width="200" height="100" style="cursor:pointer;" onclick="refreshCaptcha()">
-  <input type="text" name="captcha" required><br><br>
+{% block signin_modal %}{% endblock %}
 
-  <button type="submit">Login</button>
-</form>
+{% block content %}
+<main class="pattern">
+  <div class="wrapper">
+    <div class="container margin_80_55">
+      <div class="row justify-content-center">
+        <div class="col-lg-5">
 
+          <div class="card shadow-sm">
+            <div class="card-header bg-light">
+              <h5 class="mb-0">
+                <i class="material-icons align-middle me-1">login</i>Login
+              </h5>
+            </div>
+
+            <div class="card-body">
+              {% if error %}
+                <div class="alert alert-danger" role="alert">
+                  {{ error }}
+                </div>
+              {% endif %}
+
+              {% include "includes/_login_form.html" %}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
 <script>
-  const img = document.getElementById("captchaImg");
-  function refreshCaptcha() {
-    const ts = Date.now();
-    img.src = "{% url 'api:get_captcha' %}?t=" + ts;
-  }
-  document.addEventListener("DOMContentLoaded", refreshCaptcha);
+$(document).on('click', '.toggle-password', function () {
+  const $btn   = $(this);
+  const $icon  = $btn.children('i');
+  const $input = $($btn.data('target'));
+  const hidden = $input.attr('type') === 'password';
+
+  $input.attr('type', hidden ? 'text' : 'password');
+  $icon.text(hidden ? 'visibility' : 'visibility_off');
+});
 </script>
+{% endblock %}
