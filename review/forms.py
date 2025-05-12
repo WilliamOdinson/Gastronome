@@ -1,13 +1,22 @@
 from django import forms
 from .models import Review
 
+
 class ReviewForm(forms.ModelForm):
     class Meta:
         model = Review
         fields = ["stars", "text"]
         widgets = {
-            "stars": forms.NumberInput(attrs={"min": 1, "max": 5}),
-            "text": forms.Textarea(attrs={"rows": 6}),
+            "stars": forms.NumberInput(
+                attrs={
+                    "min": 1,
+                    "max": 5,
+                    "class": "form-control w-auto d-inline-block ms-2",
+                }
+            ),
+            "text": forms.Textarea(
+                attrs={"rows": 6, "class": "form-control"}
+            ),
         }
 
     def clean_text(self):

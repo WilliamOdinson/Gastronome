@@ -2,7 +2,10 @@ import uuid
 from django.http import HttpResponseBadRequest
 from django.shortcuts import redirect, get_object_or_404, render
 from django.db import transaction
-from django.db.models import F, Sum
+from django.db.models import F
+from django.views.decorators.http import require_http_methods
+from django.contrib.auth.decorators import login_required
+
 from business.models import Business
 from .models import Review
 from .forms import ReviewForm
@@ -12,7 +15,7 @@ from api.inference import predict_score
 @transaction.atomic
 def create_review(request, business_id):
     if not request.user.is_authenticated:
-        return redirect("login")
+        return redirect("user:login")
 
     business = get_object_or_404(Business, pk=business_id)
 
@@ -29,32 +32,56 @@ def create_review(request, business_id):
             review.auto_score = predict_score(review.text)
             review.save()
 
+            b_old_cnt = business.review_count
+            b_old_avg = business.stars or 0.0
+            b_new_cnt = b_old_cnt + 1
             business.review_count = F("review_count") + 1
-            business.save(update_fields=["review_count"])
-            business.refresh_from_db(fields=["review_count"])
-            
-            total_stars = Review.objects.filter(business=business).aggregate(total=Sum('stars'))['total'] or 0
-            if business.review_count > 0:
-                business.stars = total_stars / business.review_count
-            else:
-                business.stars = 0.0
-            business.save(update_fields=["stars"])
-            
-            # Update the user's review count.
+            business.stars = ((b_old_avg * b_old_cnt) + review.stars) / b_new_cnt
+            business.save(update_fields=["review_count", "stars"])
+
+            u_old_cnt = request.user.review_count
+            u_old_avg = request.user.average_stars or 0.0
+            u_new_cnt = u_old_cnt + 1
             request.user.review_count = F("review_count") + 1
-            request.user.save(update_fields=["review_count"])
-            request.user.refresh_from_db(fields=["review_count"])
-            
-            # Update the user's average stars
-            user_total_stars = Review.objects.filter(user=request.user).aggregate(total=Sum('stars'))['total'] or 0
-            if request.user.review_count > 0:
-                request.user.average_stars = user_total_stars / request.user.review_count
-            else:
-                request.user.average_stars = 0.0
-            request.user.save(update_fields=["average_stars"])
+            request.user.average_stars = ((u_old_avg * u_old_cnt) + review.stars) / u_new_cnt
+            request.user.save(update_fields=["review_count", "average_stars"])
 
             return redirect("business:business_detail", business_id=business_id)
     else:
         form = ReviewForm()
 
     return render(request, "create_review.html", {"form": form, "business": business})
+
+
+@login_required
+@require_http_methods(["POST"])
+@transaction.atomic
+def delete_review(request, review_id):
+    review = get_object_or_404(Review, pk=review_id, user=request.user)
+    business = review.business
+
+    b_old_cnt = business.review_count
+    b_old_avg = business.stars or 0.0
+    u_old_cnt = request.user.review_count
+    u_old_avg = request.user.average_stars or 0.0
+    removed_stars = review.stars
+
+    review.delete()
+
+    b_new_cnt = max(b_old_cnt - 1, 0)
+    business.review_count = F("review_count") - 1
+    if b_new_cnt:
+        business.stars = ((b_old_avg * b_old_cnt) - removed_stars) / b_new_cnt
+    else:
+        business.stars = 0.0
+    business.save(update_fields=["review_count", "stars"])
+
+    u_new_cnt = max(u_old_cnt - 1, 0)
+    request.user.review_count = F("review_count") - 1
+    if u_new_cnt:
+        request.user.average_stars = ((u_old_avg * u_old_cnt) - removed_stars) / u_new_cnt
+    else:
+        request.user.average_stars = 0.0
+    request.user.save(update_fields=["review_count", "average_stars"])
+
+    return redirect("user:profile")

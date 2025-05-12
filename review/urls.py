@@ -5,5 +5,6 @@ from .views import create_review
 app_name = 'review'
 
 urlpatterns = [
-    path("add/<str:business_id>/", create_review, name="create_review")
+    path("add/<str:business_id>/", create_review, name="create_review"),
+    path("delete/<str:review_id>/", views.delete_review, name="delete_review"),
 ]

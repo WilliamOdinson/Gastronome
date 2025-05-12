@@ -7,10 +7,10 @@
   <div class="wrapper">
     <div class="container margin_80_55">
 
-      <!-- profile header -->
-      <div class="row g-4 justify-content-center">
+      <div class="row justify-content-center g-4">
         <div class="col-lg-10">
 
+          <!-- profile card -->
           <div class="card shadow-sm mb-4">
             <div class="card-body d-flex flex-column flex-md-row align-items-md-center">
               <div class="flex-grow-1">
@@ -21,7 +21,6 @@
                 <p class="text-muted mb-0">Member since {{ user_obj.yelping_since }}</p>
               </div>
 
-              <!-- quick stats -->
               <ul class="list-inline mb-0 mt-3 mt-md-0">
                 <li class="list-inline-item me-3">
                   <span class="h5 mb-0">{{ user_obj.review_count }}</span><br>
@@ -39,7 +38,7 @@
             </div>
           </div>
 
-          <!-- user information -->
+          <!-- User info -->
           <div class="card shadow-sm mb-4">
             <div class="card-header bg-light">
               <h5 class="mb-0">
@@ -55,15 +54,13 @@
                 <dd class="col-sm-8">
                   {% if user_obj.elite_years %}
                     {{ user_obj.elite_years|join:", " }}
-                  {% else %}
-                    —
-                  {% endif %}
+                  {% else %} — {% endif %}
                 </dd>
               </dl>
             </div>
           </div>
 
-          <!-- compliments -->
+          <!-- Compliments --> 
           <div class="card shadow-sm mb-4">
             <div class="card-header bg-light">
               <h5 class="mb-0">
@@ -71,21 +68,45 @@
               </h5>
             </div>
             <div class="card-body">
-        <li>Hot: {{ user_obj.compliment_hot }}</li>
-        <li>More: {{ user_obj.compliment_more }}</li>
-        <li>Profile: {{ user_obj.compliment_profile }}</li>
-        <li>Cute: {{ user_obj.compliment_cute }}</li>
-        <li>List: {{ user_obj.compliment_list }}</li>
-        <li>Note: {{ user_obj.compliment_note }}</li>
-        <li>Plain: {{ user_obj.compliment_plain }}</li>
-        <li>Cool: {{ user_obj.compliment_cool }}</li>
-        <li>Funny: {{ user_obj.compliment_funny }}</li>
-        <li>Writer: {{ user_obj.compliment_writer }}</li>
-        <li>Photos: {{ user_obj.compliment_photos }}</li>
+              {% with u=user_obj %}
+                <span class="badge bg-primary-soft text-primary fw-normal me-2 mb-2">
+                  Hot <span class="badge bg-primary ms-1">{{ u.compliment_hot }}</span>
+                </span>
+                <span class="badge bg-primary-soft text-primary fw-normal me-2 mb-2">
+                  More <span class="badge bg-primary ms-1">{{ u.compliment_more }}</span>
+                </span>
+                <span class="badge bg-primary-soft text-primary fw-normal me-2 mb-2">
+                  Profile <span class="badge bg-primary ms-1">{{ u.compliment_profile }}</span>
+                </span>
+                <span class="badge bg-primary-soft text-primary fw-normal me-2 mb-2">
+                  Cute <span class="badge bg-primary ms-1">{{ u.compliment_cute }}</span>
+                </span>
+                <span class="badge bg-primary-soft text-primary fw-normal me-2 mb-2">
+                  List <span class="badge bg-primary ms-1">{{ u.compliment_list }}</span>
+                </span>
+                <span class="badge bg-primary-soft text-primary fw-normal me-2 mb-2">
+                  Note <span class="badge bg-primary ms-1">{{ u.compliment_note }}</span>
+                </span>
+                <span class="badge bg-primary-soft text-primary fw-normal me-2 mb-2">
+                  Plain <span class="badge bg-primary ms-1">{{ u.compliment_plain }}</span>
+                </span>
+                <span class="badge bg-primary-soft text-primary fw-normal me-2 mb-2">
+                  Cool <span class="badge bg-primary ms-1">{{ u.compliment_cool }}</span>
+                </span>
+                <span class="badge bg-primary-soft text-primary fw-normal me-2 mb-2">
+                  Funny <span class="badge bg-primary ms-1">{{ u.compliment_funny }}</span>
+                </span>
+                <span class="badge bg-primary-soft text-primary fw-normal me-2 mb-2">
+                  Writer <span class="badge bg-primary ms-1">{{ u.compliment_writer }}</span>
+                </span>
+                <span class="badge bg-primary-soft text-primary fw-normal me-2 mb-2">
+                  Photos <span class="badge bg-primary ms-1">{{ u.compliment_photos }}</span>
+                </span>
+              {% endwith %}
             </div>
           </div>
 
-          <!-- reviews -->
+          <!-- Reviews --> 
           <div class="card shadow-sm mb-4">
             <div class="card-header bg-light">
               <h5 class="mb-0">
@@ -97,12 +118,27 @@
                 <div class="list-group">
                   {% for review in reviews %}
                     <div class="list-group-item">
-                      <h6 class="mb-1">
-                        {{ review.business.name }}
-                        <span class="ms-2 badge bg-warning text-dark">{{ review.stars }} ★</span>
-                      </h6>
-                      <small class="text-muted">{{ review.date|date:"Y-m-d" }}</small>
-                      <p class="mb-0 mt-2">{{ review.text }}</p>
+                      <div class="d-flex justify-content-between">
+                        <div class="me-3">
+                          <h6 class="mb-1">
+                            {{ review.business.name }}
+                            <span class="badge bg-warning text-dark ms-2">{{ review.stars }} ★</span>
+                          </h6>
+                          <small class="text-muted">{{ review.date|date:"Y-m-d" }}</small>
+                          <p class="mb-0 mt-2">{{ review.text }}</p>
+                        </div>
+
+                        <form method="post"
+                              action="{% url 'review:delete_review' review.review_id %}"
+                              onsubmit="return confirm('Delete this review?');">
+                          {% csrf_token %}
+                          <button type="submit"
+                                  class="btn btn-sm btn-outline-danger"
+                                  title="Delete review">
+                            <i class="material-icons align-middle">delete</i>
+                          </button>
+                        </form>
+                      </div>
                     </div>
                   {% endfor %}
                 </div>
@@ -112,7 +148,7 @@
             </div>
           </div>
 
-          <!-- tips -->
+          <!-- Tips ─ -->
           <div class="card shadow-sm mb-4">
             <div class="card-header bg-light">
               <h5 class="mb-0">
@@ -136,7 +172,7 @@
             </div>
           </div>
 
-          <!-- logout -->
+          <!-- Logout ─ -->
           <form method="post" action="{% url 'user:logout' %}" class="text-center">
             {% csrf_token %}
             <button type="submit" class="btn btn-outline-danger">

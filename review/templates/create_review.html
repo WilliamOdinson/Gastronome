@@ -1,34 +1,57 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Write a Review</title>
-</head>
-<body>
+{% extends "common/base.html" %}
 
-<div class="container mt-4">
-    <h2>Write a Review for {{ business.name }}</h2>
-    
-    <form method="post">
-        {% csrf_token %}
-        {{ form.non_field_errors }}
-        
-        <div class="form-group">
-            <label for="id_stars">Rating (1–5 Stars)</label>
-            {{ form.stars }}
-            {{ form.stars.errors }}
+{% block title %}Write a review – {{ business.name }}{% endblock %}
+
+{% block content %}
+<main class="pattern">
+  <div class="wrapper">
+    <div class="container margin_80_55">
+
+      <div class="row justify-content-center">
+        <div class="col-lg-7">
+
+          <div class="card shadow-sm">
+            <div class="card-header bg-light">
+              <h5 class="mb-0">
+                <i class="material-icons align-middle me-1">rate_review</i>
+                Write a review for <strong>{{ business.name }}</strong>
+              </h5>
+            </div>
+
+            <div class="card-body">
+
+              <form method="post" novalidate>
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+
+                <!-- rating 1‑5 -->
+                <div class="mb-3">
+                  <label for="id_stars" class="form-label">Rating (1‑5&nbsp;Stars)</label>
+                  {{ form.stars }}
+                  {{ form.stars.errors }}
+                </div>
+
+                <!-- text -->
+                <div class="mb-4">
+                  <label for="id_text" class="form-label">Review content</label>
+                  {{ form.text }}
+                  {{ form.text.errors }}
+                </div>
+
+                <button type="submit" class="btn_1">Submit review</button>
+                <a href="{% url 'business:business_detail' business.business_id %}"
+                   class="btn btn-link">Return to business</a>
+              </form>
+
+            </div>
+          </div>
+
         </div>
+      </div>
 
-        <div class="form-group">
-            <label for="id_text">Review Content</label>
-            {{ form.text }}
-            {{ form.text.errors }}
-        </div>
+    </div>
+  </div>
+</main>
+{% endblock %}
 
-        <button type="submit" class="btn btn-success">Submit Review</button>
-        <a href="{% url 'business:business_detail' business.business_id %}" class="btn btn-link">Return to Business</a>
-    </form>
-</div>
-
-</body>
-</html>
+{% block extra_js %}{% endblock %}

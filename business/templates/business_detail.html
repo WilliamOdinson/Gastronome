@@ -1,86 +1,165 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ business.name }} - Details</title>
-</head>
-<body>
-    <h1>{{ business.name }}</h1>
-    <p><strong>Address:</strong> {{ business.address }}, {{ business.city }}, {{ business.state }} {{ business.postal_code }}</p>
-    <p><strong>Rating:</strong> {{ business.stars }} stars ({{ business.review_count }} reviews)</p>
-    <p><strong>Status:</strong> {{ business.is_open|yesno:"Open,Closed" }}</p>
+{% extends "common/base.html" %}
 
-    <h2>Categories</h2>
-    {% if business.categories.exists %}
-    <ul>
-        {% for category in business.categories.all %}
-            <li>{{ category.name }}</li>
-        {% endfor %}
-    </ul>
-    {% else %}
-        <p>No categories listed</p>
-    {% endif %}
+{% block title %}{{ business.name }} – Details{% endblock %}
 
-    {% if request.user.is_authenticated %}
-        <a href="{% url 'review:create_review' business.business_id %}" class="btn btn-primary">Write a review</a>
-    {% else %}
-        <a href="{% url 'user:login' %}?next={% url 'review:create_review' business.business_id %}" class="btn btn-secondary">Write a review after logging in!</a>
-    {% endif %}
+{% block content %}
+<main class="pattern">
+  <div class="wrapper">
+    <div class="container margin_80_55">
 
-    <h2>Hours</h2>
-    {% if business.hours.exists %}
-    <ul>
-        {% for hour in business.hours.all %}
-            <li>{{ hour.day }}: {{ hour.open_time }} - {{ hour.close_time }}</li>
-        {% endfor %}
-    </ul>
-    {% else %}
-        <p>No hours available</p>
-    {% endif %}
+      <div class="row align-items-center mb-4">
+        <div class="col-12 col-md">
+          <h1 class="mb-1">{{ business.name }}</h1>
+          <span class="rating">
+            {% for i in "12345" %}
+              {% if business.stars|floatformat:1 >= i %}
+                <i class="material-icons text-warning">star</i>
+              {% elif business.stars|floatformat:1 >= i|add:"-0.5" %}
+                <i class="material-icons text-warning">star_half</i>
+              {% else %}
+                <i class="material-icons text-warning">star_border</i>
+              {% endif %}
+            {% endfor %}
+            <small class="ms-1 text-muted">{{ business.stars|floatformat:1 }} · {{ business.review_count }} reviews</small>
+          </span>
+          <p class="mb-0">
+            {% for cat in business.categories.all %}
+              <span class="badge bg-primary-soft text-primary fw-normal me-1 mb-1">{{ cat.name }}</span>
+            {% endfor %}
+          </p>
+        </div>
 
-    <h2>Photos</h2>
-    {% if business.photos.exists %}
-    <div style="display: flex; flex-wrap: wrap;">
-        {% for photo in business.photos.all %}
-            <div style="margin: 10px;">
-                <img src="{{ photo.image_url }}" alt="{{ photo.label }}" width="200">
-                <p>{{ photo.label }}<br>{{ photo.caption }}</p>
-            </div>
-        {% endfor %}
-    </div>
-    {% else %}
-        <p>No photos available</p>
-    {% endif %}
+        <div class="col-auto mt-3 mt-md-0">
+          {% if business.is_open %}
+            <span class="badge bg-success"><i class="material-icons align-middle">schedule</i> Open</span>
+          {% else %}
+            <span class="badge bg-danger"><i class="material-icons align-middle">schedule</i> Closed</span>
+          {% endif %}
+        </div>
+      </div>
 
-    <h2>Recent Check-ins</h2>
-    {% if recent_checkins %}
-    <ul>
-        {% for checkin in recent_checkins %}
-            <li>{{ checkin.checkin_time }}</li>
-        {% endfor %}
-    </ul>
-    {% else %}
-        <p>No check-in records</p>
-    {% endif %}
-
-    <h2>Reviews</h2>
-    {% if reviews %}
-        <ul>
-        {% for review in reviews %}
-            <li style="margin-bottom: 20px;">
-                <strong>{{ review.user.display_name }}</strong> 
-                rated <strong>{{ review.stars }} stars</strong> 
-                on {{ review.date|date:"Y-m-d" }}<br>
-                <p>{{ review.text|linebreaks }}</p>
-                {% if review.auto_score %}
-                    <small>Model predicted score: {{ review.auto_score|floatformat:1 }}</small>
+      {% if business.photos.exists %}
+        <div id="photoCarousel" class="carousel slide mb-5" data-bs-ride="carousel">
+          <div class="carousel-inner">
+            {% for photo in business.photos.all|slice:":8" %}
+              <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                <img src="{{ photo.image_url }}" class="d-block w-100 rounded" alt="{{ photo.caption|default_if_none:'photo' }}">
+                {% if photo.caption %}
+                  <div class="carousel-caption d-none d-md-block">
+                    <p class="bg-dark bg-opacity-50 rounded p-1">{{ photo.caption }}</p>
+                  </div>
                 {% endif %}
-            </li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p>No reviews yet. Be the first to review!</p>
+              </div>
+            {% endfor %}
+          </div>
+          {% if business.photos.count > 1 %}
+            <button class="carousel-control-prev" type="button" data-bs-target="#photoCarousel" data-bs-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#photoCarousel" data-bs-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Next</span>
+            </button>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      <div class="row g-4 mb-5">
+        <div class="col-lg-6">
+          <div class="card shadow-sm h-100">
+            <div class="card-header bg-light">
+              <h6 class="mb-0"><i class="material-icons align-middle me-1">location_on</i>Location</h6>
+            </div>
+            <div class="card-body">
+              <address class="mb-3">
+                {{ business.address }}<br>
+                {{ business.city }}, {{ business.state }} {{ business.postal_code }}
+              </address>
+              <img src="https://maps.googleapis.com/maps/api/staticmap?center={{ business.latitude }},{{ business.longitude }}&zoom=15&size=600x200&markers=color:red%7C{{ business.latitude }},{{ business.longitude }}&key=GOOGLE_MAPS_API_KEY"
+                   class="img-fluid rounded" alt="Map of {{ business.name }}">
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="card shadow-sm h-100">
+            <div class="card-header bg-light">
+              <h6 class="mb-0"><i class="material-icons align-middle me-1">schedule</i>Opening hours</h6>
+            </div>
+            <div class="card-body">
+              {% if business.hours.exists %}
+                <table class="table table-sm mb-0">
+                  {% for h in business.hours.all %}
+                    <tr>
+                      <th class="fw-normal">{{ h.day }}</th>
+                      <td>{{ h.open_time|time:"H:i" }} – {{ h.close_time|time:"H:i" }}</td>
+                    </tr>
+                  {% endfor %}
+                </table>
+              {% else %}
+                <p class="mb-0 text-muted">Hours not available.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% if user.is_authenticated %}
+        {% if user.is_authenticated %}
+            {% if not user_has_review %}
+            <div class="alert alert-primary d-flex align-items-center mb-5" role="alert">
+            <i class="material-icons me-2">rate_review</i>
+            Fancy this place?
+            <a href="{% url 'review:create_review' business.business_id %}" class="alert-link ms-1">
+                Write your first review.
+            </a>
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-info mb-5" role="alert">
+                <i class="material-icons me-1">login</i>
+                <a href="{% url 'user:login' %}" class="alert-link">Log in</a> to leave a review.
+            </div>
+        {% endif %}
     {% endif %}
-    
-</body>
-</html>
+
+      <div class="card shadow-sm">
+        <div class="card-header bg-light">
+          <h5 class="mb-0"><i class="material-icons align-middle me-1">comment</i>Reviews</h5>
+        </div>
+        <div class="card-body p-0">
+          {% if business.reviews.exists %}
+            <div class="list-group list-group-flush">
+              {% for r in business.reviews.all %}
+                <div class="list-group-item">
+                  <div class="d-flex justify-content-between">
+                    <h6 class="mb-1">{{ r.user.display_name }}</h6>
+                    <span class="small text-muted">{{ r.date|date:"Y-m-d" }}</span>
+                  </div>
+                  <div class="mb-1">
+                    {% for i in "12345" %}
+                      <i class="material-icons text-warning small">{% if i <= r.stars|stringformat:"d" %}star{% else %}star_border{% endif %}</i>
+                    {% endfor %}
+                  </div>
+                  <p class="mb-0">{{ r.text }}</p>
+                  {% if user.id == r.user_id %}
+                    <div class="mt-2">
+                      <a href="{% url 'review:delete_review' r.review_id %}" class="link-danger small">
+                        delete
+                      </a>
+                    </div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="m-3 text-muted">No reviews yet.</p>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+{% endblock %}
