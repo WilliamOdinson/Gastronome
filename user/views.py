@@ -1,6 +1,7 @@
 import random
 import uuid
 import secrets
+import re
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -9,6 +10,7 @@ from django.core.cache import cache
 from django.core.mail import send_mail
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.http import require_http_methods
 from django.utils.crypto import get_random_string
 
 from review.models import Review, Tip
@@ -35,7 +37,7 @@ def user_login(request):
                       {"error": "Invalid email or password."})
     return render(request, "login.html")
 
-
+@require_http_methods(["POST"])
 def user_logout(request):
     """
     Log the user out and redirect to homepage.
@@ -76,6 +78,17 @@ def register(request):
         
         if password1 != password2:
             return render(request, "register.html", {"error": "Passwords do not match."})
+        
+        pattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$'
+        if not re.match(pattern, password1):
+            return render(request, "register.html", {
+                "error": "Password must be at least 8 characters and include upper‑, lower‑case letters and a digit."
+                })
+            
+        if User.objects.filter(email=email).exists():
+            return render(request, "register.html", {
+                "error": "This email is already registered."
+            })
 
         verification_code = ''.join(str(secrets.randbelow(10)) for _ in range(6))
         password_hash = make_password(password1)
