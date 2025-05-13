@@ -1,60 +1,116 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Restaurant Review Star Rating Prediction</title>
-</head>
-<body>
-  <h1>Restaurant Review Star Rating Prediction</h1>
+{# api/templates/experiment_review_predict.html #}
+{% extends "common/base.html" %}
 
-  <form id="predictForm">
-    {% csrf_token %}
-    <div>
-      <label for="review">Please enter your review:</label><br>
-      <textarea id="review" name="review" rows="5" cols="60"></textarea>
+{% block title %}Judge{% endblock %}
+
+{% block content %}
+<main class="pattern">
+  <div class="wrapper">
+    <div class="container margin_80_55">
+
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+          <div class="text-center mb-5">
+            <h1 class="mb-3">
+              <i class="material-icons text-primary align-middle me-1 fs-2">science</i>
+              Restaurant Review Star‑Rating Predictor: Judge
+            </h1>
+            <p class="lead">
+              This page showcases an <strong>experimental</strong> large‑language‑model
+              that infers the <em>1‑to‑5 star</em> rating hidden in free‑text reviews.  
+              Enter any review below and see how the model scores it.  
+              We use the result downstream to detect overly harsh or
+              unusually glowing feedback.
+            </p>
+          </div>
+
+          <div class="card shadow-sm">
+            <div class="card-body">
+
+              <form id="predictForm" novalidate>
+                {% csrf_token %}
+
+                <div class="mb-3">
+                  <label for="review" class="form-label">Paste or type your review</label>
+                  <textarea id="review"
+                            name="review"
+                            rows="5"
+                            class="form-control"
+                            placeholder="e.g. &quot;The service was quick and the tacos were delicious!&quot;"></textarea>
+                </div>
+
+                <button type="submit" class="btn_1">
+                  <i class="material-icons align-middle me-1">psychology_alt</i>
+                  Predict rating
+                </button>
+              </form>
+
+              <hr class="my-4">
+
+              <div id="result" class="fs-5 text-center"></div>
+
+            </div>
+          </div>
+
+          <p class="text-muted small mt-4">
+            Model: DistilBERT fine‑tuned on Yelp open dataset.  
+            Predictions are best‑guess and may deviate from human perception.
+          </p>
+
+        </div>
+      </div>
+
     </div>
-    <button type="submit">Start Prediction</button>
-  </form>
+  </div>
+</main>
+{% endblock %}
 
-  <div id="result" style="margin-top: 1em;"></div>
+{% block extra_js %}
+<script>
+function getCookie (name) {
+  const m = document.cookie.match(new RegExp('(^|;\\s*)' + name + '=([^;]*)'));
+  return m ? decodeURIComponent(m[2]) : null;
+}
 
-  <script>
-    // Read CSRF Token from Cookie
-    function getCookie(name) {
-      const match = document.cookie.match(new RegExp('(^|;\\s*)' + name + '=([^;]*)'));
-      return match ? decodeURIComponent(match[2]) : null;
+document.getElementById('predictForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+
+  const text = document.getElementById('review').value.trim();
+  const $result = document.getElementById('result');
+  if (!text) {
+    $result.className = 'text-danger';
+    $result.textContent = 'Please enter some review text.';
+    return;
+  }
+
+  $result.className = 'text-muted';
+  $result.textContent = 'Predicting…';
+
+  fetch("{% url 'api:predict_review_api' %}", {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken')
+    },
+    body: JSON.stringify({ review: text })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.prediction !== undefined) {
+      $result.className = 'fw-bold text-success';
+      $result.textContent = `Predicted star rating: ${data.prediction} ★`;
+    } else {
+      $result.className = 'text-danger';
+      $result.textContent = 'Error: ' + (data.error || 'Unknown');
     }
-
-    document.getElementById('predictForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const text = document.getElementById('review').value.trim();
-      if (!text) {
-        document.getElementById('result').innerText = 'Please enter your review content.';
-        return;
-      }
-
-      fetch("{% url 'api:predict_review_api' %}", {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: JSON.stringify({ review: text })
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.prediction !== undefined) {
-          document.getElementById('result').innerText = 'Predicted Star Rating: ' + data.prediction;
-        } else if (data.error) {
-          document.getElementById('result').innerText = 'Error: ' + data.error;
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        document.getElementById('result').innerText = 'Request failed, please try again later.';
-      });
-    });
-  </script>
-</body>
-</html>
+  })
+  .catch(err => {
+    console.error(err);
+    $result.className = 'text-danger';
+    $result.textContent = 'Request failed, please try again later.';
+  });
+});
+</script>
+{% endblock %}
