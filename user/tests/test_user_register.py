@@ -16,7 +16,7 @@ class UserRegisterTests(TestCase):
         self.url_verify   = reverse("user:verify_email")
         self.url_resend   = reverse("user:resend_verification")
 
-        self.email    = "newuser@example.com"
+        self.email    = "newuser@gastronome.com"
         self.display  = "Newbie"
         self.pass1    = "Passw0rd!"
         self.pass2    = self.pass1

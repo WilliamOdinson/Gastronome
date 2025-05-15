@@ -14,7 +14,7 @@ class ReviewCreateDeleteTests(TestCase):
     def setUp(self):
         self.biz = Business.objects.create(
             business_id=uuid.uuid4().hex[:22],
-            name="The Test Kitchen",
+            name="Carnegie Mellon University",
             address="5000 Forbes Ave",
             city="Pittsburgh",
             state="PA",
@@ -27,10 +27,10 @@ class ReviewCreateDeleteTests(TestCase):
         )
 
         self.user = User.objects.create_user(
-            email="alice@example.com",
+            email="alice@gastronome.com",
             password="Passw0rd!",
             display_name="Alice",
-            username="alice@example.com",
+            username="alice@gastronome.com",
             user_id="u" + uuid.uuid4().hex[:21],
             average_stars=4.0,
             review_count=5,
@@ -77,10 +77,10 @@ class ReviewCreateDeleteTests(TestCase):
     def test_delete_last_review_sets_zero(self):
         # user with no historical reviews
         solo = User.objects.create_user(
-            email="solo@example.com",
+            email="solo@gastronome.com",
             password="Passw0rd!",
             display_name="Solo",
-            username="solo@example.com",
+            username="solo@gastronome.com",
             user_id="u" + uuid.uuid4().hex[:21],
             average_stars=0.0,
             review_count=0,

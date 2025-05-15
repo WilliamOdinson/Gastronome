@@ -19,24 +19,24 @@ class DeleteReviewTests(TestCase):
         # Business record with aggregates coming from external source
         self.biz = Business.objects.create(
             business_id="biz_" + uuid.uuid4().hex[:18],   # ≤22 chars
-            name="The Mock Café",
-            address="1 Infinite Loop",
-            city="Cupertino",
-            state="CA",
-            postal_code="95014",
-            latitude=Decimal("37.3317"),
-            longitude=Decimal("-122.0301"),
-            stars=4.5,        # 2 historical reviews
+            name="Carnegie Mellon University",
+            address="5000 Forbes Ave",
+            city="Pittsburgh",
+            state="PA",
+            postal_code="15213",
+            latitude=Decimal("40.443336"),
+            longitude=Decimal("-79.944023"),
+            stars=4.5,
             review_count=2,
             is_open=True,
         )
 
         # Author of the soon‑to‑be‑deleted review
         self.alice = User.objects.create_user(
-            email="alice@test.com",
+            email="alice@gastronome.com",
             password="Passw0rd!",
             display_name="Alice",
-            username="alice@test.com",
+            username="alice@gastronome.com",
             user_id="u" + uuid.uuid4().hex[:21],
             average_stars=4.5,   # aligned with biz (same two reviews)
             review_count=2,
@@ -44,10 +44,10 @@ class DeleteReviewTests(TestCase):
 
         # Another logged‑in user (not author)
         self.bob = User.objects.create_user(
-            email="bob@test.com",
+            email="bob@gastronome.com",
             password="Passw0rd!",
             display_name="Bob",
-            username="bob@test.com",
+            username="bob@gastronome.com",
             user_id="u" + uuid.uuid4().hex[:21],
         )
 

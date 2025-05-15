@@ -12,10 +12,10 @@ class UserLoginTests(TestCase):
     def setUp(self):
         self.password = "Passw0rd!"
         self.user = User.objects.create_user(
-            email="test@example.com",
+            email="test@gastronome.com",
             password=self.password,
             display_name="Tester",
-            username="test@example.com",   # username field in AbstractUser is still required
+            username="test@gastronome.com",   # username field in AbstractUser is still required
             user_id="u12345678901234567890"
         )
         self.url = reverse("user:login")
@@ -92,7 +92,7 @@ class UserLoginTests(TestCase):
         response = self.client.post(
             self.url,
             data={
-                "email": "ghost@example.com",
+                "email": "ghost@gastronome.com",
                 "password": "Whatever123",
                 "captcha": "ABCD",
             },

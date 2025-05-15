@@ -9,10 +9,10 @@ class UserLogoutTests(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
-            email="logout@example.com",
+            email="logout@gastronome.com",
             password="Passw0rd!",
             display_name="LogoutUser",
-            username="logout@example.com",
+            username="logout@gastronome.com",
             user_id="logout1234567890123456",
         )
         self.logout_url = reverse("user:logout")
@@ -47,7 +47,7 @@ class UserLogoutTests(TestCase):
         """
         self._login()
         session = self.client.session
-        session["pending_email"] = "someone@example.com"
+        session["pending_email"] = "someone@gastronome.com"
         session.save()
 
         self.client.post(self.logout_url)
