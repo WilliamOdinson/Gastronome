@@ -1,0 +1,255 @@
+{% extends "common/base.html" %}
+{% load static %}
+
+{% block title %}Results{% endblock %}
+
+{% block header %}
+   {% include "common/nav_in.html" %}
+{% endblock %}
+
+{% block content_header %}
+<div id="results">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3 col-md-4 col-10">
+                <h4>
+                    <strong>{{ result_count }}</strong>
+                    result{% if result_count|default:0 != 1 %}s{% endif %}
+                    {% if category and category != "All" %}for {{ category }}{% else %}for All listing{% endif %}
+                </h4>
+            </div>
+
+            <div class="col-lg-9 col-md-8 col-2">
+                <a href="#0" class="side_panel btn_search_mobile"></a>
+                <form action="{% url 'core:search' %}" method="get">
+                    <div class="row g-0 custom-search-input-2 inner">
+                        <div class="col-lg-5">
+                            <div class="form-group">
+                                <input class="form-control" type="text" name="q"
+                                       value="{{ q }}" placeholder="What are you looking for…">
+                                <i class="material-icons">search</i>
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="form-group">
+                                <input class="form-control" type="text" name="where"
+                                       value="{{ where }}" placeholder="Where (default PA)">
+                                <i class="material-icons">location_on</i>
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <select name="category" class="wide">
+                                <option{% if category == "All" %} selected{% endif %}>All</option>
+                                {% for cat in CATEGORY_KEYWORDS.keys %}
+                                    <option{% if category == cat %} selected{% endif %}>{{ cat }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-lg-1"><input type="submit"></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="filters_listing version_2  sticky_horizontal">
+    <div class="container">
+        <ul class="clearfix">
+            <li>
+                <div class="switch-field">
+                    <input type="radio" id="all" name="listing_filter" value="all" checked>
+                    <label for="all">All</label>
+                    <input type="radio" id="popular" name="listing_filter" value="popular">
+                    <label for="popular">Popular</label>
+                    <input type="radio" id="latest" name="listing_filter" value="latest">
+                    <label for="latest">Latest</label>
+                </div>
+            </li>
+            <li>
+                <div class="layout_view">
+                    <a href="#0" class="active"><i class="material-icons">apps</i></a>
+                    <a href="#0"><i class="material-icons">format_list_bulleted</i></a>
+                    <a href="#0"><i class="material-icons">map</i></a>
+                </div>
+            </li>
+            <li>
+                <a class="btn_map" 
+                    data-bs-toggle="collapse" 
+                    href="#collapseMap"
+                    aria-expanded="false" 
+                    aria-controls="collapseMap"
+                    data-text-swap="Hide map" 
+                    data-text-original="View on map">
+                    <i class="material-icons" style="font-size: 16px; vertical-align: middle; margin-right: 5px;">pin_drop</i>
+                    <span class="btn-label">View on map</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="collapse" id="collapseMap">
+    <div id="map" class="map"></div>
+</div>
+<div class="container margin_60_35">
+    <div class="row">
+        <!-- Sidebar Filter -->
+        <aside class="col-lg-3" id="sidebar">
+            <div id="filters_col">
+                <a data-bs-toggle="collapse" href="#collapseFilters" aria-expanded="false"
+                   aria-controls="collapseFilters" id="filters_col_bt">Filters</a>
+
+                <div class="collapse show" id="collapseFilters">
+                    <!-- Category -->
+                    <div class="filter_type">
+                        <h6>Category</h6>
+                        <ul>
+                            {% for cat in CATEGORY_KEYWORDS.keys %}
+                                <li>
+                                    <label class="container_check">
+                                        {{ cat }} <small>{{ result_count }}</small>
+                                        <input type="checkbox" {% if cat == category %}checked{% endif %} disabled>
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <!-- Distance -->
+                    <div class="filter_type">
+                        <h6>Distance</h6>
+                        <div class="distance">Radius around selected destination <span></span> km</div>
+                        <input type="range" min="10" max="100" step="10" value="30"
+                               data-orientation="horizontal" disabled>
+                    </div>
+
+                    <!-- Rating -->
+                    <div class="filter_type">
+                        <h6>Rating</h6>
+                        <ul>
+                            {% for label in RATING_FILTERS %}
+                                <li>
+                                    <label class="container_check">
+                                        {{ label }} <small>{{ result_count }}</small>
+                                        <input type="checkbox" disabled>
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <div class="col-lg-9">
+            {% for item in results %}
+                <div class="strip list_view">
+                    <div class="row g-0">
+                        <div class="col-lg-5">
+                            <figure>
+                                <a href="{% url 'business:business_detail' item.id %}">
+                                    <img src="{{ item.image_url }}" alt="{{ item.name }}" class="img-fluid">
+                                    <div class="read_more"><span>Read more</span></div>
+                                </a>
+                                <small>{{ item.categories }}</small>
+                            </figure>
+                        </div>
+
+                        <div class="col-lg-7">
+                            <div class="wrapper">
+                                <a href="#0" class="wish_bt"></a>
+                                <h3><a href="{% url 'business:business_detail' item.id %}">{{ item.name }}</a></h3>
+                                <small>{{ item.address }}</small>
+                                <p></p>
+                                <a class="address" target="_blank"
+                                   href="https://www.google.com/maps/search/?api=1&query={{ item.latitude }},{{ item.longitude }}">
+                                    Get directions
+                                </a>
+                            </div>
+                            <ul>
+                                <li>
+                                    {% if item.is_open_now %}
+                                        <span class="loc_open">Now Open</span>
+                                    {% else %}
+                                        <span class="loc_closed">Now Closed</span>
+                                    {% endif %}
+                                </li>
+                                <li>
+                                    <div class="score">
+                                        <span>{{ item.stars|floatformat:1 }}<em>{{ item.review_count }} Reviews</em></span>
+                                        <strong>{{ item.stars|floatformat:1 }}</strong>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <p>No results found.</p>
+            {% endfor %}
+
+            {% if page_obj.has_other_pages %}
+                <div class="text-center mt-4">
+                    <nav aria-label="Results pagination">
+                        <ul class="pagination justify-content-center mb-0">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link"
+                                    href="?q={{ q }}&where={{ where }}&category={{ category }}&page={{ page_obj.previous_page_number }}"
+                                    aria-label="Previous">&laquo;</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                            {% endif %}
+
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if num >= page_obj.number|add:"-1" and num <= page_obj.number|add:"2" %}
+                                    {% if num == page_obj.number %}
+                                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                    {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link"
+                                            href="?q={{ q }}&where={{ where }}&category={{ category }}&page={{ num }}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.number|add:"2" < page_obj.paginator.num_pages %}
+                                <li class="page-item disabled"><span class="page-link">…</span></li>
+                                <li class="page-item">
+                                    <a class="page-link"
+                                    href="?q={{ q }}&where={{ where }}&category={{ category }}&page={{ page_obj.paginator.num_pages }}">
+                                        {{ page_obj.paginator.num_pages }}
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link"
+                                    href="?q={{ q }}&where={{ where }}&category={{ category }}&page={{ page_obj.next_page_number }}"
+                                    aria-label="Next">&raquo;</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    {{ block.super }}
+    <script src="https://maps.googleapis.com/maps/api/js?key=GOOGLE_MAPS_API_KEY"></script>
+{% endblock %}

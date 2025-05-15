@@ -1,5 +1,7 @@
 {% extends "common/base.html" %}
 
+{% load static %}
+
 {% block header %}
   {% with 'img/logo_white.svg' as logo_path %}
     {% include "common/nav_transparent.html" %}
@@ -23,37 +25,29 @@
         <div class="container">
             <h3>Find what you need!</h3>
             <p>Discover top hotels, shops, and restaurants around you.</p>
-            <form>
+                <form action="{% url 'core:search' %}" method="get">
                 <div class="row g-0 custom-search-input-2">
                     <div class="col-lg-4">
-                        <div class="form-group">
-                            <input class="form-control" type="text" placeholder="What are you looking for...">
-                            <i class="material-icons" style="font-size:24px;">search</i>
-                        </div>
+                    <div class="form-group">
+                        <input class="form-control" type="text" name="q" placeholder="What are you looking for…">
+                        <i class="material-icons fs-5">search</i>
+                    </div>
                     </div>
                     <div class="col-lg-3">
-                        <div class="form-group">
-                            <input class="form-control" type="text" placeholder="Where">
-                            <i class="material-icons" style="font-size:24px;">location_on</i>
-                        </div>
+                    <div class="form-group">
+                        <input class="form-control" type="text" name="where" placeholder="Where (default PA)">
+                        <i class="material-icons fs-5">location_on</i>
+                    </div>
                     </div>
                     <div class="col-lg-3">
-                        <select class="wide">
-                            <option>All Categories</option>	
-                            <option>Shops</option>
-                            <option>Hotels</option>
-                            <option>Restaurants</option>
-                            <option>Bars</option>
-                            <option>Events</option>
-                            <option>Fitness</option>
-                        </select>
+                    <select name="category" class="wide">
+                        <option>All</option>
+                        {% for cat in CATEGORY_KEYWORDS.keys %}<option>{{ cat }}</option>{% endfor %}
+                    </select>
                     </div>
-                    <div class="col-lg-2">
-                        <input type="submit" value="Search">
-                    </div>
+                    <div class="col-lg-2"><input type="submit" value="Search"></div>
                 </div>
-                <!-- /row -->
-            </form>
+                </form>
         </div>
     </div>
 </section>
@@ -67,9 +61,9 @@
         </div>
         <div class="row">
             <div class="col-lg-4 col-md-6">
-                <a href="" class="grid_item">
+                <a href="{% url 'core:search' %}?category=Shops" class="grid_item">
                     <figure>
-                        <img src="" alt="">
+                        <img src={% static "img/index/shops.png" %} style="width: 320px" alt="">
                         <div class="info">
                             <small>{{ category_counts.Shops }} Locations</small>
                             <h3>Shops</h3>
@@ -78,9 +72,9 @@
                 </a>
             </div>
             <div class="col-lg-4 col-md-6">
-                <a href="" class="grid_item">
+                <a href="{% url 'core:search' %}?category=Hotels" class="grid_item">
                     <figure>
-                        <img src="" alt="">
+                        <img src={% static "img/index/hotels.png" %} style="width: 320px" alt="">
                         <div class="info">
                             <small>{{ category_counts.Hotels }} Locations</small>
                             <h3>Hotels</h3>
@@ -89,9 +83,9 @@
                 </a>
             </div>
             <div class="col-lg-4 col-md-6">
-                <a href="" class="grid_item">
+                <a href="{% url 'core:search' %}?category=Restaurants" class="grid_item">
                     <figure>
-                        <img src="" alt="">
+                        <img src={% static "img/index/restaurant.png" %} style="width: 320px" alt="">
                         <div class="info">
                             <small>{{ category_counts.Restaurants }} Locations</small>
                             <h3>Restaurants</h3>
@@ -100,9 +94,9 @@
                 </a>
             </div>
             <div class="col-lg-4 col-md-6">
-                <a href="" class="grid_item">
+                <a href="{% url 'core:search' %}?category=Bars" class="grid_item">
                     <figure>
-                        <img src="" alt="">
+                        <img src={% static "img/index/bars.png" %} style="width: 320px" alt="">
                         <div class="info">
                             <small>{{ category_counts.Bars }} Locations</small>
                             <h3>Bars</h3>
@@ -111,9 +105,9 @@
                 </a>
             </div>
             <div class="col-lg-4 col-md-6">
-                <a href="" class="grid_item">
+                <a href="{% url 'core:search' %}?category=Events" class="grid_item">
                     <figure>
-                        <img src="" alt="">
+                        <img src={% static "img/index/events.png" %} style="width: 320px" alt="">
                         <div class="info">
                             <small>{{ category_counts.Events }} Locations</small>
                             <h3>Events</h3>
@@ -124,7 +118,7 @@
             <div class="col-lg-4 col-md-6">
                 <a href="" class="grid_item">
                     <figure>
-                        <img src="" alt="">
+                        <img src={% static "img/index/fitness.png" %} style="width: 320px" alt="">
                         <div class="info">
                             <small>{{ category_counts.Fitness }} Locations</small>
                             <h3>Fitness</h3>

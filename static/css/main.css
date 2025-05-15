@@ -701,12 +701,6 @@ a.btn_map {
 a.btn_map:hover {
   color: #004dda;
 }
-a.btn_map:before {
-  font-family: 'ElegantIcons';
-  content: "\e081";
-  display: inline-block;
-  margin-right: 5px;
-}
 
 a.btn_filt, a.btn_filt_map {
   -webkit-border-radius: 3px;
@@ -3708,21 +3702,34 @@ a.address:hover {
 }
 
 .layout_view {
-  -webkit-border-radius: 3px;
-  -moz-border-radius: 3px;
-  -ms-border-radius: 3px;
-  border-radius: 3px;
+  display: flex;
+  gap: 6px;
   border: 1px solid rgba(0, 0, 0, 0.08);
-  padding: 4px 8px 3px 8px;
+  border-radius: 3px;
 }
+
 .layout_view a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 3px;
   color: rgba(0, 0, 0, 0.5);
+  text-decoration: none;
+  transition: color 0.2s;
 }
+
 .layout_view a.active {
   color: rgba(0, 0, 0, 0.8);
 }
+
 .layout_view a:hover {
   color: #004dda;
+}
+
+.layout_view i.material-icons {
+  font-size: 20px;
 }
 
 .switch-field {

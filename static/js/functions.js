@@ -352,12 +352,20 @@
 	
 	// Button show/hide map
 	$(".btn_map, .btn_map_in, .btn_filt").on("click", function () {
-		var el = $(this);
-		el.text() == el.data("text-swap") ? el.text(el.data("text-original")) : el.text(el.data("text-swap"));
-		$('html, body').animate({
-			scrollTop: $("body").offset().top
-		}, 600);
-	});
+    var el = $(this);
+    var label = el.find(".btn-label");
+
+    // Switch text
+    label.text() === el.data("text-swap") 
+        ? label.text(el.data("text-original")) 
+        : label.text(el.data("text-swap"));
+
+    // Smooth scroll to the top of the page
+    $('html, body').animate({
+        scrollTop: $("body").offset().top
+    }, 600);
+});
+
 	
 	// Button map view
 	$(".btn_map_view").on("click", function () {
