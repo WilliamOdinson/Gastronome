@@ -76,8 +76,16 @@
 		midClick: true,
 		removalDelay: 300,
 		closeMarkup: '<button title="%title%" type="button" class="mfp-close"></button>',
-		mainClass: 'my-mfp-zoom-in'
+		mainClass: 'my-mfp-zoom-in',
+		callbacks: {
+			open: function () {
+				if (typeof refreshCaptchaLogin === "function") {
+					refreshCaptchaLogin();
+				}
+			}
+		}
 	});
+
 	
 	// Show Password
 	$('#password, #password_in').hidePassword('focus', {
