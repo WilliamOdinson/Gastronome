@@ -52,6 +52,60 @@
     </div>
 </section>
 
+
+<div class="container-fluid margin_80_55">
+    <div class="main_title_2">
+        <span><em></em></span>
+        <h2>Recommended Only For you</h2>
+        <p>Recommended based on your past records.</p>
+    </div>
+    <div id="reccomended" class="owl-carousel owl-theme">
+    {% for biz in rec_businesses %}
+    <div class="item">
+        <div class="strip grid">
+            <figure>
+                <a href="{% url 'business:business_detail' biz.business_id %}" class="wish_bt"></a>
+                <a href="{% url 'business:business_detail' biz.business_id %}">
+                    {% with photo=biz.photos.first %}
+                        <img src="{% if photo %}{{ photo.image_url }}{% else %}https://placehold.co/400x266{% endif %}"
+                            class="img-fluid" alt="{{ biz.name }}" width="400" height="266">
+                    {% endwith %}
+                    <div class="read_more"><span>Read more</span></div>
+                </a>
+                <small>{{ biz.categories.first.name }}</small>
+            </figure>
+            <div class="wrapper">
+                <h3><a href="{% url 'business:business_detail' biz.business_id %}">{{ biz.name }}</a></h3>
+                <p>{{ biz.address }}</p>
+                <a class="address" href="https://maps.google.com/?q={{ biz.latitude }},{{ biz.longitude }}">
+                    Get directions
+                </a>
+            </div>
+            <ul>
+                <li>
+                    {% if biz.is_open %}
+                        <span class="loc_open">Now Open</span>
+                    {% else %}
+                        <span class="loc_closed">Now Closed</span>
+                    {% endif %}
+                </li>
+                <li>
+                    <div class="score">
+                        <span>{{ biz.stars|floatformat:1 }} / 5<em>{{ biz.review_count }} Reviews</em></span>
+                        <strong>{{ biz.stars|floatformat:1 }}</strong>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+    <div class="container">
+        <div class="btn_home_align"><a href="" class="btn_1 rounded">View all</a></div>
+    </div>
+</div>
+
+
 <div class="bg_color_1">
     <div class="container margin_80_55">
         <div class="main_title_2">
@@ -127,127 +181,6 @@
                 </a>
             </div>
         </div>
-    </div>
-</div>
-
-<div class="container-fluid margin_80_55">
-    <div class="main_title_2">
-        <span><em></em></span>
-        <h2>Listings</h2>
-        <p>Recommended based on your past records.</p>
-    </div>
-    <div id="reccomended" class="owl-carousel owl-theme">
-        <div class="item">
-            <div class="strip grid">
-                <figure>
-                    <a href="" class="wish_bt"></a>
-                    <a href=""><img src="" class="img-fluid" alt="" width="400" height="266"><div class="read_more"><span>Read more</span></div></a>
-                    <small>Restaurant</small>
-                </figure>
-                <div class="wrapper">
-                    <h3><a href="">Da Alfredo</a></h3>
-                    <p>Id placerat tacimates definitionem sea, prima quidam vim no. Duo nobis persecuti cu.</p>
-                    <a class="address" href="">Get directions</a>
-                </div>
-                <ul>
-                    <li><span class="loc_open">Now Open</span></li>
-                    <li><div class="score"><span>Superb<em>350 Reviews</em></span><strong>8.9</strong></div></li>
-                </ul>
-            </div>
-        </div>
-        <div class="item">
-            <div class="strip grid">
-                <figure>
-                    <a href="" class="wish_bt"></a>
-                    <a href=""><img src="" class="img-fluid" alt="" width="400" height="266"><div class="read_more"><span>Read more</span></div></a>
-                    <small>Bar</small>
-                </figure>
-                <div class="wrapper">
-                    <h3><a href="">Notredam</a></h3>
-                    <p>Id placerat tacimates definitionem sea, prima quidam vim no. Duo nobis persecuti cu.</p>
-                    <a class="address" href="">Get directions</a>
-                </div>
-                <ul>
-                    <li><span class="loc_closed">Now Closed</span></li>
-                    <li><div class="score"><span>Good<em>350 Reviews</em></span><strong>7.0</strong></div></li>
-                </ul>
-            </div>
-        </div>
-        <div class="item">
-            <div class="strip grid">
-                <figure>
-                    <a href="detail-shop.html" class="wish_bt"></a>
-                    <a href="detail-shop.html"><img src="" class="img-fluid" alt="" width="400" height="266"><div class="read_more"><span>Read more</span></div></a>
-                    <small>Shop</small>
-                </figure>
-                <div class="wrapper">
-                    <h3><a href="detail-shop.html">Camden Mark</a></h3>
-                    <p>Id placerat tacimates definitionem sea, prima quidam vim no. Duo nobis persecuti cu.</p>
-                    <a class="address" href="">Get directions</a>
-                </div>
-                <ul>
-                    <li><span class="loc_open">Now Open</span></li>
-                    <li><div class="score"><span>Good<em>350 Reviews</em></span><strong>7.0</strong></div></li>
-                </ul>
-            </div>
-        </div>
-        <div class="item">
-            <div class="strip grid">
-                <figure>
-                    <a href="" class="wish_bt"></a>
-                    <a href=""><img src="" class="img-fluid" alt="" width="400" height="266"><div class="read_more"><span>Read more</span></div></a>
-                    <small>Bar</small>
-                </figure>
-                <div class="wrapper">
-                    <h3><a href="">Bistroter</a></h3>
-                    <p>Id placerat tacimates definitionem sea, prima quidam vim no. Duo nobis persecuti cu.</p>
-                    <a class="address" href="">Get directions</a>
-                </div>
-                <ul>
-                    <li><span class="loc_open">Now Open</span></li>
-                    <li><div class="score"><span>Good<em>350 Reviews</em></span><strong>7.0</strong></div></li>
-                </ul>
-            </div>
-        </div>
-        <div class="item">
-            <div class="strip grid">
-                <figure>
-                    <a href="" class="wish_bt"></a>
-                    <a href=""><img src="" class="img-fluid" alt="" width="400" height="266"><div class="read_more"><span>Read more</span></div></a>
-                    <small>Hotel</small>
-                </figure>
-                <div class="wrapper">
-                    <h3><a href="">Hotel Concorde</a></h3>
-                    <p>Id placerat tacimates definitionem sea, prima quidam vim no. Duo nobis persecuti cu.</p>
-                    <a class="address" href="">Get directions</a>
-                </div>
-                <ul>
-                    <li><span class="loc_closed">Now Closed</span></li>
-                    <li><div class="score"><span>Superb<em>350 Reviews</em></span><strong>9.0</strong></div></li>
-                </ul>
-            </div>
-        </div>
-        <div class="item">
-            <div class="strip grid">
-                <figure>
-                    <a href="" class="wish_bt"></a>
-                    <a href=""><img src="" class="img-fluid" alt="" width="400" height="266"><div class="read_more"><span>Read more</span></div></a>
-                    <small>Bar</small>
-                </figure>
-                <div class="wrapper">
-                    <h3><a href="">Eiffel Bar</a></h3>
-                    <p>Id placerat tacimates definitionem sea, prima quidam vim no. Duo nobis persecuti cu.</p>
-                    <a class="address" href="">Get directions</a>
-                </div>
-                <ul>
-                    <li><span class="loc_closed">Now Closed</span></li>
-                    <li><div class="score"><span>Good<em>350 Reviews</em></span><strong>7.5</strong></div></li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    <div class="container">
-        <div class="btn_home_align"><a href="" class="btn_1 rounded">View all</a></div>
     </div>
 </div>
 

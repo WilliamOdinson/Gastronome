@@ -11,6 +11,7 @@ from django.utils import timezone
 
 from business.models import Business, Category
 from .context_processors import CATEGORY_KEYWORDS, RATING_FILTERS
+from recommend.services import fetch_recommendations
 
 
 def index(request):
@@ -32,9 +33,13 @@ def index(request):
             category_counts[label] = len(business_ids)
 
         cache.set(cache_key, category_counts, timeout=86400)
+    
+    state = request.GET.get("state", "PA")
+    rec_qs = fetch_recommendations(request.user, state=state, n=8)
 
     return render(request, "index.html", {
-        "category_counts": category_counts
+        "category_counts": category_counts,
+        "rec_businesses": rec_qs,
     })
 
 
