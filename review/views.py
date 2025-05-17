@@ -1,4 +1,6 @@
 import uuid
+
+from django.core.cache import cache
 from django.http import HttpResponseBadRequest
 from django.shortcuts import redirect, get_object_or_404, render
 from django.db import transaction
@@ -38,6 +40,8 @@ def create_review(request, business_id):
             business.review_count = F("review_count") + 1
             business.stars = ((b_old_avg * b_old_cnt) + review.stars) / b_new_cnt
             business.save(update_fields=["review_count", "stars"])
+            
+            cache.delete(f"biz_detail:{business.business_id}")
 
             u_old_cnt = request.user.review_count
             u_old_avg = request.user.average_stars or 0.0
@@ -75,6 +79,8 @@ def delete_review(request, review_id):
     else:
         business.stars = 0.0
     business.save(update_fields=["review_count", "stars"])
+    
+    cache.delete(f"biz_detail:{business.business_id}")
 
     u_new_cnt = max(u_old_cnt - 1, 0)
     request.user.review_count = F("review_count") - 1
