@@ -9037,3 +9037,30 @@ article.blog .post_info ul li:last-child i {
 .comment_info span {
   padding: 0 10px;
 }
+
+.create_review .star {
+  font-size: 2rem;
+  cursor: pointer;
+  color: #ccc;
+  transition: color 0.2s ease;
+  user-select: none;
+}
+
+.create_review .pred-star {
+  font-size: 2rem;
+  cursor: default;
+  color: #ccc;
+  transition: color 0.2s ease;
+}
+
+.create_review .star.selected,
+.pred-star.selected {
+  color: #FFD700;
+}
+
+.create_review textarea {
+  overflow-y: hidden;
+  max-height: 300px;
+  transition: height 0.2s ease;
+  resize: none;
+}

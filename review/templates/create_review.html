@@ -4,9 +4,8 @@
 
 {% block content %}
 <main class="pattern">
-  <div class="wrapper">
+  <div class="wrapper create_review">
     <div class="container margin_80_55">
-
       <div class="row justify-content-center">
         <div class="col-lg-7">
 
@@ -19,39 +18,187 @@
             </div>
 
             <div class="card-body">
-
-              <form method="post" novalidate>
+              <form id="reviewForm" method="post" novalidate>
                 {% csrf_token %}
                 {{ form.non_field_errors }}
 
-                <!-- rating 1‑5 -->
-                <div class="mb-3">
-                  <label for="id_stars" class="form-label">Rating (1‑5&nbsp;Stars)</label>
-                  {{ form.stars }}
-                  {{ form.stars.errors }}
+                {# Top section split into two columns #}
+                <div class="row mb-4">
+                  {# Left: interactive user rating stars #}
+                  <div class="col-md-6">
+                    <label class="form-label">Your rating</label>
+                    <div id="star-rating" class="mb-1">
+                      {% for _ in "12345" %}
+                        <i class="material-icons star" data-value="{{ forloop.counter }}">star_border</i>
+                      {% endfor %}
+                    </div>
+                    <div id="rating-label" class="text-muted small">&nbsp;</div>
+                    <input type="hidden" name="stars" id="id_stars" required>
+                    {{ form.stars.errors }}
+                  </div>
+
+                  {# Right: read‑only predicted rating stars #}
+                  <div class="col-md-6">
+                    <label class="form-label">Predicted rating</label>
+                    <div id="pred-star-rating" class="mb-1">
+                      {% for _ in "12345" %}
+                        <i class="material-icons pred-star">star_border</i>
+                      {% endfor %}
+                    </div>
+                    <div id="pred-rating-label" class="text-muted small">&nbsp;</div>
+                  </div>
                 </div>
 
-                <!-- text -->
+                {# Review text area #}
                 <div class="mb-4">
                   <label for="id_text" class="form-label">Review content</label>
                   {{ form.text }}
                   {{ form.text.errors }}
                 </div>
 
+                {# Buttons for prediction and submission #}
+                <div class="d-flex align-items-center mb-4">
+                  <button type="button" id="predictRatingBtn" class="btn btn-outline-primary me-3">
+                    <i class="material-icons align-middle me-1">psychology_alt</i>
+                    Predict rating
+                  </button>
+                  {# placeholder only for error messages; success updates stars above #}
+                  <div id="predict-result" class="text-danger small">&nbsp;</div>
+                </div>
+
                 <button type="submit" class="btn_1">Submit review</button>
                 <a href="{% url 'business:business_detail' business.business_id %}"
                    class="btn btn-link">Return to business</a>
               </form>
-
             </div>
           </div>
 
         </div>
       </div>
-
     </div>
   </div>
 </main>
 {% endblock %}
 
-{% block extra_js %}{% endblock %}
+{% block extra_js %}
+<script>
+  (function() {
+    // helper to read a named cookie
+    function getCookie(name) {
+      const m = document.cookie.match(new RegExp('(^|;\\s*)' + name + '=([^;]*)'));
+      return m ? decodeURIComponent(m[2]) : null;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const stars = document.querySelectorAll('#star-rating .star');
+      const hiddenInput = document.getElementById('id_stars');
+      const ratingLabel = document.getElementById('rating-label');
+
+      const predStars = document.querySelectorAll('#pred-star-rating .pred-star');
+      const predLabel = document.getElementById('pred-rating-label');
+
+      const errorBox = document.getElementById('predict-result');
+
+      const labels = {
+        1: 'Bad!',
+        2: 'Not what I expected.',
+        3: 'Fair.',
+        4: 'Good!',
+        5: 'Excellent!'
+      };
+
+      // auto‑resize textarea based on content
+      const textarea = document.getElementById('id_text');
+      function autoResize(el) {
+        el.style.height = 'auto';
+        if (el.scrollHeight > 300) {
+          el.style.height = '300px';
+          el.style.overflowY = 'auto';
+        } else {
+          el.style.height = el.scrollHeight + 'px';
+          el.style.overflowY = 'hidden';
+        }
+      }
+      if (textarea) {
+        textarea.addEventListener('input', () => autoResize(textarea));
+        autoResize(textarea);
+      }
+
+      // highlight user stars and update label
+      function highlightStars(count) {
+        stars.forEach((s, i) => {
+          if (i < count) {
+            s.classList.add('selected');
+            s.textContent = 'star';
+          } else {
+            s.classList.remove('selected');
+            s.textContent = 'star_border';
+          }
+        });
+        ratingLabel.textContent = labels[count] || '\u00A0';
+      }
+
+      // bind hover and click on user stars
+      stars.forEach((star, idx) => {
+        star.addEventListener('mouseover', () => highlightStars(idx + 1));
+        star.addEventListener('mouseout', () => {
+          const val = parseInt(hiddenInput.value) || 0;
+          highlightStars(val);
+        });
+        star.addEventListener('click', () => {
+          const val = idx + 1;
+          hiddenInput.value = val;
+          highlightStars(val);
+        });
+      });
+
+      // highlight predicted stars and update label
+      function highlightPredStars(count) {
+        predStars.forEach((s, i) => {
+          if (i < count) {
+            s.classList.add('selected');
+            s.textContent = 'star';
+          } else {
+            s.classList.remove('selected');
+            s.textContent = 'star_border';
+          }
+        });
+        predLabel.textContent = labels[count] || '\u00A0';
+      }
+
+      document.getElementById('predictRatingBtn').addEventListener('click', function() {
+        const text = textarea.value.trim();
+        errorBox.textContent = '\u00A0';
+
+        if (!text) {
+          errorBox.textContent = 'Please enter review text first.';
+          return;
+        }
+
+        fetch("{% url 'api:predict_review_api' %}", {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          body: JSON.stringify({ review: text })
+        })
+        .then(r => r.json())
+        .then(data => {
+          if (data.prediction !== undefined) {
+            const pred = parseInt(data.prediction);
+            highlightPredStars(pred);
+          } else {
+            throw new Error(data.error || 'Unknown error');
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          errorBox.textContent = 'Prediction failed.';
+        });
+      });
+    });
+  })();
+</script>
+{% endblock %}

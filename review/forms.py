@@ -15,8 +15,12 @@ class ReviewForm(forms.ModelForm):
                 }
             ),
             "text": forms.Textarea(
-                attrs={"rows": 6, "class": "form-control"}
-            ),
+                attrs={
+                    "rows": 6,
+                    "class": "form-control auto-expand",
+                    "style": "overflow-y: hidden; max-height: 300px; transition: height 0.2s ease; resize: none;"
+                }
+            )
         }
 
     def clean_text(self):
