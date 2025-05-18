@@ -1,7 +1,7 @@
 from datetime import datetime
 from django.utils import timezone
 from pathlib import Path
-from typing import Iterable, List, Tuple
+from typing import Iterable, List
 import json
 
 from django.core.management.base import BaseCommand
@@ -54,6 +54,8 @@ class Command(BaseCommand):
         buf: List[User] = []
 
         for row in tqdm(stream(path), desc="User pass"):
+            raw_friends = row.get("friends", "")
+            friends_list = [fid.strip() for fid in raw_friends.split(",")] if raw_friends else []
             buf.append(
                 User(
                     user_id=row["user_id"],
@@ -78,6 +80,7 @@ class Command(BaseCommand):
                     compliment_funny=row["compliment_funny"],
                     compliment_writer=row["compliment_writer"],
                     compliment_photos=row["compliment_photos"],
+                    friends=friends_list,
                 )
             )
 

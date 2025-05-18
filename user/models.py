@@ -18,6 +18,7 @@ class User(AbstractUser):
     fans = models.PositiveIntegerField(default=0, verbose_name="Number of Fans")
     average_stars = models.FloatField(default=0.0, verbose_name="Average Stars")
 
+    friends = models.JSONField(default=list, blank=True, verbose_name="Friend List")
     elite_years = models.JSONField(default=list, blank=True, verbose_name="Elite Years")
 
     compliment_hot = models.PositiveIntegerField(default=0, verbose_name="Hot Compliments")
