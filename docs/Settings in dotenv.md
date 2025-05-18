@@ -2,18 +2,44 @@ Dotenv files should store information that must not be accessible to unauthorize
 
 In Gastronome, you should typically define the following environment variables in the `.env` file:
 
-1. **DJANGO_SECRET_KEY**
+1. **DJANGO\_SECRET\_KEY**
+   
+   The key Django uses for cryptographic signing, session management, and generation of security tokens.
 
-   This is the key Django uses for cryptographic signing, session management, and the generation of security tokens.
+2. **DJANGO\_DEBUG**
+   
+   A flag (`True` or `False`) that controls whether Django runs in debug mode. It should be `False` in production to avoid leaking detailed error pages.
 
-2. **MYSQL_DATABASE**, **MYSQL_USER**, **MYSQL_PASSWORD**
+3. **DJANGO\_ALLOWED\_HOSTS**
+   
+   A comma-separated list of host/domain names that this Django site can serve. For example:
 
-   These variables configure the connection to the MySQL database and contain sensitive credentials that must remain confidential.
+   ```
+   DJANGO_ALLOWED_HOSTS="localhost,127.0.0.1"
+   ```
 
-3. **DEFAULT_USER_PASSWORD**
+4. **MYSQL\_DATABASE**, **MYSQL\_USER**, **MYSQL\_PASSWORD**, **MYSQL\_HOST**, **MYSQL\_PORT**
+   
+   These variables configure the connection to the MySQL database:
 
-   This sets a default password for users to log in to the system.
+   * `MYSQL_DATABASE`: the name of the database (e.g. `gastronome`)
+   * `MYSQL_USER`: the database user (e.g. `root`)
+   * `MYSQL_PASSWORD`: the user’s password
+   * `MYSQL_HOST`: the database host (e.g. `localhost`)
+   * `MYSQL_PORT`: the database port (e.g. `3306`)
 
-4. **GOOGLE_MAPS_API_KEY**
+5. **REDIS\_URL**
+   
+   The connection URL for Redis, including authentication, host, port, and database index. For example:
+
+   ```
+   REDIS_URL=redis://:foobared@127.0.0.1:6379/6
+   ```
+
+6. **DEFAULT\_USER\_PASSWORD**
+   
+   A default password for imported users.
+
+7. **GOOGLE\_MAPS\_API\_KEY**
    
    The API key required by Google for integrating Google Maps into the website.

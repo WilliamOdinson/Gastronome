@@ -9,8 +9,17 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     env:
-      DJANGO_SECRET_KEY: test-secret-key-placeholder
+      DJANGO_SECRET_KEY: django-secret-key
+      DJANGO_ALLOWED_HOSTS: 127.0.0.1,localhost
+
+      MYSQL_DATABASE: gastronome
+      MYSQL_USER: django
+      MYSQL_PASSWORD: mysql-password
+
+      REDIS_PASSWORD: foobared
+      REDIS_URL: redis://:foobared@127.0.0.1:6379/6
 
     steps:
       - name: Checkout repository (with LFS)
@@ -18,19 +27,43 @@ jobs:
         with:
           lfs: true
 
-      - name: Install git-lfs
+      - name: Rename the example environment file to .env
+        run: mv .env.example .env
+
+      - name: Install system packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y git-lfs
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+              git-lfs mysql-server redis-server
           git lfs install
 
-      - name: Clone DistilBERT
+      - name: Initialize MySQL and Redis
+        run: |
+          sudo service mysql start
+          PASS=$(sudo awk '/password/ {print $3; exit}' /etc/mysql/debian.cnf)
+
+          sudo mysql -u debian-sys-maint -p"$PASS" <<SQL
+          CREATE DATABASE IF NOT EXISTS \`${{ env.MYSQL_DATABASE }}\`
+            DEFAULT CHARACTER SET utf8mb4
+            COLLATE utf8mb4_unicode_ci;
+          CREATE USER IF NOT EXISTS '${{ env.MYSQL_USER }}'@'localhost'
+            IDENTIFIED BY '${{ env.MYSQL_PASSWORD }}';
+
+          GRANT ALL PRIVILEGES ON *.* TO '${{ env.MYSQL_USER }}'@'localhost';
+          
+          FLUSH PRIVILEGES;
+          SQL
+
+          echo "user default on +@all ~* >${{ env.REDIS_PASSWORD }}" | \
+            sudo tee -a /etc/redis/redis.conf
+          sudo service redis-server restart
+
+          redis-cli -a "${{ env.REDIS_PASSWORD }}" PING
+
+      - name: Clone DistilBERT checkpoints
         run: |
           rm -rf assets/distilbert-base-uncased
-          git clone \
-            --depth 1 \
-            --filter=blob:none \
-            --sparse \
+          git clone --depth 1 --filter=blob:none --sparse \
             https://huggingface.co/distilbert-base-uncased \
             assets/distilbert-base-uncased
           cd assets/distilbert-base-uncased
@@ -43,18 +76,16 @@ jobs:
             /pytorch_model.bin \
             /model.safetensors
 
-      - name: Set up Python
+      - name: Set up Python 3.13
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run test-suite
-        env:
-          DJANGO_TEST_DB: sqlite
+      - name: Run Django test suite
         run: |
           python manage.py test business user review api experiments recommend core
