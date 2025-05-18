@@ -112,6 +112,15 @@ CACHES = {
     }
 }
 
+
+# Search Engine Settings
+OPENSEARCH = {
+    "HOST": os.getenv("OPENSEARCH_HOST", "http://localhost:9200"),
+    "USER": os.getenv("OPENSEARCH_USER", None),
+    "PASS": os.getenv("OPENSEARCH_PASSWORD", None),
+    "INDEX": "gastronome",
+}
+
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
