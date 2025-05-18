@@ -10,7 +10,8 @@ from django.shortcuts import render
 from django.utils import timezone
 
 from business.models import Business, Category
-from .context_processors import CATEGORY_KEYWORDS, RATING_FILTERS
+from core.context_processors import CATEGORY_KEYWORDS, RATING_FILTERS
+from core.search_backends import search_business
 from recommend.services import fetch_recommendations
 
 
@@ -62,88 +63,40 @@ def bad_request(request, exception):
     return HttpResponse("Bad Request (400)", status=400)
 
 def search(request):
-    """
-    Main entry point for search: filters businesses by "what", "where", and category.
-    """
     q = request.GET.get("q", "").strip()
     where = request.GET.get("where", "").strip() or "PA"
+    toks = where.split()
+    city = None; state = None
+    if len(toks) == 1:
+        state = toks[0].upper()
+    else:
+        city = " ".join(toks[:-1])
+        state = toks[-1].upper()
+
     cat_label = request.GET.get("category", "All").strip()
+    page = int(request.GET.get("page", 1))
 
-    cache_key = _make_cache_key(q, where, cat_label)
-    results_raw = cache.get(cache_key)
+    now = timezone.localtime()
+    weekday = now.strftime("%A")
+    now_time = now.time()
 
-    if results_raw is None:
-        qs = Business.objects.all()
+    ck = _cache_key(q, city, state, cat_label) + f":p{page}"
+    cached = cache.get(ck)
+    if cached:
+        total, cards = cached
+    else:
+        total, id_list = search_business(q, city, state, cat_label, page)
+        objs = Business.objects.in_bulk(id_list)
+        cards = [_build_card(objs[i], weekday, now_time) for i in id_list if i in objs]
+        cache.set(ck, (total, cards), 3600)
 
-        if q:
-            qs = qs.filter(Q(name__icontains=q) |
-                           Q(categories__name__icontains=q))
-
-        if where:
-            toks = where.split()
-            if len(toks) == 1:
-                qs = qs.filter(Q(state__iexact=toks[0]) |
-                               Q(city__icontains=toks[0]))
-            else:
-                qs = qs.filter(city__icontains=" ".join(toks[:-1]),
-                               state__iexact=toks[-1])
-
-        if cat_label and cat_label != "All":
-            keywords = CATEGORY_KEYWORDS.get(cat_label,
-                                             [cat_label.lower()])
-            cat_q = Q()
-            for kw in keywords:
-                cat_q |= Q(categories__name__icontains=kw)
-            qs = qs.filter(cat_q)
-
-        qs = qs.distinct().prefetch_related("categories",
-                                            "photos", "hours")
-
-        now = timezone.localtime()
-        weekday = now.strftime("%A")
-        current_time = now.time()
-
-        results_raw = []
-        for biz in qs:
-            photo = biz.photos.first()
-            open_now = (
-                biz.is_open and
-                biz.hours.filter(day=weekday,
-                                 open_time__lte=current_time,
-                                 close_time__gte=current_time).exists()
-            )
-
-            results_raw.append({
-                "id": biz.pk,
-                "name": biz.name,
-                "categories": ", ".join(
-                    c.name for c in biz.categories.all()[:3]),
-                "address": f"{biz.address}, {biz.city}",
-                "latitude": float(biz.latitude),
-                "longitude": float(biz.longitude),
-                "stars": biz.stars,
-                "review_count": biz.review_count,
-                "is_open_now": open_now,
-                "image_url": (photo.image_url if photo
-                              else "https://placehold.co/600x400"),
-            })
-
-        cache.set(cache_key, results_raw)
-
-    paginator = Paginator(results_raw, 20)
-    page_number = request.GET.get("page", 1)
-
-    try:
-        page_obj = paginator.page(page_number)
-    except PageNotAnInteger:
-        page_obj = paginator.page(1)
-    except EmptyPage:
-        page_obj = paginator.page(paginator.num_pages)
+    paginator = Paginator(range(total), 20)
+    page_obj = paginator.page(page)
 
     context = {
-        "results": page_obj.object_list,
+        "results": cards,
         "page_obj": page_obj,
-        "result_count": paginator.count,
+        "result_count": total,
         "q": q,
         "where": where,
         "category": cat_label,
@@ -152,10 +105,31 @@ def search(request):
     return render(request, "search_results.html", context)
 
 
-def _make_cache_key(q: str, where: str, cat: str) -> str:
+def _cache_key(q, city, state, cat):
+    raw = f"{q}|{city}|{state}|{cat}".encode()
+    return "os:" + blake2s(raw, digest_size=8).hexdigest()
+
+
+def _build_card(biz, weekday, now_time):
     """
-    Generate a short cache key: search:<8-byte-hash>
+    Serialize the Business object into a template-friendly dict.
     """
-    raw = f"{q}|{where}|{cat}".encode()
-    digest = blake2s(raw, digest_size=8).hexdigest()
-    return f"search:{digest}"
+    photo = biz.photos.first()
+    open_now = (
+        biz.is_open and
+        biz.hours.filter(day=weekday,
+                         open_time__lte=now_time,
+                         close_time__gte=now_time).exists()
+    )
+    return {
+        "business_id": biz.business_id,
+        "name": biz.name,
+        "categories": ", ".join(biz.categories.values_list("name", flat=True)[:3]),
+        "address": f"{biz.address}, {biz.city}",
+        "latitude": float(biz.latitude),
+        "longitude": float(biz.longitude),
+        "stars": biz.stars,
+        "review_count": biz.review_count,
+        "is_open_now": open_now,
+        "image_url": (photo.image_url if photo else "https://placehold.co/600x400"),
+    }
