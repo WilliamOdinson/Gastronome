@@ -11,8 +11,7 @@ BATCH = 10_000
 
 def ascii_slug(text: str) -> str:
     """
-    Normalize text to lowercase ASCII alphanumeric slug.
-    e.g., 'Renée Zhang!' → 'reneezhang'
+    Normalize text to lowercase ASCII alphanumeric slug. e.g., 'Renée Zhang!' -> 'reneezhang'
     """
     normalized = unicodedata.normalize("NFKD", text)
     ascii_str = normalized.encode("ascii", "ignore").decode("ascii")

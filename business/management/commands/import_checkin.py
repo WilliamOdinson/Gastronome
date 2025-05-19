@@ -16,26 +16,26 @@ BATCH = 5_000
 
 
 def stream(path: Path) -> Iterable[dict]:
-    with path.open(encoding="utf‑8") as fh:
+    with path.open(encoding="utf-8") as fh:
         for line in fh:
             yield json.loads(line)
 
 
 class Command(BaseCommand):
-    help = "Imports check-in records from json file into the CheckIn model."
+    help = "Imports Customers' check-in records from json file into the CheckIn model."
 
     def add_arguments(self, parser):
-        parser.add_argument("file", help="Path to checkin.json")
+        parser.add_argument("file", help="Path to yelp_academic_dataset_checkin.json")
 
     @transaction.atomic
     def handle(self, *_, **opts):
         f = Path(opts["file"]).resolve()
         buf: List[CheckIn] = []
 
-        for row in tqdm(stream(f), desc="Check-ins"):
+        for row in tqdm(stream(f), desc="Importing check-in records"):
             bid = row["business_id"]
             for dt_str in row["date"].split(", "):
-                
+
                 dt = timezone.make_aware(datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S"))
                 buf.append(CheckIn(business_id=bid, checkin_time=dt))
 

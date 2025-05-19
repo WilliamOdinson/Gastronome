@@ -30,20 +30,21 @@ def parse_time(value: str) -> time:
 
 
 class Command(BaseCommand):
-    help = "Imports Business records, links existing Categories, and adds Hour entries from a JSON file."
+    help = "Imports business hours records from json file into the Hour model."
 
     def add_arguments(self, parser):
-        parser.add_argument("file", help="Path to business.json")
+        parser.add_argument(
+            "file", help="Path to yelp_academic_dataset_business.json")
 
     @transaction.atomic
     def handle(self, *_, **opts):
-        f = Path(opts["file"]).resolve()
+        file_path = Path(opts["file"]).resolve()
         cat_cache = {}
         batch = []
         hours_buffer = []
 
-        for row in tqdm(stream(f), desc="Business"):
-            b = Business(
+        for row in tqdm(stream(file_path), desc="Importing business hours"):
+            business = Business(
                 business_id=row["business_id"],
                 name=row["name"],
                 address=row["address"],
@@ -57,7 +58,7 @@ class Command(BaseCommand):
                 is_open=row["is_open"] == 1,
                 attributes=row.get("attributes") or None,
             )
-            batch.append((b, row.get("categories"), row.get("hours")))
+            batch.append((business, row.get("categories"), row.get("hours")))
 
             if len(batch) >= BATCH:
                 self._flush(batch, cat_cache, hours_buffer)

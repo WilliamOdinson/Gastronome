@@ -19,7 +19,7 @@ def stream(path: Path) -> Iterable[tuple[str, float]]:
 
 
 class Command(BaseCommand):
-    help = "Import predicted_stars as auto_score into the Review table"
+    help = "Import predicted_stars as auto_score into the Review table."
 
     def add_arguments(self, parser):
         parser.add_argument("file", help="Path to review_predictions.json")
@@ -31,7 +31,7 @@ class Command(BaseCommand):
         scores: Dict[str, float] = {}
         updated = 0
 
-        for review_id, score in tqdm(stream(path), desc="AutoScore"):
+        for review_id, score in tqdm(stream(path), desc="Importing auto_score"):
             ids.append(review_id)
             scores[review_id] = score
 
@@ -43,7 +43,7 @@ class Command(BaseCommand):
         if ids:
             updated += self._bulk_update(ids, scores)
 
-        self.stdout.write(self.style.SUCCESS(f"auto_score import completed, {updated} records updated."))
+        self.stdout.write(self.style.SUCCESS(f"Auto_score import completed."))
 
     def _bulk_update(self, ids: List[str], scores: Dict[str, float]) -> int:
         objs = list(Review.objects.filter(review_id__in=ids).only("review_id", "auto_score"))

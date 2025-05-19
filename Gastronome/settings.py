@@ -83,23 +83,17 @@ WSGI_APPLICATION = 'Gastronome.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-import pymysql
-pymysql.install_as_MySQLdb()
-
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": os.getenv("MYSQL_DATABASE", ""),
-        "USER": os.getenv("MYSQL_USER", "root"),
-        "PASSWORD": os.getenv("MYSQL_PASSWORD", ""),
-        "HOST": os.getenv("MYSQL_HOST", "localhost"),
-        "PORT": os.getenv("MYSQL_PORT", "3306"),
-        "OPTIONS": {
-            "charset": "utf8mb4",
-            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("POSTGRES_DB", ""),
+        "USER": os.getenv("POSTGRES_USER", ""),
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD", ""),
+        "HOST": os.getenv("POSTGRES_HOST", "localhost"),
+        "PORT": os.getenv("POSTGRES_PORT", "5432"),
     }
 }
+
 
 CACHES = {
     "default": {
@@ -171,6 +165,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # ------------------------------
 FONT_PATH = os.path.join(BASE_DIR, "static", "fonts", "Arial.ttf")
 PHOTO_BASE_URL = "https://gastronome-recommendation.s3.us-east-1.amazonaws.com/"
-# While developing, we can use the console backend to print emails to the console cause we don't have a real email server.
+# While developing, we can use the console backend to print emails to the
+# console cause we don't have a real email server.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'

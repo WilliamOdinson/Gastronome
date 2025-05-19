@@ -15,29 +15,31 @@ BATCH = 10_000
 
 
 def parse_datetime(s: str):
-    dt = datetime.strptime(
-        s, "%Y-%m-%d %H:%M:%S") if " " in s else datetime.strptime(s, "%Y-%m-%d")
+    dt = (datetime.strptime(s, "%Y-%m-%d %H:%M:%S")
+          if " " in s
+          else datetime.strptime(s, "%Y-%m-%d")
+          )
     return timezone.make_aware(dt)
 
 
 def stream(path: Path) -> Iterable[dict]:
-    with path.open(encoding="utf‑8") as fh:
+    with path.open(encoding="utf-8") as fh:
         for line in fh:
             yield json.loads(line)
 
 
 class Command(BaseCommand):
-    help = "Import tip.json into the Tip table"
+    help = "Imports tips from json file into the Tip model."
 
     def add_arguments(self, parser):
-        parser.add_argument("file", help="Path to tip.json")
+        parser.add_argument("file", help="Path to yelp_academic_dataset_tip.json")
 
     @transaction.atomic
     def handle(self, *_, **opts):
         path = Path(opts["file"]).resolve()
         buf: List[Tip] = []
 
-        for row in tqdm(stream(path), desc="Tip"):
+        for row in tqdm(stream(path), desc="Importing tips"):
             buf.append(
                 Tip(
                     user_id=row["user_id"],

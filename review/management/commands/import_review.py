@@ -10,34 +10,40 @@ from django.db import transaction
 from django.utils import timezone
 
 from review.models import Review
+from user.models import User
 
-BATCH = 10_000
+BATCH = 5_000
 
 
 def parse_datetime(s: str):
-    dt = datetime.strptime(
-        s, "%Y-%m-%d %H:%M:%S") if " " in s else datetime.strptime(s, "%Y-%m-%d")
+    dt = (datetime.strptime(s, "%Y-%m-%d %H:%M:%S")
+          if " " in s
+          else datetime.strptime(s, "%Y-%m-%d")
+          )
     return timezone.make_aware(dt)
 
 
 def stream(path: Path) -> Iterable[dict]:
-    with path.open(encoding="utf‑8") as fh:
+    with path.open(encoding="utf-8") as fh:
         for line in fh:
             yield json.loads(line)
 
 
 class Command(BaseCommand):
-    help = "Import review.json into the Review table"
+    help = "Imports reviews from json file into the Review model."
 
     def add_arguments(self, parser):
-        parser.add_argument("file", help="Path to review.json")
+        parser.add_argument(
+            "file", help="Path to yelp_academic_dataset_review.json")
 
     @transaction.atomic
     def handle(self, *_, **opts):
-        path = Path(opts["file"]).resolve()
+        file_path = Path(opts["file"]).resolve()
         buf: List[Review] = []
-
-        for row in tqdm(stream(path), desc="Review"):
+        existing_user_ids = set(User.objects.values_list("user_id", flat=True))
+        for row in tqdm(stream(file_path), desc="Importing reviews"):
+            if row["user_id"] not in existing_user_ids:
+                continue
             buf.append(
                 Review(
                     review_id=row["review_id"],
@@ -46,9 +52,9 @@ class Command(BaseCommand):
                     stars=row["stars"],
                     date=parse_datetime(row["date"]),
                     text=row["text"],
-                    useful=row["useful"],
-                    funny=row["funny"],
-                    cool=row["cool"],
+                    useful=max(0, row["useful"]),
+                    funny=max(0, row["funny"]),
+                    cool=max(0, row["cool"]),
                 )
             )
 

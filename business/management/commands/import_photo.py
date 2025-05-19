@@ -20,17 +20,17 @@ def stream(path: Path) -> Iterable[dict]:
 
 
 class Command(BaseCommand):
-    help = "Imports photo records from json file into the photo model."
+    help = "Imports photo records from json file into the Photo model."
 
     def add_arguments(self, parser):
-        parser.add_argument("file", help="Path to photo.json")
+        parser.add_argument("file", help="Path to photos.json")
 
     @transaction.atomic
     def handle(self, *_, **opts):
         path = Path(opts["file"]).resolve()
         buf: List[Photo] = []
 
-        for row in tqdm(stream(path), desc="Photo"):
+        for row in tqdm(stream(path), desc="Importing photos"):
             buf.append(
                 Photo(
                     photo_id=row["photo_id"],

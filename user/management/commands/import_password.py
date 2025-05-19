@@ -8,8 +8,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 class Command(BaseCommand):
-    help = "Set an initial password for every imported Yelp user (single SQL UPDATE)."
+    help = "Set an initial password for every imported Yelp user."
 
     def handle(self, *args, **options):
         raw_pwd = os.getenv("DEFAULT_USER_PASSWORD")
@@ -22,6 +23,6 @@ class Command(BaseCommand):
         hashed_pwd = make_password(raw_pwd)
 
         rows = User.objects.filter(password="").update(password=hashed_pwd)
-        self.stdout.write(self.style.SUCCESS(
-            f"Initial password hashes have been written for {rows} users (completed in one SQL).。"
-        ))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Initial password hashes have been written for {rows} users ..."))
