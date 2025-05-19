@@ -1,6 +1,6 @@
 {% extends "common/base.html" %}
 
-{% block title %}Profile – {{ user_obj.display_name }}{% endblock %}
+{% block title %}My Profile{% endblock %}
 
 {% block content %}
 <main class="pattern">
@@ -54,7 +54,7 @@
                 <dd class="col-sm-8">
                   {% if user_obj.elite_years %}
                     {{ user_obj.elite_years|join:", " }}
-                  {% else %} — {% endif %}
+                  {% else %} Not Yet. {% endif %}
                 </dd>
               </dl>
             </div>

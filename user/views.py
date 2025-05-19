@@ -14,13 +14,13 @@ from django.views.decorators.http import require_http_methods
 from django.utils.crypto import get_random_string
 
 from review.models import Review, Tip
-from user.models import *
+from user.models import User
 
 
 @csrf_protect
 def user_login(request):
     if request.method == "POST":
-        email = request.POST.get("email")
+        email = (request.POST.get("email") or "").strip().lower()
         password = request.POST.get("password")
         captcha_input = request.POST.get("captcha", "").upper()
 
@@ -36,6 +36,7 @@ def user_login(request):
         return render(request, "login.html",
                       {"error": "Invalid email or password."})
     return render(request, "login.html")
+
 
 @require_http_methods(["POST"])
 def user_logout(request):
@@ -62,7 +63,7 @@ def user_profile(request):
 @csrf_protect
 def register(request):
     if request.method == "POST":
-        email = request.POST.get("email")
+        email = (request.POST.get("email") or "").strip().lower()
         password1 = request.POST.get("password1")
         password2 = request.POST.get("password2")
         display_name = request.POST.get("display_name")
@@ -75,17 +76,17 @@ def register(request):
 
         if not email or not password1 or not password2 or not display_name:
             return render(request, "register.html", {"error": "All fields are required."})
-        
+
         if password1 != password2:
             return render(request, "register.html", {"error": "Passwords do not match."})
-        
+
         pattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$'
         if not re.match(pattern, password1):
             return render(request, "register.html", {
-                "error": "Password must be at least 8 characters and include upper‑, lower‑case letters and a digit."
-                })
-            
-        if User.objects.filter(email=email).exists():
+                "error": "Password must be at least 8 characters and include upper and lower-case letters and a digit."
+            })
+
+        if User.objects.filter(email__iexact=email).exists():
             return render(request, "register.html", {
                 "error": "This email is already registered."
             })
@@ -126,7 +127,8 @@ def verify_email(request):
 
         data = cache.get(f"pending_register:{email}")
         if not data:
-            return render(request, "verify_email.html", {"error": "Verification expired, please register again."})
+            return render(request, "verify_email.html", {
+                          "error": "Verification expired, please register again."})
 
         if data['verification_code'] == code:
             user = User.objects.create(

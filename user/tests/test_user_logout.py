@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -9,26 +11,22 @@ class UserLogoutTests(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
-            email="logout@gastronome.com",
+            email="test@gastronome.com",
             password="Passw0rd!",
-            display_name="LogoutUser",
-            username="logout@gastronome.com",
-            user_id="logout1234567890123456",
+            display_name="test",
+            username="test@gastronome.com",
+            user_id="u" + uuid.uuid4().hex[:21],
         )
         self.logout_url = reverse("user:logout")
         self.home_url = reverse("core:index")
 
     def _login(self):
-        """
-        Force login user using built-in test client
-        """
+        """Force login user using built-in test client"""
         self.client.force_login(self.user)
-        self.assertIn("_auth_user_id", self.client.session)  # sanity‑check
+        self.assertIn("_auth_user_id", self.client.session)
 
     def test_logout_via_post(self):
-        """
-        POST /logout/ should redirect to homepage and clear session
-        """
+        """POST /logout/ should redirect to homepage and clear session"""
         self._login()
         response = self.client.post(self.logout_url)
         self.assertRedirects(response, self.home_url)
@@ -42,9 +40,7 @@ class UserLogoutTests(TestCase):
 
 
     def test_logout_with_extra_session_keys(self):
-        """
-        Custom session data should also be cleared
-        """
+        """Custom session data should also be cleared"""
         self._login()
         session = self.client.session
         session["pending_email"] = "someone@gastronome.com"
@@ -54,8 +50,6 @@ class UserLogoutTests(TestCase):
         self.assertNotIn("pending_email", self.client.session)
 
     def test_logout_when_anonymous(self):
-        """
-        Anonymous users visiting /logout/ should still receive the same redirect
-        """
+        """Anonymous users visiting /logout/ should still receive the same redirect"""
         response = self.client.post(self.logout_url)
         self.assertRedirects(response, self.home_url)

@@ -1,4 +1,5 @@
 import time
+import uuid
 
 from django.contrib.auth import get_user_model
 from django.core import mail
@@ -16,8 +17,8 @@ class UserRegisterTests(TestCase):
         self.url_verify   = reverse("user:verify_email")
         self.url_resend   = reverse("user:resend_verification")
 
-        self.email    = "newuser@gastronome.com"
-        self.display  = "Newbie"
+        self.email    = "test@gastronome.com"
+        self.display  = "test"
         self.pass1    = "Passw0rd!"
         self.pass2    = self.pass1
 
@@ -92,24 +93,20 @@ class UserRegisterTests(TestCase):
         self.assertContains(resp, "Password must be at least 8 characters")
 
     def test_register_email_already_exists(self):
-        """
-        Email already exists in the database
-        """
+        """Email already exists in the database"""
         # Create an existing user first
         User.objects.create_user(
             email=self.email,
             password="Another123!",
             display_name="Someone",
-            username=self.email, user_id="dup123456789012345678"
+            username=self.email, user_id="u" + uuid.uuid4().hex[:21],
         )
         self._set_captcha()
         resp = self._post_register()
         self.assertContains(resp, "already registered")
 
     def test_register_overwrites_existing_pending_cache(self):
-        """
-        Second submission refreshes the verification_code
-        """
+        """Second submission refreshes the verification_code"""
         self._set_captcha()
         self._post_register()
         first_code = cache.get(f"pending_register:{self.email}")["verification_code"]
@@ -122,9 +119,7 @@ class UserRegisterTests(TestCase):
         self.assertNotEqual(first_code, second_code)
 
     def test_verify_email_success_creates_user(self):
-        """
-        Full flow: register -> verify -> auto login
-        """
+        """Full flow: register -> verify -> auto login"""
         # Register first
         self._set_captcha()
         self._post_register()
