@@ -1,6 +1,6 @@
 {% extends "common/base.html" %}
 
-{% block title %}Write a review – {{ business.name }}{% endblock %}
+{% block title %}Write a review{% endblock %}
 
 {% block content %}
 <main class="pattern">
@@ -22,9 +22,7 @@
                 {% csrf_token %}
                 {{ form.non_field_errors }}
 
-                {# Top section split into two columns #}
                 <div class="row mb-4">
-                  {# Left: interactive user rating stars #}
                   <div class="col-md-6">
                     <label class="form-label">Your rating</label>
                     <div id="star-rating" class="mb-1">
@@ -37,7 +35,6 @@
                     {{ form.stars.errors }}
                   </div>
 
-                  {# Right: read‑only predicted rating stars #}
                   <div class="col-md-6">
                     <label class="form-label">Predicted rating</label>
                     <div id="pred-star-rating" class="mb-1">
@@ -49,20 +46,17 @@
                   </div>
                 </div>
 
-                {# Review text area #}
                 <div class="mb-4">
                   <label for="id_text" class="form-label">Review content</label>
                   {{ form.text }}
                   {{ form.text.errors }}
                 </div>
 
-                {# Buttons for prediction and submission #}
                 <div class="d-flex align-items-center mb-4">
                   <button type="button" id="predictRatingBtn" class="btn btn-outline-primary me-3">
                     <i class="material-icons align-middle me-1">psychology_alt</i>
                     Predict rating
                   </button>
-                  {# placeholder only for error messages; success updates stars above #}
                   <div id="predict-result" class="text-danger small">&nbsp;</div>
                 </div>
 
@@ -83,7 +77,6 @@
 {% block extra_js %}
 <script>
   (function() {
-    // helper to read a named cookie
     function getCookie(name) {
       const m = document.cookie.match(new RegExp('(^|;\\s*)' + name + '=([^;]*)'));
       return m ? decodeURIComponent(m[2]) : null;
@@ -107,7 +100,6 @@
         5: 'Excellent!'
       };
 
-      // auto‑resize textarea based on content
       const textarea = document.getElementById('id_text');
       function autoResize(el) {
         el.style.height = 'auto';
@@ -124,7 +116,6 @@
         autoResize(textarea);
       }
 
-      // highlight user stars and update label
       function highlightStars(count) {
         stars.forEach((s, i) => {
           if (i < count) {
@@ -138,7 +129,6 @@
         ratingLabel.textContent = labels[count] || '\u00A0';
       }
 
-      // bind hover and click on user stars
       stars.forEach((star, idx) => {
         star.addEventListener('mouseover', () => highlightStars(idx + 1));
         star.addEventListener('mouseout', () => {
@@ -152,7 +142,6 @@
         });
       });
 
-      // highlight predicted stars and update label
       function highlightPredStars(count) {
         predStars.forEach((s, i) => {
           if (i < count) {
