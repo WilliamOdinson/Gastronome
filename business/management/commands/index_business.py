@@ -1,9 +1,13 @@
-from django.core.management.base import BaseCommand
+import urllib3
+
 from django.conf import settings
+from django.core.management.base import BaseCommand
 from opensearchpy import OpenSearch, helpers
 from tqdm import tqdm
 
 from business.models import Business
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 MAPPING = {
     "settings": {
@@ -50,9 +54,9 @@ MAPPING = {
 
 
 def client():
-    """Create an OpenSearch client (unauthenticated)"""
     return OpenSearch(
         hosts=[settings.OPENSEARCH["HOST"]],
+        http_auth=(settings.OPENSEARCH["USER"], settings.OPENSEARCH["PASSWORD"]),
         verify_certs=False,
         retry_on_timeout=True,
         timeout=30,

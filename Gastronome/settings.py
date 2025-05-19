@@ -111,7 +111,7 @@ CACHES = {
 OPENSEARCH = {
     "HOST": os.getenv("OPENSEARCH_HOST", "http://localhost:9200"),
     "USER": os.getenv("OPENSEARCH_USER", None),
-    "PASS": os.getenv("OPENSEARCH_PASSWORD", None),
+    "PASSWORD": os.getenv("OPENSEARCH_PASSWORD", None),
     "INDEX": "gastronome",
 }
 
