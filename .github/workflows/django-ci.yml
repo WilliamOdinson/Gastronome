@@ -13,11 +13,11 @@ jobs:
     env:
       DJANGO_SECRET_KEY: django-secret-key
       DJANGO_ALLOWED_HOSTS: 127.0.0.1,localhost
-
-      MYSQL_DATABASE: gastronome
-      MYSQL_USER: django
-      MYSQL_PASSWORD: mysql-password
-
+      POSTGRES_DB: gastronome
+      POSTGRES_USER: django
+      POSTGRES_PASSWORD: postgres-password
+      POSTGRES_HOST: 127.0.0.1
+      POSTGRES_PORT: 5432
       REDIS_PASSWORD: foobared
       REDIS_URL: redis://:foobared@127.0.0.1:6379/6
 
@@ -34,30 +34,31 @@ jobs:
         run: |
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-              git-lfs mysql-server redis-server
+              git-lfs postgresql postgresql-contrib redis-server
           git lfs install
 
-      - name: Initialize MySQL and Redis
+      - name: Initialize PostgreSQL and Redis
         run: |
-          sudo service mysql start
-          PASS=$(sudo awk '/password/ {print $3; exit}' /etc/mysql/debian.cnf)
-
-          sudo mysql -u debian-sys-maint -p"$PASS" <<SQL
-          CREATE DATABASE IF NOT EXISTS \`${{ env.MYSQL_DATABASE }}\`
-            DEFAULT CHARACTER SET utf8mb4
-            COLLATE utf8mb4_unicode_ci;
-          CREATE USER IF NOT EXISTS '${{ env.MYSQL_USER }}'@'localhost'
-            IDENTIFIED BY '${{ env.MYSQL_PASSWORD }}';
-
-          GRANT ALL PRIVILEGES ON *.* TO '${{ env.MYSQL_USER }}'@'localhost';
-          
-          FLUSH PRIVILEGES;
+          sudo service postgresql start
+          sudo -u postgres psql <<SQL
+          CREATE DATABASE "${{ env.POSTGRES_DB }}";
+          CREATE USER "${{ env.POSTGRES_USER }}" WITH PASSWORD '${{ env.POSTGRES_PASSWORD }}';
+          ALTER USER "${{ env.POSTGRES_USER }}" CREATEDB;
+          GRANT ALL PRIVILEGES ON DATABASE "${{ env.POSTGRES_DB }}" TO "${{ env.POSTGRES_USER }}";
+          \c ${{ env.POSTGRES_DB }}
+          ALTER SCHEMA public OWNER TO "${{ env.POSTGRES_USER }}";
+          GRANT ALL ON SCHEMA public TO "${{ env.POSTGRES_USER }}";
+          GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "${{ env.POSTGRES_USER }}";
+          GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO "${{ env.POSTGRES_USER }}";
+          GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO "${{ env.POSTGRES_USER }}";
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO "${{ env.POSTGRES_USER }}";
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO "${{ env.POSTGRES_USER }}";
+          ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO "${{ env.POSTGRES_USER }}";
           SQL
 
           echo "user default on +@all ~* >${{ env.REDIS_PASSWORD }}" | \
             sudo tee -a /etc/redis/redis.conf
           sudo service redis-server restart
-
           redis-cli -a "${{ env.REDIS_PASSWORD }}" PING
 
       - name: Clone DistilBERT checkpoints
@@ -86,6 +87,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Django test suite
+      - name: Run Django migrations and test suite
+        env:
+          PGHOST: ${{ env.POSTGRES_HOST }}
+          PGPORT: ${{ env.POSTGRES_PORT }}
+          PGUSER: ${{ env.POSTGRES_USER }}
+          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          PGDATABASE: ${{ env.POSTGRES_DB }}
         run: |
+          python manage.py migrate
           python manage.py test business user review api experiments recommend core

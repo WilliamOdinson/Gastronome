@@ -22,8 +22,8 @@ opensearch-py==2.8.0
 packaging==25.0
 pandas==2.2.3
 pillow==11.2.1
+psycopg2==2.9.10
 pycparser==2.22
-PyMySQL==1.1.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.0
 pytz==2025.2
