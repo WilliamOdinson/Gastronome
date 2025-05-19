@@ -3,24 +3,26 @@ import random
 import time
 from io import BytesIO
 
+from PIL import Image, ImageDraw, ImageFont
+
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import F
-from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse, HttpRequest
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST
-from PIL import Image, ImageDraw, ImageFont
+
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from api.captcha import generate_captcha_text
+from api.inference import predict_score
+from api.serializers import ReviewSerializer
 from business.models import Business
 from review.models import Review
-from .captcha import generate_captcha_text
-from .inference import predict_score
-from .serializers import ReviewSerializer
 
 
 @require_POST
@@ -102,28 +104,31 @@ class CreateReviewAPIView(APIView):
 
         if Review.objects.filter(user=request.user, business=business).exists():
             return Response(
-                {"detail": "You have already reviewed this business."}, status=status.HTTP_400_BAD_REQUEST
+                {"detail": "You have already reviewed this business."},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         serializer = ReviewSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        User = get_user_model()
+
         with transaction.atomic():
-            review = serializer.save(commit=False)
-            review.user = request.user
-            review.business = business
+            review = serializer.save(user=request.user, business=business)
             review.auto_score = predict_score(review.text)
-            review.save()
+            review.save(update_fields=["auto_score"])
 
-            business.review_count = F("review_count") + 1
-
-            business.stars = (
-                (business.stars * (business.review_count - 1) + review.stars)
-                / business.review_count
+            Business.objects.filter(pk=business.pk).update(
+                review_count=F("review_count") + 1,
+                stars=(
+                    F("stars") * F("review_count") + review.stars
+                ) / (F("review_count") + 1),
             )
-            business.save(update_fields=["review_count", "stars"])
 
-            request.user.review_count = F("review_count") + 1
-            request.user.save(update_fields=["review_count"])
+            User.objects.filter(pk=request.user.pk).update(
+                review_count=F("review_count") + 1
+            )
 
-        return Response(ReviewSerializer(review).data, status=status.HTTP_201_CREATED)
+        return Response(
+            ReviewSerializer(review).data, status=status.HTTP_201_CREATED
+        )

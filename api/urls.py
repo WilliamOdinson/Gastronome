@@ -1,6 +1,5 @@
 from django.urls import path
-from . import views
-from .views import predict_review_api, get_captcha_image, CreateReviewAPIView
+from api.views import predict_review_api, get_captcha_image, CreateReviewAPIView
 
 app_name = 'api'
 

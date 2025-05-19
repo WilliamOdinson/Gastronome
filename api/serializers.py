@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from review.models import Review
 
+
 class ReviewSerializer(serializers.ModelSerializer):
     """
     Only allow the client to submit the star rating and content; other fields are automatically completed by the server.

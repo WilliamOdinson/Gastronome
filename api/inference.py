@@ -33,10 +33,12 @@ class ReviewScorer:
             pred_class = torch.argmax(logits, dim=1).item()
             return int(pred_class)
 
+
 scorer = ReviewScorer(
     tokenizer_path='assets/distilbert-base-uncased',
     model_weights_path='assets/weights/model_distilbert_cls.pth'
 )
+
 
 def predict_score(text: str) -> int:
     return scorer.predict(text)
