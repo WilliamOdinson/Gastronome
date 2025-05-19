@@ -1,4 +1,5 @@
 asgiref==3.8.1
+autopep8==2.3.2
 certifi==2025.4.26
 cffi==1.17.1
 charset-normalizer==3.4.1
@@ -23,6 +24,7 @@ packaging==25.0
 pandas==2.2.3
 pillow==11.2.1
 psycopg2==2.9.10
+pycodestyle==2.13.0
 pycparser==2.22
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.0

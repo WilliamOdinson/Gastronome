@@ -38,7 +38,6 @@ class UserLogoutTests(TestCase):
         self.assertEqual(resp.status_code, 405)
         self.assertIn("_auth_user_id", self.client.session)
 
-
     def test_logout_with_extra_session_keys(self):
         """Custom session data should also be cleared"""
         self._login()

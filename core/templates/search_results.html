@@ -26,7 +26,7 @@
                         <div class="col-lg-5">
                             <div class="form-group">
                                 <input class="form-control" type="text" name="q"
-                                       value="{{ q }}" placeholder="What are you looking for…">
+                                       value="{{ q }}" placeholder="What are you looking for ...">
                                 <i class="material-icons">search</i>
                             </div>
                         </div>
@@ -197,7 +197,6 @@
             <div class="text-center mt-4">
                 <nav aria-label="Results pagination">
                     <ul class="pagination justify-content-center mb-0">
-                        {# ← Prev #}
                         {% if page_obj.has_previous %}
                             <li class="page-item">
                                 <a class="page-link"
@@ -208,17 +207,15 @@
                             <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
                         {% endif %}
 
-                        {# Page 1 always #}
                         {% if page_obj.number > 2 %}
                             <li class="page-item">
                                 <a class="page-link" href="?q={{ q }}&where={{ where }}&category={{ category }}&page=1">1</a>
                             </li>
                             {% if page_obj.number > 3 %}
-                                <li class="page-item disabled"><span class="page-link">…</span></li>
+                                <li class="page-item disabled"><span class="page-link"> ...</span></li>
                             {% endif %}
                         {% endif %}
 
-                        {# Dynamic window around current page: num -1, num, num+1, num+2 #}
                         {% for num in page_obj.paginator.page_range %}
                             {% if num >= page_obj.number|add:"-1" and num <= page_obj.number|add:"2" %}
                                 {% if num == page_obj.number %}
@@ -232,9 +229,8 @@
                             {% endif %}
                         {% endfor %}
 
-                        {# Last page always if not in the window #}
                         {% if page_obj.number < page_obj.paginator.num_pages|add:"-2" %}
-                            <li class="page-item disabled"><span class="page-link">…</span></li>
+                            <li class="page-item disabled"><span class="page-link"> ...</span></li>
                             <li class="page-item">
                                 <a class="page-link"
                                 href="?q={{ q }}&where={{ where }}&category={{ category }}&page={{ page_obj.paginator.num_pages }}">
@@ -243,7 +239,6 @@
                             </li>
                         {% endif %}
 
-                        {# → Next #}
                         {% if page_obj.has_next %}
                             <li class="page-item">
                                 <a class="page-link"

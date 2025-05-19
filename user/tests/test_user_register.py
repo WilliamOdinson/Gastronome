@@ -14,13 +14,13 @@ class UserRegisterTests(TestCase):
 
     def setUp(self):
         self.url_register = reverse("user:register")
-        self.url_verify   = reverse("user:verify_email")
-        self.url_resend   = reverse("user:resend_verification")
+        self.url_verify = reverse("user:verify_email")
+        self.url_resend = reverse("user:resend_verification")
 
-        self.email    = "test@gastronome.com"
-        self.display  = "test"
-        self.pass1    = "Passw0rd!"
-        self.pass2    = self.pass1
+        self.email = "test@gastronome.com"
+        self.display = "test"
+        self.pass1 = "Passw0rd!"
+        self.pass2 = self.pass1
 
     def _set_captcha(self, code="ABCD"):
         session = self.client.session
@@ -29,11 +29,11 @@ class UserRegisterTests(TestCase):
 
     def _post_register(self, captcha="ABCD", **override):
         data = {
-            "email":        self.email,
+            "email": self.email,
             "display_name": self.display,
-            "password1":    self.pass1,
-            "password2":    self.pass2,
-            "captcha":      captcha,
+            "password1": self.pass1,
+            "password2": self.pass2,
+            "captcha": captcha,
         }
         data.update(override)
         return self.client.post(self.url_register, data, follow=True)
@@ -82,7 +82,7 @@ class UserRegisterTests(TestCase):
             follow=True,
         )
         self.assertContains(resp, "All fields are required.")
-        
+
     def test_register_weak_password_rejected(self):
         """
         Password does not meet complexity requirements
@@ -124,7 +124,7 @@ class UserRegisterTests(TestCase):
         self._set_captcha()
         self._post_register()
         pending = cache.get(f"pending_register:{self.email}")
-        code    = pending["verification_code"]
+        code = pending["verification_code"]
 
         # Submit verification code
         resp = self.client.post(self.url_verify, {"code": code}, follow=True)

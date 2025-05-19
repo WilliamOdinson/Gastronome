@@ -1,7 +1,9 @@
 import pandas as pd
 
 
-def build_ensemble_dataframe(svd_predictions, cosine_predictions, als_predictions, sgd_predictions, rf_predictions):
+def build_ensemble_dataframe(svd_predictions, cosine_predictions,
+                             als_predictions, sgd_predictions,
+                             rf_predictions):
     """
     Build DataFrame containing predictions from multiple models.
 
@@ -20,8 +22,9 @@ def build_ensemble_dataframe(svd_predictions, cosine_predictions, als_prediction
     ensemble_df['ALS'] = als_predictions
     ensemble_df['SGD'] = sgd_predictions
     ensemble_df['Random Forest'] = rf_predictions
-    
+
     return ensemble_df
+
 
 def get_dataframe_dtypes(dataframe):
     """
@@ -34,5 +37,5 @@ def get_dataframe_dtypes(dataframe):
         dict: Mapping of column names to their data type as string
     """
     dtype_info = {column: str(dtype) for column, dtype in zip(dataframe.columns, dataframe.dtypes)}
-    
+
     return dtype_info

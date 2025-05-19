@@ -34,7 +34,7 @@ def index(request):
             category_counts[label] = len(business_ids)
 
         cache.set(cache_key, category_counts, timeout=86400)
-    
+
     state = request.GET.get("state", "PA")
     rec_qs = fetch_recommendations(request.user, state=state, n=8)
 
@@ -47,26 +47,33 @@ def index(request):
 def tech_details(request):
     return render(request, 'tech_details.html')
 
+
 def system_map(request):
     return render(request, 'system_map.html')
+
 
 def page_not_found(request, exception):
     return render(request, '404.html', status=404)
 
+
 def server_error(request):
     return HttpResponse("Server Error (500)", status=500)
+
 
 def permission_denied(request, exception):
     return HttpResponse("Permission Denied (403)", status=403)
 
+
 def bad_request(request, exception):
     return HttpResponse("Bad Request (400)", status=400)
+
 
 def search(request):
     q = request.GET.get("q", "").strip()
     where = request.GET.get("where", "").strip() or "PA"
     toks = where.split()
-    city = None; state = None
+    city = None
+    state = None
     if len(toks) == 1:
         state = toks[0].upper()
     else:
@@ -116,10 +123,10 @@ def _build_card(biz, weekday, now_time):
     """
     photo = biz.photos.first()
     open_now = (
-        biz.is_open and
-        biz.hours.filter(day=weekday,
-                         open_time__lte=now_time,
-                         close_time__gte=now_time).exists()
+        biz.is_open
+        and biz.hours.filter(day=weekday,
+                             open_time__lte=now_time,
+                             close_time__gte=now_time).exists()
     )
     return {
         "business_id": biz.business_id,

@@ -30,6 +30,7 @@ def _make_business(biz: str, stars=4.5, reviews=500, state="PA") -> Business:
         is_open=True,
     )
 
+
 class LoadEnsembleTests(TestCase):
     def tearDown(self):
         services._MODEL = None
@@ -136,7 +137,10 @@ class FetchRecommendationsTests(TestCase):
             services, "get_user_recommendations", return_value=["a1", "a2"]
         ) as mock_user_rec:
             qs = services.fetch_recommendations(self.user, state="PA", n=8)
-            self.assertQuerySetEqual(qs.order_by("business_id"), ["a1", "a2"], transform=lambda b: b.business_id)
+            self.assertQuerySetEqual(
+                qs.order_by("business_id"),
+                ["a1", "a2"],
+                transform=lambda b: b.business_id)
             mock_user_rec.assert_called_once()
 
         with mock.patch.object(

@@ -22,7 +22,7 @@ class Command(BaseCommand):
 
         BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
         csv_path = BASE_DIR / "database" / "Yelp_final.csv"
-        
+
         if not csv_path.exists():
             self.stderr.write(self.style.ERROR(f"CSV not found: {csv_path}"))
             return
@@ -49,4 +49,6 @@ class Command(BaseCommand):
         self.stdout.write(f"Saving model to: {model_path}")
         model.save(model_path)
 
-        self.stdout.write(self.style.SUCCESS(f"ALS model for {city} saved to {model_path} successfully."))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"ALS model for {city} saved to {model_path} successfully."))

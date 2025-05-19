@@ -14,7 +14,7 @@ from core.views import _cache_key
 
 def _fake_search_business(q, city, state, category, page, per_page=20):
     """
-    Use ORM filtering only and return (total, [business_id, …]).
+    Use ORM filtering only and return (total, [business_id,  ...]).
     This is sufficient for view-layer tests without relying on OpenSearch.
     """
     qs = Business.objects.all()
@@ -33,7 +33,7 @@ def _fake_search_business(q, city, state, category, page, per_page=20):
     total = qs.count()
     ids = list(qs.values_list("business_id", flat=True))
     start = (page - 1) * per_page
-    return total, ids[start : start + per_page]
+    return total, ids[start: start + per_page]
 
 
 class SearchViewTests(TestCase):
@@ -69,7 +69,6 @@ class SearchViewTests(TestCase):
 
         cls.url = reverse("core:search")
 
-    # ---------- Test cases ---------------------------------------------
     def test_keyword_search(self):
         """q='chinese' & category='Restaurants' should return only the two Chinese restaurants"""
         resp = self._search(q="chinese", where="PA", category="Restaurants")

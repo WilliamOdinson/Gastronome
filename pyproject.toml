@@ -1,0 +1,10 @@
+[tool.autopep8]
+max_line_length = 100
+ignore = ["E203", "W503"]
+select = ["E", "W"]
+aggressive = 1
+hang_closing = false
+experimental = false
+diff = false
+verbose = false
+exit_code = true

@@ -26,14 +26,14 @@ class Command(BaseCommand):
         if not csv_path.exists():
             self.stderr.write(self.style.ERROR(f"CSV not found: {csv_path}"))
             return
-        
+
         model_dir = BASE_DIR / "assets" / "weights" / "svd"
         model_dir.mkdir(parents=True, exist_ok=True)
         model_path = model_dir / f"svd_{city_lower}.pkl"
-        
+
         self.stdout.write(f"Loading data from: {csv_path}")
         df = pd.read_csv(csv_path)
-        
+
         self.stdout.write(f"Training SVD model for: {city}")
 
         model = SVDRecommender(
@@ -44,4 +44,6 @@ class Command(BaseCommand):
         model.fit(df)
         model.save(model_path)
 
-        self.stdout.write(self.style.SUCCESS(f"SVD model for {city} saved to {model_path} successfully."))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"SVD model for {city} saved to {model_path} successfully."))

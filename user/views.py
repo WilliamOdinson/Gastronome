@@ -83,7 +83,8 @@ def register(request):
         pattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$'
         if not re.match(pattern, password1):
             return render(request, "register.html", {
-                "error": "Password must be at least 8 characters and include upper and lower-case letters and a digit."
+                "error": "Password must be at least 8 characters"
+                + "and include upper and lower-case letters and a digit."
             })
 
         if User.objects.filter(email__iexact=email).exists():
@@ -145,7 +146,8 @@ def verify_email(request):
             login(request, user)
             return redirect('core:index')
         else:
-            return render(request, "verify_email.html", {"error": "Invalid verification code."})
+            return render(request, "verify_email.html",
+                          {"error": "Invalid verification code."})
     return render(request, "verify_email.html")
 
 

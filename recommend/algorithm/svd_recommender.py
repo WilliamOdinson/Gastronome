@@ -7,6 +7,7 @@ import joblib
 from .base import BaseRecommender
 from .utils import get_clean_df, get_sparse_matrix, compute_global_user_item_bias
 
+
 class SVDRecommender(BaseRecommender):
     """
     Bias-corrected Truncated SVD recommender.
@@ -128,7 +129,6 @@ class SVDRecommender(BaseRecommender):
         if not self._item_map_inv:
             raise RuntimeError("Model not fitted.")
         return self._item_map_inv
-
 
     def predict_matrix(self) -> np.ndarray:
         if self._pred_full is None:

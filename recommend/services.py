@@ -13,6 +13,7 @@ from review.models import Review
 _MODEL = None
 _MODEL_PATH = Path(settings.BASE_DIR) / "assets" / "weights" / "ensemble_pa.pkl"
 
+
 def _load_ensemble():
     global _MODEL
     if _MODEL is None:
@@ -20,11 +21,13 @@ def _load_ensemble():
         _MODEL = module.EnsembleRecommender.load(_MODEL_PATH)
     return _MODEL
 
+
 def get_user_recommendations(user, n: int = 8) -> List[str]:
     model = _load_ensemble()
     # ensemble.predict returns a list of (business_id, score) tuples
     recs = model.predict(user.user_id, n=n)
     return [bid for bid, _ in recs]
+
 
 def get_state_hotlist(state: str = "PA", n: int = 8) -> List[str]:
     qs = (
@@ -37,6 +40,7 @@ def get_state_hotlist(state: str = "PA", n: int = 8) -> List[str]:
     random.shuffle(ids)
     return ids[:n]
 
+
 def fetch_recommendations(user, state: str = "PA", n: int = 8):
     """
     Check Redis cache first; if not found, compute and store it.
@@ -46,11 +50,11 @@ def fetch_recommendations(user, state: str = "PA", n: int = 8):
     if user.is_authenticated and Review.objects.filter(user=user).count() >= 10:
         cache_key = f"rec:user:{user.pk}"
         timeout = 3600  # 1 hour
-        loader = lambda: get_user_recommendations(user, n)
+        def loader(): return get_user_recommendations(user, n)
     else:
         cache_key = f"rec:state:{state}"
         timeout = 86400  # 24 hours
-        loader = lambda: get_state_hotlist(state, n)
+        def loader(): return get_state_hotlist(state, n)
 
     ids = cache.get(cache_key)
     if ids is None:

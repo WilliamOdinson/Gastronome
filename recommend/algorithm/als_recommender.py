@@ -7,6 +7,7 @@ import joblib
 from .base import BaseRecommender
 from .utils import get_clean_df, get_sparse_matrix
 
+
 class ALSRecommender(BaseRecommender):
     """
     Alternating Least Squares recommender.
@@ -88,7 +89,8 @@ class ALSRecommender(BaseRecommender):
         return [(self._item_map_inv[int(j)], float(scores[j])) for j in top_idx]
 
     @staticmethod
-    def _als_factorization(R: np.ndarray, k: int, iterations: int, user_reg: float, item_reg: float, seed: int) -> Tuple[np.ndarray, np.ndarray]:
+    def _als_factorization(R: np.ndarray, k: int, iterations: int, user_reg: float,
+                           item_reg: float, seed: int) -> Tuple[np.ndarray, np.ndarray]:
         """
         Perform ALS matrix factorization.
         Returns user and item latent factor matrices.
@@ -140,9 +142,8 @@ class ALSRecommender(BaseRecommender):
         if not self._item_map_inv:
             raise RuntimeError("Model not fitted.")
         return self._item_map_inv
-    
+
     def predict_matrix(self) -> np.ndarray:
         if self.user_factors is None or self.item_factors is None:
             raise RuntimeError("Model has not been fitted.")
         return self.user_factors @ self.item_factors.T
-

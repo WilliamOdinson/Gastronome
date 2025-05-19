@@ -7,6 +7,7 @@ import joblib
 from .base import BaseRecommender
 from .utils import get_clean_df, get_sparse_matrix, sgd_with_bias_correction, calculate_mse, concatenate_user_item_vectors
 
+
 class SGDRecommender(BaseRecommender):
     """
     Bias-corrected matrix factorization using Stochastic Gradient Descent.
@@ -96,7 +97,7 @@ class SGDRecommender(BaseRecommender):
                   + self.user_bias[u_idx]
                   + self.item_bias.ravel()
                   + self.user_vectors[u_idx] @ self.item_vectors.T)
-        
+
         top_idx = np.argsort(scores)[-n:][::-1]
         return [(self._item_map_inv[int(j)], float(scores[j])) for j in top_idx]
 

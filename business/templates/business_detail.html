@@ -1,6 +1,6 @@
 {% extends "common/base.html" %}
 
-{% block title %}{{ business.name }} – Details{% endblock %}
+{% block title %}{{ business.name }} - Details{% endblock %}
 
 {% block content %}
 <main class="pattern">
@@ -93,7 +93,7 @@
                   {% for h in business.hours.all %}
                     <tr>
                       <th class="fw-normal">{{ h.day }}</th>
-                      <td>{{ h.open_time|time:"H:i" }} – {{ h.close_time|time:"H:i" }}</td>
+                      <td>{{ h.open_time|time:"H:i" }} - {{ h.close_time|time:"H:i" }}</td>
                     </tr>
                   {% endfor %}
                 </table>

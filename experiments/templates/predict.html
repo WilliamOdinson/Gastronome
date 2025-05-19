@@ -14,14 +14,19 @@
           <div class="text-center mb-5">
             <h1 class="mb-3">
               <i class="material-icons text-primary align-middle me-1 fs-2">science</i>
-              Restaurant Review Star‑Rating Predictor: Judge
+              Review Star-Rating Predictor: Judge
             </h1>
             <p class="lead">
-              This page showcases an <strong>experimental</strong> large‑language‑model
-              that infers the <em>1‑to‑5 star</em> rating hidden in free‑text reviews.  
-              Enter any review below and see how the model scores it.  
-              We use the result downstream to detect overly harsh or
-              unusually glowing feedback.
+              This page presents a <strong>fine-tuned DistilBERT model</strong>
+              trained on over two million Yelp restaurant reviews to predict the
+              <em>1-to-5 star rating</em> directly from free-text input. The
+              model is optimized for natural language understanding and achieves
+              over <strong>75% accuracy</strong> on unseen data. It captures
+              sentiment and intent beyond surface-level keywords. Enter any
+              review below to see how the model interprets it. The predicted
+              score will be blended with the user's original rating using a
+              tunable weighted average to flag <strong>inconsistent, overly harsh, 
+              or unusually positive feedback</strong>.
             </p>
           </div>
 
@@ -54,8 +59,7 @@
           </div>
 
           <p class="text-muted small mt-4">
-            Model: DistilBERT fine‑tuned on Yelp open dataset.  
-            Predictions are best‑guess and may deviate from human perception.
+            Model: DistilBERT fine-tuned on Yelp open dataset. Predictions are best-guess and may deviate from human perception.
           </p>
 
         </div>
@@ -85,7 +89,7 @@ document.getElementById('predictForm').addEventListener('submit', function (e) {
   }
 
   $result.className = 'text-muted';
-  $result.textContent = 'Predicting…';
+  $result.textContent = 'Predicting ...';
 
   fetch("{% url 'api:predict_review_api' %}", {
     method: 'POST',

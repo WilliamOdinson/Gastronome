@@ -5,8 +5,10 @@ from sklearn.metrics import mean_squared_error
 from typing import Dict, Tuple
 
 
-
-def get_clean_df(df: pd.DataFrame, cols: list[str], min_user_review: int = 30, min_res_review: int = 0) -> pd.DataFrame:
+def get_clean_df(df: pd.DataFrame,
+                 cols: list[str],
+                 min_user_review: int = 30,
+                 min_res_review: int = 0) -> pd.DataFrame:
     df_new = df[cols].dropna()
 
     user_col = cols[0]
@@ -21,6 +23,7 @@ def get_clean_df(df: pd.DataFrame, cols: list[str], min_user_review: int = 30, m
     df_clean = df_new[df_new[user_col].isin(kept_users)]
 
     return df_clean.reset_index(drop=True)
+
 
 def get_sparse_matrix(df):
     unique_users = list(df['user_id'].unique())
@@ -44,6 +47,7 @@ def get_sparse_matrix(df):
         "col_index": item_map
     }
 
+
 def compute_global_user_item_bias(rating_matrix):
     dense_matrix = rating_matrix.todense()
     mask_matrix = (dense_matrix > 0).astype(int)
@@ -65,8 +69,17 @@ def compute_global_user_item_bias(rating_matrix):
 
     return user_bias, item_bias, ratings_matrix_no_bias
 
-def sgd_with_bias_correction(rating_matrix, num_features=40, user_bias_reg=0.01, item_bias_reg=0.01, user_vector_reg=0.01,
-    item_vector_reg=0.01, learning_rate=1e-3, iterations=200, adaptive_lr: bool = False, lr_schedule: callable = None):
+
+def sgd_with_bias_correction(rating_matrix,
+                             num_features=40,
+                             user_bias_reg=0.01,
+                             item_bias_reg=0.01,
+                             user_vector_reg=0.01,
+                             item_vector_reg=0.01,
+                             learning_rate=1e-3,
+                             iterations=200,
+                             adaptive_lr: bool = False,
+                             lr_schedule: callable = None):
     num_users, num_items = rating_matrix.shape
     error_array = np.zeros(iterations)
 
@@ -97,23 +110,24 @@ def sgd_with_bias_correction(rating_matrix, num_features=40, user_bias_reg=0.01,
             item = non_zero_item_indices[idx]
 
             prediction = global_bias + user_bias[user] + item_bias[item] + \
-                         np.dot(user_vectors[user, :], item_vectors[item, :].T)
+                np.dot(user_vectors[user, :], item_vectors[item, :].T)
             error = rating_matrix[user, item] - prediction
             temp_error_array[datapoint_idx] += error**2
 
             user_bias[user] += lr * (error - user_bias_reg * user_bias[user])
             item_bias[item] += lr * (error - item_bias_reg * item_bias[item])
-            user_vectors[user, :] += lr * (error * item_vectors[item, :] - user_vector_reg * user_vectors[user, :])
-            item_vectors[item, :] += lr * (error * user_vectors[user, :] - item_vector_reg * item_vectors[item, :])
+            user_vectors[user, :] += lr * \
+                (error * item_vectors[item, :] - user_vector_reg * user_vectors[user, :])
+            item_vectors[item, :] += lr * \
+                (error * user_vectors[user, :] - item_vector_reg * item_vectors[item, :])
 
         error_array[iteration] = np.mean(temp_error_array)
 
     predictions = global_bias + user_bias[:, np.newaxis] + item_bias[np.newaxis, :] + \
-                  np.dot(user_vectors, item_vectors.T)
+        np.dot(user_vectors, item_vectors.T)
     predictions = np.clip(predictions, 0, 5)
 
     return predictions, error_array, user_vectors, item_vectors, user_bias, item_bias
-
 
 
 def concatenate_user_item_vectors(user_vectors, item_vectors, rating_matrix):
@@ -127,11 +141,10 @@ def concatenate_user_item_vectors(user_vectors, item_vectors, rating_matrix):
 
     return concatenated_matrix
 
+
 def calculate_mse(predictions, actual_ratings):
     non_zero_indices = actual_ratings.nonzero()
     predictions = predictions[non_zero_indices].flatten()
     actual_ratings = actual_ratings[non_zero_indices].flatten()
 
     return mean_squared_error(predictions, actual_ratings)
-
-

@@ -7,6 +7,7 @@ from scipy import sparse
 from scipy.sparse import csr_matrix
 from sklearn.metrics import accuracy_score
 
+
 def get_top_m_num_reviews_for_city_and_business(df, m):
     """
     Get the number of businesses counted by city and category, and return the top m results.
@@ -26,7 +27,7 @@ def get_top_m_num_reviews_for_city_and_business(df, m):
         categories = str(df.categories.iloc[i]).split(',')
         city = df.city.iloc[i]
         for category in categories:
-            key = (category, city) 
+            key = (category, city)
             if key not in business_city_count.keys():
                 business_city_count[key] = 1
             else:
@@ -36,7 +37,6 @@ def get_top_m_num_reviews_for_city_and_business(df, m):
     business_city_count_series.sort_values(ascending=False, inplace=True)
 
     return business_city_count_series[:m]
-
 
 
 def get_clean_df(df, cols, min_user_review=30, min_res_review=0):
@@ -60,7 +60,6 @@ def get_clean_df(df, cols, min_user_review=30, min_res_review=0):
     df_clean_2 = df_clean[df_clean[cols[0] + '_freq'] >= min_user_review]
 
     return df_clean_2
-
 
 
 def get_sparsity(sparse_matrix):
@@ -98,9 +97,10 @@ def get_sparse_matrix(df):
 
     business_indices = pd.Categorical(df['business_id'], categories=unique_businesses).codes
 
-    sparse_matrix = csr_matrix((ratings, (user_indices, business_indices)), shape=(len(unique_users), len(unique_businesses)))
+    sparse_matrix = csr_matrix(
+        (ratings, (user_indices, business_indices)), shape=(
+            len(unique_users), len(unique_businesses)))
     return sparse_matrix
-
 
 
 def train_val_test_split(sparse_matrix, num_review_val=2, num_review_test=2):
@@ -128,8 +128,8 @@ def train_val_test_split(sparse_matrix, num_review_val=2, num_review_test=2):
 
         # Split indices for test set and validation set
         test_indices = user_review_indices[-num_review_test:]
-        val_indices = user_review_indices[-(num_review_val +
-                                            num_review_test):-num_review_test]
+        val_indices = user_review_indices[-(num_review_val
+                                            + num_review_test):-num_review_test]
 
         # Assign test set and validation set indices to corresponding sparse matrices
         sparse_matrix_test[user,
@@ -157,6 +157,7 @@ def train_val_test_split(sparse_matrix, num_review_val=2, num_review_test=2):
     assert overlap_all.nnz == 0, "There are overlapping elements between training, validation, and test sets"
 
     return sparse_matrix_train, sparse_matrix_val, sparse_matrix_test
+
 
 class NBFeatures(BaseEstimator):
     """Naive Bayes Feature Class
@@ -243,7 +244,7 @@ def get_coefs(word, *arr):
         *arr (str): Vector values associated with the word, passed in as strings and converted to a NumPy float32 array.
 
     Returns:
-        tuple: A tuple containing the word and its corresponding vector as a NumPy array. 
+        tuple: A tuple containing the word and its corresponding vector as a NumPy array.
                If conversion fails, returns the word and None.
     """
     try:

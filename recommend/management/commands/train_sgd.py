@@ -51,4 +51,6 @@ class Command(BaseCommand):
         self.stdout.write(f"Saving model to: {model_path}")
         model.save(model_path)
 
-        self.stdout.write(self.style.SUCCESS(f"SGD model for {city} saved to {model_path} successfully."))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"SGD model for {city} saved to {model_path} successfully."))

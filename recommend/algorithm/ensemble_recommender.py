@@ -81,7 +81,7 @@ class EnsembleRecommender(BaseRecommender):
         Return top-n recommendations for a user.
         """
         if self._pred_full is None:
-            raise RuntimeError("Prediction matrix not cached. Enable `use_cache` or compute manually.")
+            raise RuntimeError("Prediction matrix not cached. Enable use_cache.")
 
         if user_id not in self.user_map:
             return []

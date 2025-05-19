@@ -15,8 +15,10 @@ RATING_FILTERS = [
     "Bad 1+",
 ]
 
+
 def category_keywords(_request):
     return {"CATEGORY_KEYWORDS": CATEGORY_KEYWORDS}
+
 
 def rating_filters(_request):
     return {"RATING_FILTERS": RATING_FILTERS}
