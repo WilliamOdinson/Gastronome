@@ -1,0 +1,34 @@
+name: General Request
+description: Use this template to report bugs, request features, or ask for support.
+title: "[Request] <Please briefly summarize your issue>"
+labels: []
+assignees: []
+
+body:
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: I confirm that I have checked
+      description: Please confirm you've reviewed the following resources before submitting.
+      options:
+        - label: "I have read the [Gastronome README](https://github.com/WilliamOdinson/Gastronome/blob/main/README.md)"
+        - label: "I have reviewed the [Documents in the docs folder](https://github.com/WilliamOdinson/Gastronome/tree/main/docs)"
+        - label: "I have checked for [Other Issues](https://github.com/WilliamOdinson/Gastronome/issues)"
+
+  - type: checkboxes
+    id: request_type
+    attributes:
+      label: I am submitting a request for
+      options:
+        - label: Bug report
+        - label: Request for a new feature or functionality
+        - label: Technical support
+
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: Please describe the issue, feature, or question in detail.
+      placeholder: Tell us what happened, what you expected, and any relevant context.
+    validations:
+      required: true
