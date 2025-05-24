@@ -222,4 +222,9 @@ Temporary Items
 #------------------
 # Project Related
 #------------------
+celerybeat-schedule
+celerybeat.pid
+celerybeat-schedule-shm
+celerybeat-schedule-wal
+
 database/*
