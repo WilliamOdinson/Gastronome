@@ -69,6 +69,12 @@ class Migration(migrations.Migration):
                 ("review_count", models.IntegerField(verbose_name="Review Count")),
                 ("is_open", models.BooleanField(default=True, verbose_name="Is Open")),
                 (
+                    "timezone",
+                    models.CharField(
+                        blank=True, max_length=64, null=True, verbose_name="Timezone"
+                    ),
+                ),
+                (
                     "attributes",
                     models.JSONField(
                         blank=True, null=True, verbose_name="Raw Attributes"

@@ -115,6 +115,16 @@ OPENSEARCH = {
     "INDEX": "gastronome",
 }
 
+# Celery configuration
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "pyamqp://guest:guest@localhost//")
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "rpc://")
+CELERY_TASK_DEFAULT_QUEUE = 'celery'
+CELERY_TASK_ROUTES = {
+    "business.tasks.refresh_open_status": {"queue": "business_status"},
+    "business.tasks.refresh_open_batch": {"queue": "business_status"},
+}
+CELERY_TIMEZONE = "UTC"
+
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 

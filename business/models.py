@@ -1,5 +1,13 @@
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
+from zoneinfo import ZoneInfo
+from timezonefinder import TimezoneFinder
+from datetime import datetime
+
+
+tf = TimezoneFinder()
+
 
 class Category(models.Model):
     """
@@ -26,10 +34,10 @@ class Business(models.Model):
     stars = models.FloatField(verbose_name="Average Rating")
     review_count = models.IntegerField(verbose_name="Review Count")
     is_open = models.BooleanField(default=True, verbose_name="Is Open")
+    timezone = models.CharField(max_length=64, null=True, blank=True, verbose_name="Timezone")
 
     categories = models.ManyToManyField(Category, related_name="businesses", verbose_name="Categories")
     attributes = models.JSONField(null=True, blank=True, verbose_name="Raw Attributes")
-    
 
     class Meta:
         indexes = [
@@ -39,9 +47,36 @@ class Business(models.Model):
             models.Index(fields=['is_open']),
         ]
 
-
     def __str__(self):
         return f"{self.name} ({self.city}, {self.state})"
+
+    def get_timezone(self) -> ZoneInfo:
+        """
+        Returns the business timezone; if the database is empty, it infers the timezone
+        from the latitude and longitude in real-time and writes it back.
+        """
+        if not self.timezone:
+            tzname = tf.timezone_at(lng=float(self.longitude),
+                                    lat=float(self.latitude)) or "UTC"
+            self.timezone = tzname
+            self.save(update_fields=["timezone"])
+        return ZoneInfo(self.timezone)
+
+    def calculate_open_status(self, when: datetime | None = None) -> bool:
+        """
+        Determines if the business is open at the given time.
+        When called in Celery tasks, it can use the same timestamp to reduce system calls.
+        """
+        when = when or timezone.now()
+        local_dt = when.astimezone(self.get_timezone())
+        weekday = local_dt.strftime("%A")
+        rec = self.hours.filter(day=weekday).first()
+        if not rec:
+            return False
+        o, c, t = rec.open_time, rec.close_time, local_dt.time()
+        if c <= o:
+            return t >= o or t <= c
+        return o <= t <= c
 
 
 class Hour(models.Model):
@@ -78,12 +113,12 @@ class Photo(models.Model):
     business = models.ForeignKey(Business, related_name='photos', on_delete=models.CASCADE)
     caption = models.CharField(max_length=255, null=True, blank=True)
     label = models.CharField(max_length=50, null=True, blank=True)
-    
+
     @property
     def image_url(self) -> str:
         base = settings.PHOTO_BASE_URL.rstrip('/')
         return f"{base}/{self.photo_id}.jpg"
-    
+
     class Meta:
         indexes = [
             models.Index(fields=['label']),
