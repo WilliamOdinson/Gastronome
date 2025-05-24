@@ -1,4 +1,5 @@
 import types
+import random
 from decimal import Decimal
 from unittest import mock
 
@@ -15,7 +16,7 @@ from recommend import services
 User = get_user_model()
 
 
-def _make_business(biz: str, stars=4.5, reviews=500, state="PA") -> Business:
+def _make_business(biz: str, stars: float = 4.5, reviews: int = 500, state: str = "PA") -> Business:
     return Business.objects.create(
         business_id=biz,
         name=f"Carnegie Mellon University {biz}",
@@ -62,7 +63,7 @@ class GetUserRecommendationsTests(TestCase):
             username="user1",
             user_id="u1",
             display_name="User One",
-            email="a@gastronome.com",
+            email="one@gastronome.com",
             password="x",
         )
 
@@ -80,7 +81,7 @@ class GetUserRecommendationsTests(TestCase):
                 return [("b1", 9.9), ("b2", 9.5)]
 
         with mock.patch.object(services, "_load_ensemble", return_value=FakeModel()):
-            ids = services.get_user_recommendations(self.user, n=5)
+            ids = services.get_user_recommendations(self.user, 5)
 
         self.assertEqual(ids, ["b1", "b2"])
 
@@ -97,8 +98,10 @@ class GetStateHotlistTests(TestCase):
         _make_business("b2", stars=4.7, reviews=100, state="PA")
         _make_business("b3", stars=4.9, reviews=700, state="NJ")
 
-        ids = services.get_state_hotlist("PA", n=3)
-        self.assertTrue(all(bid in {"g1", "g2"} for bid in ids))
+        ids = services.get_state_hotlist("PA", 3)
+        self.assertTrue(all(bid in {good1.business_id, good2.business_id}
+                            for bid in ids))
+        # only two qualify
         self.assertEqual(len(ids), 2)
 
 
@@ -133,35 +136,53 @@ class FetchRecommendationsTests(TestCase):
 
     def test_authenticated_user_with_enough_reviews(self):
         self._setup_user_reviews(12)
-        with mock.patch.object(
-            services, "get_user_recommendations", return_value=["a1", "a2"]
-        ) as mock_user_rec:
+        with mock.patch.object(services, "get_user_recommendations", return_value=["a1", "a2"]) as mock_user_rec:
             qs = services.fetch_recommendations(self.user, state="PA", n=8)
             self.assertQuerySetEqual(
-                qs.order_by("business_id"),
-                ["a1", "a2"],
-                transform=lambda b: b.business_id)
+                qs.order_by("business_id"), ["a1", "a2"],
+                transform=lambda b: b.business_id
+            )
             mock_user_rec.assert_called_once()
 
         with mock.patch.object(
-            services, "get_user_recommendations", side_effect=AssertionError("Should hit cache")
+            services, "get_user_recommendations",
+            side_effect=AssertionError("Should hit cache")
         ):
             _ = services.fetch_recommendations(self.user, state="PA", n=8)
 
     def test_anonymous_user_uses_state_hotlist(self):
         anon = AnonymousUser()
         with mock.patch.object(
-            services, "get_state_hotlist", return_value=["a1"]
+            services, "get_state_hotlist",
+            return_value=["a1"]
         ) as mock_hot:
             qs = services.fetch_recommendations(anon, state="PA", n=8)
-            self.assertQuerySetEqual(qs, ["a1"], transform=lambda b: b.business_id)
+            self.assertQuerySetEqual(qs, ["a1"],
+                                     transform=lambda b: b.business_id)
             mock_hot.assert_called_once()
 
     def test_user_with_few_reviews_falls_back(self):
         self._setup_user_reviews(2)
         with mock.patch.object(
-            services, "get_state_hotlist", return_value=["a2"]
+            services, "get_state_hotlist",
+            return_value=["a2"]
         ) as mock_hot:
             qs = services.fetch_recommendations(self.user, state="PA", n=8)
-            self.assertQuerySetEqual(qs, ["a2"], transform=lambda b: b.business_id)
+            self.assertQuerySetEqual(qs, ["a2"],
+                                     transform=lambda b: b.business_id)
             mock_hot.assert_called_once()
+
+
+class SampleKeepOrderTests(TestCase):
+
+    def test_keeps_original_order(self):
+        seq = list("ABCDEFGH")
+        picked = services._sample_keep_order(seq, 5)
+        # preserve subsequence property and order
+        self.assertTrue(all(ch in seq for ch in picked))
+        self.assertEqual(sorted(seq.index(c) for c in picked),
+                         [seq.index(c) for c in picked])
+
+    def test_len_smaller_than_k_returns_all(self):
+        seq = ["x", "y"]
+        self.assertEqual(services._sample_keep_order(seq, 5), seq)
