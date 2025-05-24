@@ -18,11 +18,12 @@
                 <h3 data-bs-target="#collapse_ft_2">Categories</h3>
                 <div class="collapse dont-collapse-sm" id="collapse_ft_2">
                     <ul class="links">
-                        <li><a href="#0">Shops</a></li>
-                        <li><a href="#0">Hotels</a></li>
-                        <li><a href="#0">Restaurants</a></li>
-                        <li><a href="#0">Bars</a></li>
-                        <li><a href="#0">Fitness</a></li>
+                        <li><a href="{% url 'core:search' %}?category=Shops">Shops</a></li>
+                        <li><a href="{% url 'core:search' %}?category=Hotels">Hotels</a></li>
+                        <li><a href="{% url 'core:search' %}?category=Restaurants">Restaurants</a></li>
+                        <li><a href="{% url 'core:search' %}?category=Bars">Bars</a></li>
+                        <li><a href="{% url 'core:search' %}?category=Fitness">Fitness</a></li>
+                        <li><a href="{% url 'core:search' %}?category=Events">Events</a></li>
                     </ul>
                 </div>
             </div>
