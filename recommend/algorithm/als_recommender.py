@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import List, Tuple, Dict
 import joblib
 
-from .base import BaseRecommender
-from .utils import get_clean_df, get_sparse_matrix
+from recommend.algorithm.base import BaseRecommender
+from recommend.algorithm.utils import get_clean_df, get_sparse_matrix
 
 
 class ALSRecommender(BaseRecommender):
@@ -147,3 +147,17 @@ class ALSRecommender(BaseRecommender):
         if self.user_factors is None or self.item_factors is None:
             raise RuntimeError("Model has not been fitted.")
         return self.user_factors @ self.item_factors.T
+
+    def predict_user(self, user_id: str) -> np.ndarray:
+        """
+        Return item-score vector for any user.
+        If unseen, use mean of user factors.
+        """
+        if self.user_factors is None or self.item_factors is None:
+            raise RuntimeError("Model not fitted")
+
+        if user_id in self.user_map:
+            u_vec = self.user_factors[self.user_map[user_id]]
+        else:
+            u_vec = self.user_factors.mean(axis=0)
+        return u_vec @ self.item_factors.T

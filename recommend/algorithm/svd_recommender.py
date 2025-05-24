@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import List, Tuple, Dict
 import joblib
 
-from .base import BaseRecommender
-from .utils import get_clean_df, get_sparse_matrix, compute_global_user_item_bias
+from recommend.algorithm.base import BaseRecommender
+from recommend.algorithm.utils import get_clean_df, get_sparse_matrix, compute_global_user_item_bias
 
 
 class SVDRecommender(BaseRecommender):
@@ -94,7 +94,7 @@ class SVDRecommender(BaseRecommender):
             + self.global_bias
             + self.user_bias[u_idx]
             + self.item_bias
-        ).A1
+        ).ravel()
 
         top_idx = np.argsort(scores)[-n:][::-1]
         return [(self._item_map_inv[int(j)], float(scores[j])) for j in top_idx]
@@ -141,3 +141,14 @@ class SVDRecommender(BaseRecommender):
                 + self.item_bias
             )
         return self._pred_full
+
+    def predict_user(self, user_id: str) -> np.ndarray:
+        if self.U_k is None:
+            raise RuntimeError("Model not fitted")
+        if user_id in self.user_map:
+            u = self.user_map[user_id]
+            base = (self.U_k[u] @ self.S_k @ self.Vt_k)
+            return (base + self.global_bias
+                    + self.user_bias[u] + self.item_bias).ravel()
+        # cold-start: use global average + item bias
+        return (self.global_bias + self.item_bias).ravel()

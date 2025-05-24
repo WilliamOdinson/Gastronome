@@ -35,3 +35,11 @@ class BaseRecommender(ABC):
         if not isinstance(obj, cls):
             raise TypeError(f"The object in the file is not an instance of {cls.__name__}")
         return obj
+
+    @abstractmethod
+    def predict_user(self, user_id: str) -> np.ndarray:
+        """
+        Return a 1-D score vector for all items.
+        Cold-start users MAY return zeros.
+        """
+        pass

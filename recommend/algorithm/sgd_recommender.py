@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import List, Tuple, Dict
 import joblib
 
-from .base import BaseRecommender
-from .utils import get_clean_df, get_sparse_matrix, sgd_with_bias_correction, calculate_mse, concatenate_user_item_vectors
+from recommend.algorithm.base import BaseRecommender
+from recommend.algorithm.utils import get_clean_df, get_sparse_matrix, sgd_with_bias_correction, calculate_mse, concatenate_user_item_vectors
 
 
 class SGDRecommender(BaseRecommender):
@@ -135,3 +135,19 @@ class SGDRecommender(BaseRecommender):
                 + self.user_bias[:, np.newaxis]
                 + self.item_bias[np.newaxis, :]
                 + self.user_vectors @ self.item_vectors.T)
+
+    def predict_user(self, user_id: str) -> np.ndarray:
+        if self.user_vectors is None or self.item_vectors is None:
+            raise RuntimeError("Model not fitted")
+        if user_id in self.user_map:
+            idx = self.user_map[user_id]
+            u_bias = self.user_bias[idx]
+            u_vec = self.user_vectors[idx]
+        else:
+            # cold-start: average user
+            u_bias = float(self.user_bias.mean())
+            u_vec = self.user_vectors.mean(axis=0)
+        return (self.global_bias
+                + u_bias
+                + self.item_bias.ravel()
+                + u_vec @ self.item_vectors.T)

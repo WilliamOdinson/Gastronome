@@ -5,7 +5,7 @@ from typing import Dict, List, Tuple, Literal
 import joblib
 from sklearn.linear_model import LinearRegression, Ridge
 
-from .base import BaseRecommender
+from recommend.algorithm.base import BaseRecommender
 
 
 class EnsembleRecommender(BaseRecommender):
@@ -80,16 +80,13 @@ class EnsembleRecommender(BaseRecommender):
         """
         Return top-n recommendations for a user.
         """
-        if self._pred_full is None:
-            raise RuntimeError("Prediction matrix not cached. Enable use_cache.")
-
-        if user_id not in self.user_map:
-            return []
-
-        u_idx = self.user_map[user_id]
-        scores = self._pred_full[u_idx]
-        top_idx = np.argsort(scores)[-n:][::-1]
-        return [(self._item_map_inv[int(j)], float(scores[j])) for j in top_idx]
+        if self._pred_full is not None and user_id in self.user_map:
+            u = self.user_map[user_id]
+            scores = self._pred_full[u]
+            idx = np.argsort(scores)[-n:][::-1]
+            return [(self._item_map_inv[int(j)], float(scores[j])) for j in idx]
+        # unseen user
+        return self._predict_new_user(user_id, n)
 
     def predict_matrix(self) -> np.ndarray:
         if self._pred_full is None:
@@ -120,3 +117,30 @@ class EnsembleRecommender(BaseRecommender):
         if not self._item_map_inv:
             raise RuntimeError("Model not fitted.")
         return self._item_map_inv
+
+    def _predict_new_user(self, user_id: str, n: int) -> List[Tuple[str, float]]:
+        if self.model is None:
+            raise RuntimeError("Model not trained")
+        cols = [m.predict_user(user_id) for m in self.base_models.values()]
+        X = np.column_stack(cols)
+        scores = self.model.predict(X)
+        top = np.argsort(scores)[-n:][::-1]
+        return [(self._item_map_inv[int(j)], float(scores[j])) for j in top]
+
+    def predict_user(self, user_id: str) -> np.ndarray:
+        """
+        Return a 1-D score vector for any user.
+        if the user was seen in training, use cached row
+        otherwise, linearly combine base-model score vectors
+        """
+        if self.model is None:
+            raise RuntimeError("Model not trained")
+
+        # fast path: user present in cached matrix
+        if self._pred_full is not None and user_id in self.user_map:
+            return self._pred_full[self.user_map[user_id]]
+
+        # cold-start: assemble base-model features then regress
+        cols = [m.predict_user(user_id) for m in self.base_models.values()]
+        X = np.column_stack(cols)
+        return self.model.predict(X)
