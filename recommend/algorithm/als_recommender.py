@@ -19,7 +19,7 @@ class ALSRecommender(BaseRecommender):
         iterations: int = 5,
         user_reg: float = 1e-3,
         item_reg: float = 1e-3,
-        city: str | None = None,
+        state: str | None = None,
         min_user_review: int = 10,
         random_state: int = 42,
     ):
@@ -27,7 +27,7 @@ class ALSRecommender(BaseRecommender):
         self.iterations = iterations
         self.user_reg = user_reg
         self.item_reg = item_reg
-        self.city = city
+        self.state = state
         self._min_user_review = min_user_review
         self.random_state = random_state
 
@@ -44,8 +44,8 @@ class ALSRecommender(BaseRecommender):
         """
         Train ALS model from the given rating dataframe.
         """
-        if self.city:
-            ratings_df = ratings_df[ratings_df.city == self.city]
+        if self.state:
+            ratings_df = ratings_df[ratings_df.state == self.state]
 
         clean_df = get_clean_df(
             ratings_df,

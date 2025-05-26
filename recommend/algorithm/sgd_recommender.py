@@ -16,7 +16,7 @@ class SGDRecommender(BaseRecommender):
     def __init__(self,
                  k: int = 40,
                  iterations: int = 200,
-                 city: str | None = None,
+                 state: str | None = None,
                  min_user_review: int = 10,
                  learning_rate: float = 1e-3,
                  user_bias_reg: float = 0.01,
@@ -25,7 +25,7 @@ class SGDRecommender(BaseRecommender):
                  item_vec_reg: float = 0.01):
         self.k = k
         self.iterations = iterations
-        self.city = city
+        self.state = state
         self._min_user_review = min_user_review
 
         # SGD hyperparameters
@@ -48,8 +48,8 @@ class SGDRecommender(BaseRecommender):
         """
         Train the recommender using bias-corrected SGD.
         """
-        if self.city:
-            ratings_df = ratings_df[ratings_df.city == self.city]
+        if self.state:
+            ratings_df = ratings_df[ratings_df.state == self.state]
 
         clean_df = get_clean_df(
             ratings_df,

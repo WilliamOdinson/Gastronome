@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from scipy.sparse import csr_matrix
 from sklearn.metrics import mean_squared_error
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Callable, Optional
 
 
 def get_clean_df(df: pd.DataFrame,
@@ -70,16 +70,18 @@ def compute_global_user_item_bias(rating_matrix):
     return user_bias, item_bias, ratings_matrix_no_bias
 
 
-def sgd_with_bias_correction(rating_matrix,
-                             num_features=40,
-                             user_bias_reg=0.01,
-                             item_bias_reg=0.01,
-                             user_vector_reg=0.01,
-                             item_vector_reg=0.01,
-                             learning_rate=1e-3,
-                             iterations=200,
-                             adaptive_lr: bool = False,
-                             lr_schedule: callable = None):
+def sgd_with_bias_correction(
+    rating_matrix,
+    num_features: int = 40,
+    user_bias_reg: float = 0.01,
+    item_bias_reg: float = 0.01,
+    user_vector_reg: float = 0.01,
+    item_vector_reg: float = 0.01,
+    learning_rate: float = 1e-3,
+    iterations: int = 200,
+    adaptive_lr: bool = False,
+    lr_schedule: Optional[Callable[[int], float]] = None,
+):
     num_users, num_items = rating_matrix.shape
     error_array = np.zeros(iterations)
 
@@ -89,45 +91,60 @@ def sgd_with_bias_correction(rating_matrix,
     user_vectors = 0.1 * (2 * (np.random.rand(num_users, num_features) - 1))
     item_vectors = 0.1 * (2 * (np.random.rand(num_items, num_features) - 1))
 
-    training_indices = np.arange(rating_matrix.nonzero()[0].shape[0])
-    np.random.shuffle(training_indices)
-    non_zero_user_indices = rating_matrix.nonzero()[0]
-    non_zero_item_indices = rating_matrix.nonzero()[1]
+    rows, cols = rating_matrix.nonzero()
+    training_indices = np.arange(rows.shape[0])
 
     for iteration in range(iterations):
-        if lr_schedule is not None:
-            lr = lr_schedule(iteration)
-        elif adaptive_lr:
-            lr = 1.0 / (100 + 0.01 * iteration)
-        else:
-            lr = learning_rate
+        lr = (
+            lr_schedule(iteration)
+            if lr_schedule
+            else (1.0 / (100 + 0.01 * iteration) if adaptive_lr else learning_rate)
+        )
 
         np.random.shuffle(training_indices)
-        temp_error_array = np.zeros(len(training_indices))
+        tmp_err = np.zeros(len(training_indices))
 
-        for datapoint_idx, idx in enumerate(training_indices):
-            user = non_zero_user_indices[idx]
-            item = non_zero_item_indices[idx]
+        for d_idx, idx in enumerate(training_indices):
+            u = rows[idx]
+            i = cols[idx]
 
-            prediction = global_bias + user_bias[user] + item_bias[item] + \
-                np.dot(user_vectors[user, :], item_vectors[item, :].T)
-            error = rating_matrix[user, item] - prediction
-            temp_error_array[datapoint_idx] += error**2
+            pred = (
+                global_bias
+                + user_bias[u]
+                + item_bias[i]
+                + np.dot(user_vectors[u], item_vectors[i])
+            )
+            err = rating_matrix[u, i] - pred
+            tmp_err[d_idx] = err * err
 
-            user_bias[user] += lr * (error - user_bias_reg * user_bias[user])
-            item_bias[item] += lr * (error - item_bias_reg * item_bias[item])
-            user_vectors[user, :] += lr * \
-                (error * item_vectors[item, :] - user_vector_reg * user_vectors[user, :])
-            item_vectors[item, :] += lr * \
-                (error * user_vectors[user, :] - item_vector_reg * item_vectors[item, :])
+            grad_ub = lr * (err - user_bias_reg * user_bias[u])
+            grad_ib = lr * (err - item_bias_reg * item_bias[i])
+            user_bias[u] += np.clip(grad_ub, -1.0, 1.0)
+            item_bias[i] += np.clip(grad_ib, -1.0, 1.0)
 
-        error_array[iteration] = np.mean(temp_error_array)
+            grad_uv = lr * (err * item_vectors[i] - user_vector_reg * user_vectors[u])
+            grad_iv = lr * (err * user_vectors[u] - item_vector_reg * item_vectors[i])
+            user_vectors[u] += np.clip(grad_uv, -10.0, 10.0)
+            item_vectors[i] += np.clip(grad_iv, -10.0, 10.0)
 
-    predictions = global_bias + user_bias[:, np.newaxis] + item_bias[np.newaxis, :] + \
-        np.dot(user_vectors, item_vectors.T)
+        error_array[iteration] = np.mean(tmp_err)
+
+    predictions = (
+        global_bias
+        + user_bias[:, None]
+        + item_bias[None, :]
+        + user_vectors @ item_vectors.T
+    )
     predictions = np.clip(predictions, 0, 5)
 
-    return predictions, error_array, user_vectors, item_vectors, user_bias, item_bias
+    return (
+        predictions,
+        error_array,
+        user_vectors,
+        item_vectors,
+        user_bias,
+        item_bias,
+    )
 
 
 def concatenate_user_item_vectors(user_vectors, item_vectors, rating_matrix):

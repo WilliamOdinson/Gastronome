@@ -14,10 +14,10 @@ class SVDRecommender(BaseRecommender):
     """
 
     def __init__(self, k: int = 10,
-                 city: str | None = None,
+                 state: str | None = None,
                  min_user_review: int = 10) -> None:
         self.k = k
-        self.city = city
+        self.state = state
         self._min_user_review = min_user_review
 
         # ID mappings
@@ -42,8 +42,8 @@ class SVDRecommender(BaseRecommender):
         """
         Train the model using bias-corrected SVD.
         """
-        if self.city:
-            ratings_df = ratings_df[ratings_df.city == self.city]
+        if self.state:
+            ratings_df = ratings_df[ratings_df.state == self.state]
 
         clean_df = get_clean_df(
             ratings_df,
