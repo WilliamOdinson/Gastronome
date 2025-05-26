@@ -1,8 +1,8 @@
 import urllib3
-
 from django.conf import settings
 from opensearchpy import OpenSearch
 
+from core.context_processors import CATEGORY_KEYWORDS
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -19,17 +19,18 @@ def client():
 
 
 def search_business(q, city, state, category, page, per_page=20):
-    """
-    Return (total, [business_id,  ...]), keeping OpenSearch order.
-    """
-    must = []
-    filt = []
+    """Perform OpenSearch query with optional full-text and category filtering."""
+    must, filt = [], []
 
     if q:
         must.append({
             "multi_match": {
                 "query": q,
-                "fields": ["name^4", "name.ng"],
+                "fields": [
+                    "name^4",
+                    "name.ng",
+                    "categories^2"
+                ],
                 "fuzziness": "AUTO"
             }
         })
@@ -39,7 +40,13 @@ def search_business(q, city, state, category, page, per_page=20):
     if state:
         filt.append({"term": {"state": state}})
     if category and category != "All":
-        filt.append({"term": {"categories": category}})
+        keywords = CATEGORY_KEYWORDS.get(category, [category])
+        must.append({
+            "bool": {
+                "should": [{"match": {"categories": kw}} for kw in keywords],
+                "minimum_should_match": 1
+            }
+        })
 
     body = {
         "query": {

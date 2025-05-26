@@ -12,7 +12,6 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 MAPPING = {
     "settings": {
         "number_of_shards": 1,
-        "index.max_result_window": 1000000,  # Allows deep pagination beyond 10,000
         "analysis": {
             "analyzer": {
                 "name_ngram": {
@@ -47,7 +46,14 @@ MAPPING = {
             "stars": {"type": "float"},
             "review_count": {"type": "integer"},
             "is_open": {"type": "boolean"},
-            "categories": {"type": "keyword"},
+            "categories": {
+                "type": "text",
+                "analyzer": "english",
+                "fields": {
+                    "keyword": {"type": "keyword"},
+                    "ng": {"type": "text", "analyzer": "name_ngram"}
+                }
+            },
         }
     },
 }
