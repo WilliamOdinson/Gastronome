@@ -120,8 +120,13 @@ CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "pyamqp://guest:guest@localho
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "rpc://")
 CELERY_TASK_DEFAULT_QUEUE = 'celery'
 CELERY_TASK_ROUTES = {
+    # business is_open status maintenance
     "business.tasks.refresh_open_status": {"queue": "business_status"},
     "business.tasks.refresh_open_batch": {"queue": "business_status"},
+    # recommendation precache
+    "recommend.tasks.precache_recommendations": {"queue": "recommendation"},
+    "recommend.tasks.warmup_state_hotlists": {"queue": "recommendation"},
+    "recommend.tasks.compute_user_recs": {"queue": "recommendation"},
 }
 CELERY_TIMEZONE = "UTC"
 
