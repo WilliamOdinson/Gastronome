@@ -1,6 +1,5 @@
 from django.urls import path
-from . import views
-from .views import predict_review
+from experiments.views import predict_review
 
 app_name = 'experiments'
 

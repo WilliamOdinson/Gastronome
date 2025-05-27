@@ -1,5 +1,5 @@
 from django import forms
-from .models import Review
+from review.models import Review
 
 
 class ReviewForm(forms.ModelForm):

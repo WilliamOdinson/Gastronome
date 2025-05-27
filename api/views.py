@@ -6,23 +6,11 @@ from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont
 
 from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.db import transaction
-from django.db.models import F
 from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST
-
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from api.captcha import generate_captcha_text
 from api.inference import predict_score
-from api.serializers import ReviewSerializer
-from business.models import Business
-from review.models import Review
 
 
 @require_POST
@@ -94,41 +82,3 @@ def get_captcha_image(request):
     buffer = BytesIO()
     image.save(buffer, "png")
     return HttpResponse(buffer.getvalue(), content_type="image/png")
-
-
-class CreateReviewAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, business_id: str):
-        business = get_object_or_404(Business, pk=business_id)
-
-        if Review.objects.filter(user=request.user, business=business).exists():
-            return Response(
-                {"detail": "You have already reviewed this business."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        serializer = ReviewSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        User = get_user_model()
-
-        with transaction.atomic():
-            review = serializer.save(user=request.user, business=business)
-            review.auto_score = predict_score(review.text)
-            review.save(update_fields=["auto_score"])
-
-            Business.objects.filter(pk=business.pk).update(
-                review_count=F("review_count") + 1,
-                stars=(
-                    F("stars") * F("review_count") + review.stars
-                ) / (F("review_count") + 1),
-            )
-
-            User.objects.filter(pk=request.user.pk).update(
-                review_count=F("review_count") + 1
-            )
-
-        return Response(
-            ReviewSerializer(review).data, status=status.HTTP_201_CREATED
-        )

@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views
+# from recommend.views import 
 
 app_name = 'recommend'
 

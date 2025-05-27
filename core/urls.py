@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import index, system_map, tech_details, search
+from core.views import index, system_map, tech_details, search
 
 app_name = 'core'
 

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import user_login, user_logout, user_profile, register, verify_email, resend_verification
+from user.views import user_login, user_logout, user_profile, register, verify_email, resend_verification
 
 app_name = 'user'
 
