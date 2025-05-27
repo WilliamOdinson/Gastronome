@@ -13,6 +13,7 @@ from api.inference import predict_score
 from business.models import Business
 from review.forms import ReviewForm
 from review.models import Review
+from review.tasks import compute_auto_score
 
 User = get_user_model()
 
@@ -34,7 +35,6 @@ def create_review(request, business_id: str):
             review.user = request.user
             review.business = business
             review.review_id = uuid.uuid4().hex[:22]
-            review.auto_score = predict_score(review.text)
             review.save()
 
             # Statistic Updates: Business
@@ -54,6 +54,10 @@ def create_review(request, business_id: str):
             )
 
             cache.delete(f"biz_detail:{business.business_id}")
+
+            # dispatch the Celery task after the transaction is committed
+            transaction.on_commit(lambda: compute_auto_score.delay(review.pk))
+
             return redirect("business:business_detail", business_id=business_id)
     else:
         form = ReviewForm()

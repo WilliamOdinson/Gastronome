@@ -133,6 +133,8 @@ CELERY_TASK_ROUTES = {
     "recommend.tasks.compute_user_recs": {"queue": "recommendation"},
     # user e-mail dispatch
     "user.tasks.send_verification_email": {"queue": "email"},
+    # review automatic scoring
+    "review.tasks.compute_auto_score": {"queue": "bert-predict"},
 }
 CELERY_TIMEZONE = "UTC"
 
