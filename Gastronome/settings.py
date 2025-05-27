@@ -10,8 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
+import sys
 from pathlib import Path
+
 from dotenv import load_dotenv
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -128,8 +131,15 @@ CELERY_TASK_ROUTES = {
     "recommend.tasks.precache_recommendations": {"queue": "recommendation"},
     "recommend.tasks.warmup_state_hotlists": {"queue": "recommendation"},
     "recommend.tasks.compute_user_recs": {"queue": "recommendation"},
+    # user e-mail dispatch
+    "user.tasks.send_verification_email": {"queue": "email"},
 }
 CELERY_TIMEZONE = "UTC"
+
+TESTING = len(sys.argv) > 1 and sys.argv[1] == "test"
+if TESTING:
+    CELERY_TASK_ALWAYS_EAGER = True
+    CELERY_TASK_EAGER_PROPAGATES = True
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

@@ -124,7 +124,6 @@
 
 {% block extra_js %}
 <script>
-/* ---------- Captcha ---------- */
 function refreshCaptcha () {
   const ts = Date.now();
   document.getElementById('captchaImg').src =
@@ -171,7 +170,7 @@ function passwordStrengthCheck(password1, password2, passwordsInfo) {
                    .html("Still Weak! (Add digits)");
     } else {
       passwordsInfo.attr('class','weakpass')
-                   .html("Very Weak! (≥5 chars)");
+                   .html("Very Weak! (>=5 chars)");
     }
   });
 
