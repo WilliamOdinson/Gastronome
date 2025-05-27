@@ -3,7 +3,8 @@ from decimal import Decimal
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.db import connection
+from django.test import TestCase, TransactionTestCase
 from django.urls import reverse
 
 from business.models import Business
@@ -106,3 +107,48 @@ class ReviewCreateDeleteTests(TestCase):
         test.refresh_from_db()
         self.assertEqual(test.review_count, 0)
         self.assertEqual(test.average_stars, 0.0)
+
+
+class ReviewAsyncTaskTests(TransactionTestCase):
+    def setUp(self):
+        patcher = patch("api.inference.predict_score", return_value=4)
+        self.addCleanup(patcher.stop)
+        patcher.start()
+
+        self.biz = Business.objects.create(
+            business_id=uuid.uuid4().hex[:22],
+            name="Carnegie Mellon University",
+            address="5000 Forbes Ave",
+            city="Pittsburgh",
+            state="PA",
+            postal_code="15213",
+            latitude=Decimal("40.443336"),
+            longitude=Decimal("-79.944023"),
+            stars=4.2,
+            review_count=10,
+            is_open=True,
+        )
+
+        self.user = User.objects.create_user(
+            email="alice@gastronome.com",
+            password="Passw0rd!",
+            display_name="Alice",
+            username="alice@gastronome.com",
+            user_id="u" + uuid.uuid4().hex[:21],
+            average_stars=4.0,
+            review_count=5,
+        )
+
+        self.url_add = reverse("review:create_review", args=[self.biz.business_id])
+        self.client.force_login(self.user)
+
+    def test_auto_score_task_enqueued_on_commit(self):
+        """
+        After creating a comment, the asynchronous auto-score task
+        should be queued upon transaction submission.
+        """
+        with patch("review.views.compute_auto_score.delay") as mock_delay:
+            self.client.post(self.url_add, {"stars": 5, "text": "Asynchronous!"})
+
+            rev = Review.objects.get(business=self.biz, user=self.user)
+            mock_delay.assert_called_once_with(rev.pk)
