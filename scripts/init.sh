@@ -3,25 +3,8 @@ set -e
 PROJECT_NAME="Gastronome"
 DATA_DIR="./database"
 
-# echo ">>> Creating Python virtual environment..."
-# python3 -m venv venv
-# source venv/bin/activate
-
-# echo ">>> Upgrading pip and installing requirements..."
-# pip install --upgrade pip
-# pip install -r requirements.txt
-
-# echo ">>> Applying database migrations..."
-# python manage.py makemigrations
-# python manage.py migrate
-
-# If this is your first time running it, uncomment the line.
-# Skip this step if it's already been created.
-# echo ">>> Creating superuser (optional)..."
-# python manage.py createsuperuser || true
-
 echo "===The following import may take about 160 minutes (for a 12th Gen Intel i9, 64 GB RAM Windows Laptop). ==="
-echo "===You can comment out line 39 if you read the entire init.sh before executing.==="
+echo "===You can comment out line 8, 27, 35 and re-run if you read the entire init.sh before executing.==="
 echo ">>> Press any key to continue..." && stty -echo -icanon && dd bs=1 count=1 2>/dev/null < /dev/tty && stty icanon echo
 
 echo ">>> Importing category data, 1,311 entires (~0.1 min)"
@@ -61,5 +44,4 @@ python manage.py import_tip "$DATA_DIR/yelp_academic_dataset_tip.json"
 echo ">>> Importing auto_score scored by our judge, 6,990,280 entires (~50 min for batch = 2,000)"
 python manage.py import_autoscore "$DATA_DIR/review_predictions.json"
 
-echo ">>> All done. Run the server with:"
-echo "    source venv/bin/activate && python manage.py runserver"
+echo ">>> All done."

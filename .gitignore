@@ -227,4 +227,7 @@ celerybeat.pid
 celerybeat-schedule-shm
 celerybeat-schedule-wal
 
+certs/server.crt
+certs/server.key
+
 database/*
