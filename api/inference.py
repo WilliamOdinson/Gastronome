@@ -16,9 +16,12 @@ class ReviewScorer:
             warnings.simplefilter('ignore')
             self.model = DistilBertForSequenceClassification(config)
 
-        state_dict = torch.load(model_weights_path, map_location='cpu', weights_only=False)
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        state_dict = torch.load(model_weights_path, map_location=device)
         self.model.load_state_dict(state_dict)
         self.model.eval()
+        self.model.to(device)
+        self.device = device
 
     def predict(self, text: str) -> int:
         inputs = self.tokenizer(
@@ -28,6 +31,7 @@ class ReviewScorer:
             truncation=True,
             return_tensors='pt'
         )
+        inputs = {k: v.to(self.device) for k, v in inputs.items()}
         with torch.no_grad():
             logits = self.model(**inputs).logits
             pred_class = torch.argmax(logits, dim=1).item()
