@@ -80,6 +80,15 @@ CELERY_BROKER_URL="pyamqp://guest:guest@localhost//"
 CELERY_RESULT_BACKEND="rpc://"
 ```
 
+## 8  Sentry Error Monitoring
+
+Sentry is used for tracking and monitoring runtime errors, exceptions, and performance issues in your Gastronome project. Real-time alerts help you identify and resolve problems quickly in production and development environments. To enable Sentry integration, register an account and project on the [Sentry dashboard](https://sentry.io/). After creating your project (select Django as the platform), you will be provided with a DSN (Data Source Name).
+
+```bash
+SENTRY_DSN="https://<your_key>@o0.ingest.us.sentry.io/<project_id>"
+SENTRY_ENVIRONMENT="production"
+```
+
 ## Final Notes
 
 Always maintain `.env` securely:

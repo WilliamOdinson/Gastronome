@@ -9,49 +9,59 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
+
 import os
 import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
+import sentry_sdk
+from sentry_sdk.integrations.celery import CeleryIntegration
+from sentry_sdk.integrations.django import DjangoIntegration
 
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# ------------------------------
+# I. BASE & ENVIRONMENT
+# ------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env", override=True)
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
+# ------------------------------
+# II. SECURITY
+# https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
+# ------------------------------
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
-
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() in ("1", "true", "yes")
-print(f"debug: {DEBUG}")
-
+print(f"DEBUG: {DEBUG}")
 ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",")
-# Application definition
 
+# ------------------------------
+# III. APPLICATIONS & AUTHENTICATION
+# ------------------------------
 INSTALLED_APPS = [
+    # Django contrib apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Project apps
     'business',
     'user',
     'review',
     'api',
     'experiments',
     'recommend',
-    'core'
+    'core',
 ]
 
 AUTH_USER_MODEL = 'user.User'
 LOGIN_URL = '/user/login/'
 
+# ------------------------------
+# IV. MIDDLEWARE
+# ------------------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -62,8 +72,15 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# ------------------------------
+# V. URLS & WSGI
+# ------------------------------
 ROOT_URLCONF = 'Gastronome.urls'
+WSGI_APPLICATION = 'Gastronome.wsgi.application'
 
+# ------------------------------
+# VI. TEMPLATES
+# ------------------------------
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -81,11 +98,10 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'Gastronome.wsgi.application'
-
-
-# Database
+# ------------------------------
+# VII. DATABASE
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+# ------------------------------
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -97,6 +113,9 @@ DATABASES = {
     }
 }
 
+# ------------------------------
+# VIII. CACHES
+# ------------------------------
 REDIS_HOST = os.getenv("REDIS_HOST", "127.0.0.1")
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", "")
@@ -118,8 +137,9 @@ CACHES = {
     }
 }
 
-
-# Search Engine Settings
+# ------------------------------
+# IX. SEARCH ENGINE
+# ------------------------------
 OPENSEARCH = {
     "HOST": os.getenv("OPENSEARCH_HOST", "http://localhost:9200"),
     "USER": os.getenv("OPENSEARCH_USER", None),
@@ -127,7 +147,9 @@ OPENSEARCH = {
     "INDEX": "gastronome",
 }
 
-# Celery configuration
+# ------------------------------
+# X. CELERY CONFIGURATION
+# ------------------------------
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "pyamqp://guest:guest@localhost//")
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "rpc://")
 CELERY_TASK_DEFAULT_QUEUE = 'celery'
@@ -135,25 +157,56 @@ CELERY_TASK_ROUTES = {
     # business is_open status maintenance
     "business.tasks.refresh_open_status": {"queue": "business_status"},
     "business.tasks.refresh_open_batch": {"queue": "business_status"},
+
     # recommendation precache
     "recommend.tasks.precache_recommendations": {"queue": "recommendation"},
     "recommend.tasks.warmup_state_hotlists": {"queue": "recommendation"},
     "recommend.tasks.compute_user_recs": {"queue": "recommendation"},
+
     # user e-mail dispatch
     "user.tasks.send_verification_email": {"queue": "email"},
+
     # review automatic scoring
     "review.tasks.compute_auto_score": {"queue": "bert-predict"},
 }
 CELERY_TIMEZONE = "UTC"
 
+# Enable eager tasks when running tests
 TESTING = len(sys.argv) > 1 and sys.argv[1] == "test"
 if TESTING:
     CELERY_TASK_ALWAYS_EAGER = True
     CELERY_TASK_EAGER_PROPAGATES = True
 
-# Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
+# ------------------------------
+# XI. LOGGING & MONITORING
+# ------------------------------
 
+SENTRY_DSN = os.getenv("SENTRY_DSN", "")
+SENTRY_ENVIRONMENT = os.getenv("SENTRY_ENVIRONMENT", "development")
+
+if SENTRY_DSN and not TESTING:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        # Add data like request headers and IP for users,
+        # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
+        send_default_pii=True,
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for tracing.
+        traces_sample_rate=1.0,
+        # Set profile_session_sample_rate to 1.0 to profile 100%
+        # of profile sessions.
+        profile_session_sample_rate=1.0,
+        integrations=[DjangoIntegration(), CeleryIntegration()],
+        environment=SENTRY_ENVIRONMENT,
+        # Set profile_lifecycle to "trace" to automatically
+        # run the profiler on when there is an active transaction
+        profile_lifecycle="trace",
+    )
+
+# ------------------------------
+# XII. AUTH PASSWORD VALIDATORS
+# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
+# ------------------------------
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -169,35 +222,32 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-# Internationalization
+# ------------------------------
+# XIII. INTERNATIONALIZATION
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
-
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
+# ------------------------------
+LANGUAGE_CODE = "en-us"
+TIME_ZONE = "UTC"
 USE_I18N = True
-
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
+# ------------------------------
+# XIV. STATIC FILES
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
-
+# ------------------------------
 STATIC_URL = 'static/'
-
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
 
-# Default primary key field type
+# ------------------------------
+# XV. DEFAULT PRIMARY KEY FIELD TYPE
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
+# ------------------------------
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ------------------------------
-# Custom application settings
+# XVI. CUSTOM APPLICATION SETTINGS
 # ------------------------------
 FONT_PATH = os.path.join(BASE_DIR, "static", "fonts", "Arial.ttf")
 PHOTO_BASE_URL = "https://gastronome-recommendation.s3.us-east-1.amazonaws.com/"

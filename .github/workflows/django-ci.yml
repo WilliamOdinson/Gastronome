@@ -127,5 +127,4 @@ jobs:
           PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
           PGDATABASE: ${{ env.POSTGRES_DB }}
         run: |
-          python manage.py migrate
           python manage.py test business user review api experiments recommend core
