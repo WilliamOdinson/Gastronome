@@ -8,6 +8,10 @@ Search & Recommendation: [![OpenSearch](https://img.shields.io/badge/OpenSearch-
 
 Frontend & UI: [![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/html) [![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS) [![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3.3-7952B3?logo=bootstrap&logoColor=white)](https://getbootstrap.com/) [![JavaScript](https://img.shields.io/badge/JavaScript-ES2023-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript) [![Google Maps](https://img.shields.io/badge/Google%20Maps%20Static%20API-grey?logo=googlemaps&logoColor=white)](https://developers.google.com/maps/documentation/maps-static)
 
+Load Test: [![Locust](https://img.shields.io/badge/Locust-2.37.6-brightgreen?logo=speedtest&logoColor=white)](https://locust.io/)
+
+Deployment & Monitoring: [![Sentry](https://img.shields.io/badge/Sentry-2.29.1-362D59?logo=sentry&logoColor=white)](https://sentry.io/)
+
 ## Features
 
 1. **Semantic Scoring**: When a user submits a review, the system asynchronously invokes a DistilBERT-based text classification model to assign a semantic score that reflects both the sentiment and the underlying meaning of the review content.
