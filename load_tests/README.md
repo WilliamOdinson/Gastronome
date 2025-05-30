@@ -151,3 +151,23 @@ Out[1]: <AsyncResult: 3c574fd7-ee85-4018-907b-82a14deb0a69>
 ```
 
 Wait until caching completes before initiating your load tests for best results.
+
+## Additional Notes
+
+To monitor Celery task execution and diagnose potential issues during load tests, it is recommended to use [Flower](https://github.com/mher/flower), a web-based tool for Celery monitoring.
+
+Install Flower with pip:
+
+```bash
+pip install flower
+```
+
+Start Flower alongside your Celery workers:
+
+```bash
+celery -A Gastronome flower
+```
+
+Then, open your browser and navigate to [http://localhost:5555](http://localhost:5555)
+
+For detailed information and advanced configuration, refer to [Flower's official documentation](https://flower.readthedocs.io/en/latest/).
