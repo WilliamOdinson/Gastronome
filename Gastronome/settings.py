@@ -9,11 +9,11 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-from colorama import init, Fore, Style
 import os
 import sys
 from pathlib import Path
 
+from colorama import Fore, Style, init
 from dotenv import load_dotenv
 import sentry_sdk
 from sentry_sdk.integrations.celery import CeleryIntegration
@@ -33,10 +33,14 @@ init(autoreset=True)
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() in ("1", "true", "yes")
 LOAD_TEST = os.getenv("LOAD_TEST", "False").lower() in ("1", "true", "yes")
+DJANGO_TEST = len(sys.argv) > 1 and sys.argv[1] == "test"
 if DEBUG:
-    print(Fore.RED + "[!WARNING] You are running in DEBUG mode! This is not safe for production.")
+    print(Fore.YELLOW + "[!WARNING] Django DEBUG mode is enabled.")
 if LOAD_TEST:
-    print(Fore.RED + "[!WARNING] Load testing mode is enabled. Some features may be disabled.")
+    print(Fore.YELLOW + "[!WARNING] Load test mode is enabled.")
+if LOAD_TEST and DJANGO_TEST:
+    print(Fore.RED + "[ERROR] Running Django tests during load test mode is not allowed.")
+    sys.exit(1)
 ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",")
 
 # ------------------------------
@@ -177,8 +181,7 @@ CELERY_TASK_ROUTES = {
 CELERY_TIMEZONE = "UTC"
 
 # Enable eager tasks when running tests
-TESTING = len(sys.argv) > 1 and sys.argv[1] == "test"
-if TESTING:
+if DJANGO_TEST:
     CELERY_TASK_ALWAYS_EAGER = True
     CELERY_TASK_EAGER_PROPAGATES = True
 
@@ -189,7 +192,7 @@ if TESTING:
 SENTRY_DSN = os.getenv("SENTRY_DSN", "")
 SENTRY_ENVIRONMENT = os.getenv("SENTRY_ENVIRONMENT", "development")
 
-if SENTRY_DSN and not TESTING and not LOAD_TEST:
+if SENTRY_DSN and not DJANGO_TEST and not LOAD_TEST:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
         # Add data like request headers and IP for users,

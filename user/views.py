@@ -71,10 +71,11 @@ def register(request):
         display_name = request.POST.get("display_name")
         captcha_input = request.POST.get("captcha", "").upper()
 
-        saved = request.session.pop("captcha_code", None)
-        if not saved or captcha_input != saved[0].upper():
-            return render(request, "register.html",
-                          {"error": "Invalid captcha. Click the image to refresh."})
+        if not settings.LOAD_TEST:
+            saved = request.session.pop("captcha_code", None)
+            if not saved or captcha_input != saved[0].upper():
+                return render(request, "register.html",
+                              {"error": "Invalid captcha. Click the image to refresh."})
 
         if not email or not password1 or not password2 or not display_name:
             return render(request, "register.html", {"error": "All fields are required."})
@@ -119,6 +120,24 @@ def register(request):
 
 
 def verify_email(request):
+    if settings.LOAD_TEST:
+        email = request.session.get("pending_email")
+        data = cache.get(f"pending_register:{email}")
+        if data:
+            user = User.objects.create(
+                email=email,
+                display_name=data["display_name"],
+                username=email,
+                user_id=uuid.uuid4().hex[:22],
+            )
+            user.password = data["password_hash"]
+            user.save()
+            cache.delete(f"pending_register:{email}")
+            login(request, user)
+            return redirect("core:index")
+        else:
+            return redirect("user:register")
+
     if request.method == "POST":
         code = request.POST.get("code")
         email = request.session.get("pending_email")

@@ -50,7 +50,8 @@ The load testing scripts are organized as follows:
 load_tests/
 ├── locustfile.py                # Entry point for Locust tests
 └── tasks/
-    └── recommend_tasks.py       # Recommendation system tasks
+    ├── recommend_tasks.py       # Recommendation system tasks
+    └── user_tasks.py            # User actions (login/logout/profile)
 ```
 
 ## 1  Running Load Tests
@@ -151,6 +152,30 @@ Out[1]: <AsyncResult: 3c574fd7-ee85-4018-907b-82a14deb0a69>
 ```
 
 Wait until caching completes before initiating your load tests for best results.
+
+## 4  Cleaning Up Test Users After Load Tests
+
+Running the `UserTasks` in Locust will automatically register a set of dummy accounts to verify the robustness of the registration endpoint. These test accounts are logged in `registered_emails.log` at the project root (next to `manage.py`). Once your load test finishes, remove all of these accounts by executing:
+
+```bash
+python scripts/cleanup_registered_users.py
+```
+
+This cleanup script reads each email from `registered_emails.log` and deletes the matching user records from the database. To confirm that no test accounts remain, connect to PostgreSQL:
+
+```bash
+psql -h localhost -U postgres -d gastronome -p 5432
+```
+
+and run:
+
+```sql
+SELECT email
+FROM user_user
+WHERE email LIKE '%test.com';
+```
+
+If this query returns no rows, all test users have been successfully removed.
 
 ## Additional Notes
 
