@@ -36,7 +36,7 @@ brew services list
 
 You should see four entries with a `started` status similar to:
 
-```bash
+```
 Name            Status   User       File
 opensearch      started  <username> ~/Library/LaunchAgents/homebrew.mxcl.opensearch.plist
 postgresql@14   started  <username> ~/Library/LaunchAgents/homebrew.mxcl.postgresql@14.plist
@@ -134,7 +134,7 @@ Before proceeding, ensure you have completed the [5 Database Initialization](#5-
 >
 >    *(By default, this project uses email for login. Adjust this temporarily for dataset import.)*
 >
->    For more details on migrating the users, refer to [docs/migrate-users.md](https://github.com/WilliamOdinson/Gastronome/blob/main/docs/docs/migrate-users.md)
+>    For more details on migrating the users, refer to [docs/migrate-users.md](https://github.com/WilliamOdinson/Gastronome/blob/main/docs/migrate-users.md)
 >
 > 3. **Delete previous migration**:
 >
@@ -168,7 +168,7 @@ Alternatively, use the provided shell script for automated execution with estima
 bash scripts/init.sh
 ```
 
-## 7. Training the Recommendation Models
+## 7  Training the Recommendation Models
 
 To train recommendation models for each state, run:
 
