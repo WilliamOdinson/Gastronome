@@ -3,6 +3,7 @@ import uuid
 import secrets
 import re
 
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
@@ -24,10 +25,11 @@ def user_login(request):
         password = request.POST.get("password")
         captcha_input = request.POST.get("captcha", "").upper()
 
-        saved = request.session.pop("captcha_code", None)
-        if not saved or captcha_input != saved[0].upper():
-            return render(request, "login.html",
-                          {"error": "Invalid captcha. Click the image to refresh."})
+        if not settings.LOAD_TEST:
+            saved = request.session.pop("captcha_code", None)
+            if not saved or captcha_input != saved[0].upper():
+                return render(request, "login.html",
+                              {"error": "Invalid captcha. Click the image to refresh."})
 
         user = authenticate(request, email=email, password=password)
         if user:

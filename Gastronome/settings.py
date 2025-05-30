@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
+from colorama import init, Fore, Style
 import os
 import sys
 from pathlib import Path
@@ -24,6 +24,7 @@ from sentry_sdk.integrations.django import DjangoIntegration
 # ------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env", override=True)
+init(autoreset=True)
 
 # ------------------------------
 # II. SECURITY
@@ -31,7 +32,11 @@ load_dotenv(BASE_DIR / ".env", override=True)
 # ------------------------------
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() in ("1", "true", "yes")
-print(f"DEBUG: {DEBUG}")
+LOAD_TEST = os.getenv("LOAD_TEST", "False").lower() in ("1", "true", "yes")
+if DEBUG:
+    print(Fore.RED + "[!WARNING] You are running in DEBUG mode! This is not safe for production.")
+if LOAD_TEST:
+    print(Fore.RED + "[!WARNING] Load testing mode is enabled. Some features may be disabled.")
 ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",")
 
 # ------------------------------
@@ -184,7 +189,7 @@ if TESTING:
 SENTRY_DSN = os.getenv("SENTRY_DSN", "")
 SENTRY_ENVIRONMENT = os.getenv("SENTRY_ENVIRONMENT", "development")
 
-if SENTRY_DSN and not TESTING:
+if SENTRY_DSN and not TESTING and not LOAD_TEST:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
         # Add data like request headers and IP for users,

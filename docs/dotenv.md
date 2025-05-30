@@ -6,8 +6,8 @@ This document describes the setup and purpose of environment variables in the **
 
 Before proceeding, ensure you have:
 
-* Created a `.env` file at the root directory of your Gastronome project.
-* Restricted file permissions to avoid accidental exposure (e.g., using `chmod 600 .env` on Unix-based systems).
+- Created a `.env` file at the root directory of your Gastronome project.
+- Restricted file permissions to avoid accidental exposure (e.g., using `chmod 600 .env` on Unix-based systems).
 
 ## 1  Django Configuration
 
@@ -15,13 +15,15 @@ These variables control Django's runtime behavior and security settings.
 
 ```bash
 DJANGO_SECRET_KEY="<your-django-secret-key>"
+LOAD_TEST="False"    # Set to "True" only in load test environments
 DJANGO_DEBUG="True"  # Set to "False" in production environments
 DJANGO_ALLOWED_HOSTS="localhost,127.0.0.1"  # Add your production domains as needed
 ```
 
-* **`DJANGO_SECRET_KEY`**: Used for cryptographic signing and session management. Keep it secret.
-* **`DJANGO_DEBUG`**: Controls debug mode; disable (`False`) in production.
-* **`DJANGO_ALLOWED_HOSTS`**: A comma-separated list of allowed domain names/IPs.
+- **`DJANGO_SECRET_KEY`**: Used for cryptographic signing and session management. Keep it secret.
+- **`LOAD_TEST`**: Enables optimizations specific to automated load testing. For more information, refer to [load_tests/README.md](https://github.com/WilliamOdinson/Gastronome/blob/main/load_tests/README.md)
+- **`DJANGO_DEBUG`**: Controls debug mode; disable (`False`) in production.
+- **`DJANGO_ALLOWED_HOSTS`**: A comma-separated list of allowed domain names/IPs.
 
 ## 2  PostgreSQL Database Settings
 
@@ -93,6 +95,6 @@ SENTRY_ENVIRONMENT="production"
 
 Always maintain `.env` securely:
 
-* Never commit it to Git.
-* Regularly update passwords and API keys.
-* Limit access to trusted developers and administrators only.
+- Never commit it to Git.
+- Regularly update passwords and API keys.
+- Limit access to trusted developers and administrators only.
