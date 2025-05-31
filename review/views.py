@@ -1,12 +1,15 @@
 import uuid
+from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.db import transaction
-from django.db.models import F, Case, When, Value, FloatField, ExpressionWrapper
+from django.db.models import Case, ExpressionWrapper, F, FloatField, Value, When
 from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
 from api.inference import predict_score
@@ -25,8 +28,27 @@ def create_review(request, business_id: str):
 
     business = get_object_or_404(Business, pk=business_id)
 
-    if Review.objects.filter(user=request.user, business=business).exists():
-        return HttpResponseBadRequest("You have already reviewed this business.")
+    # 1. Restrict: no more than one review for the same business within 24 hours
+    twenty_four_hours_ago = timezone.now() - timedelta(hours=24)
+    already_reviewed_same = Review.objects.filter(
+        user=request.user,
+        business=business,
+        date__gte=twenty_four_hours_ago
+    ).exists()
+    if already_reviewed_same:
+        return HttpResponseBadRequest("You have already reviewed this business today!")
+
+    # 2. Restrict: no more than three reviews for different businesses within one hour
+    if not settings.LOAD_TEST:
+        one_hour_ago = timezone.now() - timedelta(hours=1)
+        recent_business_reviews_count = Review.objects.filter(
+            user=request.user,
+            date__gte=one_hour_ago
+        ).count()
+        if recent_business_reviews_count >= 3:
+            return HttpResponseBadRequest(
+                "You cannot submit more than three reviews for different businesses within one hour."
+            )
 
     if request.method == "POST":
         form = ReviewForm(request.POST)
