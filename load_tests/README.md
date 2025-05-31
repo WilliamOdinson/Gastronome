@@ -42,6 +42,30 @@ After generating, move or copy this CSV file to:
 database/test_accounts.csv
 ```
 
+### Generating Test Reviews CSV
+
+Run the following PostgreSQL command to export user accounts with at least 10 reviews in Pennsylvania (`PA`) directly into a CSV file:
+
+```sql
+-- PostgreSQL \copy requires single-line SQL
+\Copy (SELECT DISTINCT ON (business_id) business_id, text, stars FROM review_review WHERE user_id = '_BcWyKQL16ndpBdggh2kNA') TO 'test_review.csv' WITH CSV HEADER;
+```
+
+Formatted SQL Query (for clarity):
+
+```sql
+SELECT DISTINCT ON (business_id) business_id, text, stars
+FROM review_review
+WHERE user_id = '_BcWyKQL16ndpBdggh2kNA';
+-- _BcWyKQL16ndpBdggh2kNA has 3048 reivews, with 2199 for distinct business
+```
+
+After generating, move or copy this CSV file to:
+
+```
+database/test_review.csv
+```
+
 ### Directory Structure
 
 The load testing scripts are organized as follows:
@@ -51,6 +75,7 @@ load_tests/
 ├── locustfile.py                # Entry point for Locust tests
 └── tasks/
     ├── recommend_tasks.py       # Recommendation system tasks
+    ├── review_tasks.py          # Review-related tasks
     └── user_tasks.py            # User actions (login/logout/profile)
 ```
 

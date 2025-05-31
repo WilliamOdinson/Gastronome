@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from locust import HttpUser, between
 
 from tasks.recommend_tasks import RecommendTasks
+from tasks.review_tasks import ReviewTasks
 from tasks.user_tasks import UserTasks
 
 
@@ -24,4 +25,4 @@ if not LOAD_TEST:
 class WebsiteUser(HttpUser):
     host = "http://localhost:8000"  # Base URL of the target Django server
     wait_time = between(0.5, 2.0)
-    tasks = [RecommendTasks, UserTasks]
+    tasks = [UserTasks, ReviewTasks, RecommendTasks]
