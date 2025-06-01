@@ -1,4 +1,4 @@
-# Django 5 Recommendation System: Gastronome
+# Django 5 Recommendation System: Gastronome [![Django CI](https://github.com/WilliamOdinson/Gastronome/actions/workflows/django-ci.yml/badge.svg)](https://github.com/WilliamOdinson/Gastronome/blob/main/.github/workflows/django-ci.yml)
 
 **Gastronome** is a local business recommendation system built upon semantic sentiment scoring, utilizing [the Yelp dataset](https://business.yelp.com/data/resources/open-dataset/). Developed with the Django 5 framework. The core objective of the system is to enhance recommendation quality by **leveraging users' historical reviews combined with semantic analysis**.
 
