@@ -74,7 +74,7 @@ class Command(BaseCommand):
 
     def handle(self, *_, **__):
         op = client()
-        index = settings.OPENSEARCH["INDEX"]
+        index = settings.OPENSEARCH["BUSINESS_INDEX"]
 
         # Create the index if it doesn't exist
         if not op.indices.exists(index):

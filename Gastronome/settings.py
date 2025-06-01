@@ -153,7 +153,10 @@ OPENSEARCH = {
     "HOST": os.getenv("OPENSEARCH_HOST", "http://localhost:9200"),
     "USER": os.getenv("OPENSEARCH_USER", None),
     "PASSWORD": os.getenv("OPENSEARCH_PASSWORD", None),
-    "INDEX": "gastronome",
+    "BUSINESS_INDEX": "gastronome-business",
+    "REVIEW_INDEX": "gastronome-review",
+    "USER_INDEX": "gastronome-user",
+    "TIP_INDEX": "gastronome-tip",
 }
 
 # ------------------------------
