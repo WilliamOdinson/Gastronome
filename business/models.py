@@ -5,7 +5,6 @@ from zoneinfo import ZoneInfo
 from timezonefinder import TimezoneFinder
 from datetime import datetime
 
-
 tf = TimezoneFinder()
 
 
@@ -14,6 +13,10 @@ class Category(models.Model):
     Category tag for businesses, e.g., "Mexican", "Burgers".
     """
     name = models.CharField(max_length=50, unique=True)
+
+    class Meta:
+        verbose_name = "Category"
+        verbose_name_plural = "Categories"
 
     def __str__(self):
         return self.name
@@ -27,7 +30,7 @@ class Business(models.Model):
     name = models.CharField(max_length=255, verbose_name="Business Name")
     address = models.CharField(max_length=255, verbose_name="Address")
     city = models.CharField(max_length=100, verbose_name="City")
-    state = models.CharField(max_length=2, verbose_name="2 Character State Code")
+    state = models.CharField(max_length=2, verbose_name="State")
     postal_code = models.CharField(max_length=20, verbose_name="Postal Code")
     latitude = models.DecimalField(max_digits=9, decimal_places=6, verbose_name="Latitude")
     longitude = models.DecimalField(max_digits=9, decimal_places=6, verbose_name="Longitude")
@@ -40,6 +43,8 @@ class Business(models.Model):
     attributes = models.JSONField(null=True, blank=True, verbose_name="Raw Attributes")
 
     class Meta:
+        verbose_name = "Business"
+        verbose_name_plural = "Businesses"
         indexes = [
             models.Index(fields=['city', 'state']),
             models.Index(fields=['stars']),
@@ -56,8 +61,7 @@ class Business(models.Model):
         from the latitude and longitude in real-time and writes it back.
         """
         if not self.timezone:
-            tzname = tf.timezone_at(lng=float(self.longitude),
-                                    lat=float(self.latitude)) or "UTC"
+            tzname = tf.timezone_at(lng=float(self.longitude), lat=float(self.latitude)) or "UTC"
             self.timezone = tzname
             self.save(update_fields=["timezone"])
         return ZoneInfo(self.timezone)
@@ -99,6 +103,8 @@ class Hour(models.Model):
     close_time = models.TimeField(verbose_name="Closing Time")
 
     class Meta:
+        verbose_name = "Hour"
+        verbose_name_plural = "Hours"
         unique_together = ('business', 'day')
 
     def __str__(self):
@@ -120,6 +126,8 @@ class Photo(models.Model):
         return f"{base}/{self.photo_id}.jpg"
 
     class Meta:
+        verbose_name = "Photo"
+        verbose_name_plural = "Photos"
         indexes = [
             models.Index(fields=['label']),
         ]
@@ -136,6 +144,8 @@ class CheckIn(models.Model):
     checkin_time = models.DateTimeField(verbose_name="Check-in Timestamp")
 
     class Meta:
+        verbose_name = "Check-In"
+        verbose_name_plural = "Check-Ins"
         indexes = [
             models.Index(fields=['business']),
             models.Index(fields=['checkin_time']),
