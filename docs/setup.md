@@ -187,7 +187,7 @@ python manage.py train_ensemble --state PA
 
 These models will be used for generating personalized recommendations on your platform.
 
-## 9  Revert User Model Email Field for Production
+## 8  Revert User Model Email Field for Production
 
 After all data imports are complete, update the `User` model to require an email address for each user, as expected in production environments. Update your `user/models.py` as follows:
 
@@ -216,6 +216,27 @@ python manage.py migrate
 ```
 
 This ensures that all new users must register with a unique, non-empty email address, preparing the project for production deployment.
+
+## 9  Indexing Data into OpenSearch
+
+Once your database is populated, the next step is indexing the `business`, `user`, `review`, and `tip` models into OpenSearch for efficient and fast search capabilities.
+
+While Django's ORM (backed by psycopg2 in this project) is powerful for general querying, it becomes inefficient and problematic for large-scale search operations. ORM-based searches often suffer from performance issues such as the "N+1 query" problem. For detailed reasoning about why ORMs aren't optimal for large-scale search functionalities, please refer to [docs/search-engine.md](https://github.com/WilliamOdinson/Gastronome/blob/main/docs/search-engine.md).
+
+To address this, the project uses **OpenSearch**, an open-source counterpart of Elasticsearch, optimized for fast, scalable, and efficient searching.
+
+The project provides built-in Django management commands to bulk index data into OpenSearch:
+
+```bash
+python manage.py index_business
+python manage.py index_review
+python manage.py index_tip
+python manage.py index_user
+```
+
+> [!NOTE]
+>
+> After running these commands once, new records or updates - such as newly registered users or recently submitted reviews - will be automatically synchronized into OpenSearch through Django signals configured in each app's `apps.py`. This eliminates the need to manually re-run indexing commands for incremental updates.
 
 ## 10  Starting the development server
 

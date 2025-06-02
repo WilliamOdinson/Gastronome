@@ -51,8 +51,8 @@ It is recommended to follow the configuration and deployment instructions in the
 
 **Before contributing, please adhere to our [Code of Conduct](https://github.com/WilliamOdinson/Gastronome?tab=coc-ov-file#readme).** We welcome all forms of contributions! If you encounter any bugs or have suggestions for improvement, please open an **[Issue](https://github.com/WilliamOdinson/Gastronome/issues/new?template=request.yaml)** describing the details. To fix issues or propose new features, feel free to fork the repository and submit a Pull Request. Make sure to clearly explain the changes you've made and include any relevant tests or documentation.
 
-If you discover a potential security vulnerability, **do not open a public issue**. Instead, please refer to our [Security Policy](https://github.com/WilliamOdinson/Gastronome?tab=security-ov-file) for instructions on how to report it responsibly.
+If you discover a potential security vulnerability, **do not open a public issue**. Instead, please refer to our [Security Policy](https://github.com/WilliamOdinson/Gastronome/blob/main/.github/SECURITY.md) for instructions on how to report it responsibly.
 
 ## License
 
-This project is licensed under the **MIT License**. You are free to use, copy, modify, and distribute the software, provided that the original copyright notice and license terms are retained.
+This project is licensed under the [**MIT License**](LICENSE). You are free to use, copy, modify, and distribute the software, provided that the original copyright notice and license terms are retained.
