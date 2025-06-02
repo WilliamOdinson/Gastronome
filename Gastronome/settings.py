@@ -34,6 +34,7 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() in ("1", "true", "yes")
 LOAD_TEST = os.getenv("LOAD_TEST", "False").lower() in ("1", "true", "yes")
 DJANGO_TEST = len(sys.argv) > 1 and sys.argv[1] == "test"
+DATA_IMPORT = len(sys.argv) > 1 and sys.argv[1].startswith("import_")
 if DEBUG:
     print(Fore.YELLOW + "[!WARNING] Django DEBUG mode is enabled.")
 if LOAD_TEST:
