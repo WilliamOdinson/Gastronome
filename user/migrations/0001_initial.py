@@ -1,4 +1,3 @@
-import django.contrib.auth.models
 import django.contrib.auth.validators
 import django.utils.timezone
 from django.db import migrations, models
@@ -245,8 +244,5 @@ class Migration(migrations.Migration):
                     models.Index(fields=["fans"], name="user_user_fans_1ca852_idx"),
                 ],
             },
-            managers=[
-                ("objects", django.contrib.auth.models.UserManager()),
-            ],
         ),
     ]
