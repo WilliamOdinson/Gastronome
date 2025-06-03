@@ -58,6 +58,9 @@ MAPPING = {
                 }
             },
             "auto_score": {"type": "float"},
+            "useful": {"type": "integer"},
+            "funny": {"type": "integer"},
+            "cool": {"type": "integer"},
         },
     },
 }
@@ -123,6 +126,9 @@ class Command(BaseCommand):
                         "date": r.date,
                         "text": r.text,
                         "auto_score": r.auto_score,
+                        "useful": r.useful,
+                        "funny": r.funny,
+                        "cool": r.cool,
                     },
                 }
 

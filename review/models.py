@@ -10,7 +10,7 @@ class Review(models.Model):
     """
     review_id = models.CharField(max_length=22, primary_key=True, unique=True, verbose_name="Review ID")
     user = models.ForeignKey(User, related_name="reviews", on_delete=models.CASCADE, verbose_name="Review Author")
-    business = models.ForeignKey(Business, related_name="reviews", on_delete=models.CASCADE,verbose_name="Business Reviewed")
+    business = models.ForeignKey(Business, related_name="reviews", on_delete=models.CASCADE, verbose_name="Business Reviewed")
     stars = models.PositiveSmallIntegerField(verbose_name="Star Rating")
     date = models.DateTimeField(default=timezone.now, verbose_name="Review Date")
     text = models.TextField(verbose_name="Review Text")
@@ -19,8 +19,11 @@ class Review(models.Model):
     cool = models.PositiveIntegerField(default=0, verbose_name="Cool Votes")
     
     # Auto rating based on user review text
-    auto_score = models.FloatField(null=True, blank=True, verbose_name="Model automatic scoring")
+    auto_score = models.FloatField(null=True, blank=True, verbose_name="Model Automatic Scoring")
+    
     class Meta:
+        verbose_name = "Review"
+        verbose_name_plural = "Reviews"
         ordering = ['-date']
         indexes = [
             models.Index(fields=['user']),
@@ -43,6 +46,8 @@ class Tip(models.Model):
     compliment_count = models.PositiveIntegerField(default=0, verbose_name="Compliment Count")
 
     class Meta:
+        verbose_name = "Tip"
+        verbose_name_plural = "Tips"
         ordering = ['-date']
         indexes = [
             models.Index(fields=['user']),

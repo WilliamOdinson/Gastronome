@@ -1,13 +1,12 @@
 import logging
 import urllib3
 
-from colorama import Fore, Style, init
+from colorama import Fore, init
 from opensearchpy import NotFoundError, OpenSearch
 
 from django.apps import AppConfig
 from django.conf import settings
-from django.db.models.signals import m2m_changed, post_delete, post_save
-
+from django.db.models.signals import post_delete, post_save
 
 init(autoreset=True)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -15,6 +14,9 @@ logger = logging.getLogger(__name__)
 
 
 def client():
+    """
+    Create and return a new OpenSearch client.
+    """
     return OpenSearch(
         hosts=[settings.OPENSEARCH["HOST"]],
         http_auth=(settings.OPENSEARCH["USER"], settings.OPENSEARCH["PASSWORD"]),
@@ -26,10 +28,9 @@ def client():
 
 def _review_to_doc(r):
     """
-    Convert the Review object to an OpenSearch document.
+    Convert the Review object to a document suitable for indexing in OpenSearch.
+    All nullable numeric fields are defaulted to 0 to prevent mapping errors.
     """
-    if r.auto_score is None:
-        r.auto_score = 0.0
     return {
         "review_id": r.review_id,
         "user_id": r.user_id,
@@ -39,14 +40,22 @@ def _review_to_doc(r):
         "stars": r.stars,
         "date": r.date,
         "text": r.text,
-        "auto_score": r.auto_score,
+        "auto_score": r.auto_score or 0.0,
+        "useful": r.useful or 0,
+        "funny": r.funny or 0,
+        "cool": r.cool or 0,
     }
 
 
 def sync_review(sender, instance, **kwargs):
-    if settings.DJANGO_TEST or settings.DATA_IMPORT:
-        # print(Fore.YELLOW + f"[SKIP] OpenSearch indexing skipped")or settings
+    """
+    Index or delete a Review document in OpenSearch when the model changes.
+    Triggered on post_save and post_delete.
+    """
+    if getattr(settings, "DJANGO_TEST", False) or getattr(settings, "DATA_IMPORT", False):
+        print(Fore.YELLOW + "[SKIP] OpenSearch indexing skipped due to test/import mode")
         return
+
     op = client()
     idx = settings.OPENSEARCH["REVIEW_INDEX"]
 
@@ -61,11 +70,8 @@ def sync_review(sender, instance, **kwargs):
         return
 
     try:
-        resp = op.index(
-            index=idx,
-            id=instance.pk,
-            body=_review_to_doc(instance),
-            refresh="wait_for")
+        doc = _review_to_doc(instance)
+        resp = op.index(index=idx, id=instance.pk, body=doc, refresh="wait_for")
         print(f"Indexed review {instance.pk} into {idx}: result = {resp.get('result')}")
     except Exception as exc:
         print(Fore.RED + f"[ERROR] Failed to index review {instance.pk}: {exc}")
@@ -73,7 +79,7 @@ def sync_review(sender, instance, **kwargs):
 
 def _tip_to_doc(t):
     """
-    Convert the Tip object to an OpenSearch document.
+    Convert the Tip object to a document suitable for indexing in OpenSearch.
     """
     return {
         "user_id": t.user_id,
@@ -82,14 +88,19 @@ def _tip_to_doc(t):
         "business_name": t.business.name,
         "date": t.date,
         "text": t.text,
-        "compliment_count": t.compliment_count,
+        "compliment_count": t.compliment_count or 0,
     }
 
 
 def sync_tip(sender, instance, **kwargs):
-    if settings.DJANGO_TEST:
-        # print(Fore.YELLOW + f"[SKIP] OpenSearch indexing skipped")or settings
+    """
+    Index or delete a Tip document in OpenSearch when the model changes.
+    Triggered on post_save and post_delete.
+    """
+    if getattr(settings, "DJANGO_TEST", False):
+        print(Fore.YELLOW + "[SKIP] OpenSearch indexing skipped due to test mode")
         return
+
     op = client()
     idx = settings.OPENSEARCH["TIP_INDEX"]
 
@@ -104,25 +115,28 @@ def sync_tip(sender, instance, **kwargs):
         return
 
     try:
-        resp = op.index(index=idx, id=instance.pk, body=_tip_to_doc(instance), refresh="wait_for")
+        doc = _tip_to_doc(instance)
+        resp = op.index(index=idx, id=instance.pk, body=doc, refresh="wait_for")
         print(f"Indexed tip {instance.pk} into {idx}: result = {resp.get('result')}")
     except Exception as exc:
         print(Fore.RED + f"[ERROR] Failed to index tip {instance.pk}: {exc}")
 
 
 class ReviewConfig(AppConfig):
+    """
+    Django AppConfig for the 'review' app.
+    Registers model signal handlers to sync with OpenSearch.
+    """
     default_auto_field = "django.db.models.BigAutoField"
     name = "review"
 
     def ready(self):
         from review.models import Review, Tip
 
-        post_save.connect(sync_review, sender=Review,
-                          dispatch_uid="sync_review_save")
-        post_delete.connect(sync_review, sender=Review,
-                            dispatch_uid="sync_review_delete")
+        # Register signal handlers for Review
+        post_save.connect(sync_review, sender=Review, dispatch_uid="sync_review_save")
+        post_delete.connect(sync_review, sender=Review, dispatch_uid="sync_review_delete")
 
-        post_save.connect(sync_tip, sender=Tip,
-                          dispatch_uid="sync_tip_save")
-        post_delete.connect(sync_tip, sender=Tip,
-                            dispatch_uid="sync_tip_delete")
+        # Register signal handlers for Tip
+        post_save.connect(sync_tip, sender=Tip, dispatch_uid="sync_tip_save")
+        post_delete.connect(sync_tip, sender=Tip, dispatch_uid="sync_tip_delete")
