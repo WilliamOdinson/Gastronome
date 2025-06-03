@@ -1,13 +1,10 @@
-import urllib3
-
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from opensearchpy import OpenSearch, helpers
+from opensearchpy import helpers
 from tqdm import tqdm
 
 from user.models import User
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+from Gastronome.opensearch import get_opensearch_client
 
 MAPPING = {
     "settings": {
@@ -69,57 +66,45 @@ MAPPING = {
 }
 
 
-def client():
-    return OpenSearch(
-        hosts=[settings.OPENSEARCH["HOST"]],
-        http_auth=(settings.OPENSEARCH["USER"], settings.OPENSEARCH["PASSWORD"]),
-        verify_certs=False,
-        retry_on_timeout=True,
-        timeout=30,
-    )
-
-
 class Command(BaseCommand):
     help = "Create OpenSearch index and bulk import all User records"
 
     def handle(self, *_, **__):
-        op = client()
+        op = get_opensearch_client()
         index = settings.OPENSEARCH["USER_INDEX"]
 
         if not op.indices.exists(index):
             op.indices.create(index, body=MAPPING)
 
         total = User.objects.count()
-        qs = (
-            User.objects.only(
-                "pk",
-                "user_id",
-                "email",
-                "display_name",
-                "review_count",
-                "useful",
-                "funny",
-                "cool",
-                "fans",
-                "average_stars",
-                "elite_years",
-                "compliment_hot",
-                "compliment_more",
-                "compliment_profile",
-                "compliment_cute",
-                "compliment_list",
-                "compliment_note",
-                "compliment_plain",
-                "compliment_cool",
-                "compliment_funny",
-                "compliment_writer",
-                "compliment_photos",
-                "is_staff",
-                "is_superuser",
-                "is_active",
-                "date_joined",
-            ).iterator(chunk_size=1000)
-        )
+        qs = User.objects.only(
+            "pk",
+            "user_id",
+            "email",
+            "display_name",
+            "review_count",
+            "useful",
+            "funny",
+            "cool",
+            "fans",
+            "average_stars",
+            "elite_years",
+            "compliment_hot",
+            "compliment_more",
+            "compliment_profile",
+            "compliment_cute",
+            "compliment_list",
+            "compliment_note",
+            "compliment_plain",
+            "compliment_cool",
+            "compliment_funny",
+            "compliment_writer",
+            "compliment_photos",
+            "is_staff",
+            "is_superuser",
+            "is_active",
+            "date_joined",
+        ).iterator(chunk_size=1000)
 
         def docs():
             for u in tqdm(

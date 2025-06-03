@@ -1,24 +1,12 @@
-import urllib3
-
 from colorama import Fore, init
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from opensearchpy import OpenSearch, NotFoundError
+from opensearchpy import NotFoundError
+
+from Gastronome.opensearch import get_opensearch_client
 
 
 init(autoreset=True)
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-
-def client():
-    return OpenSearch(
-        hosts=[settings.OPENSEARCH["HOST"]],
-        http_auth=(settings.OPENSEARCH["USER"], settings.OPENSEARCH["PASSWORD"]),
-        verify_certs=False,
-        retry_on_timeout=True,
-        timeout=10,
-    )
 
 
 class Command(BaseCommand):
@@ -42,7 +30,7 @@ class Command(BaseCommand):
         # Support both direct index names and symbolic keys like 'REVIEW_INDEX'
         index_name = os_settings.get(index_arg.upper(), index_arg)
 
-        op = client()
+        op = get_opensearch_client()
 
         try:
             if op.indices.exists(index=index_name):

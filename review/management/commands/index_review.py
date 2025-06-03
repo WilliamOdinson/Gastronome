@@ -1,13 +1,11 @@
-import urllib3
-
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from opensearchpy import OpenSearch, helpers
+from opensearchpy import helpers
 from tqdm import tqdm
 
 from review.models import Review
+from Gastronome.opensearch import get_opensearch_client
 
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 MAPPING = {
     "settings": {
@@ -66,21 +64,11 @@ MAPPING = {
 }
 
 
-def client():
-    return OpenSearch(
-        hosts=[settings.OPENSEARCH["HOST"]],
-        http_auth=(settings.OPENSEARCH["USER"], settings.OPENSEARCH["PASSWORD"]),
-        verify_certs=False,
-        retry_on_timeout=True,
-        timeout=30,
-    )
-
-
 class Command(BaseCommand):
     help = "Create OpenSearch index and bulk import all Review records"
 
     def handle(self, *_, **__):
-        op = client()
+        op = get_opensearch_client()
         index = settings.OPENSEARCH["REVIEW_INDEX"]
 
         if not op.indices.exists(index):

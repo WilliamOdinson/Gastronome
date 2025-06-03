@@ -1,27 +1,16 @@
 import logging
-import urllib3
 
-from colorama import Fore, Style, init
-from opensearchpy import NotFoundError, OpenSearch
+from colorama import Fore, init
+from opensearchpy import NotFoundError
 
 from django.apps import AppConfig
 from django.conf import settings
 from django.db.models.signals import post_delete, post_save
 
+from Gastronome.opensearch import get_opensearch_client
 
 init(autoreset=True)
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 logger = logging.getLogger(__name__)
-
-
-def client():
-    return OpenSearch(
-        hosts=[settings.OPENSEARCH["HOST"]],
-        http_auth=(settings.OPENSEARCH["USER"], settings.OPENSEARCH["PASSWORD"]),
-        verify_certs=False,
-        retry_on_timeout=True,
-        timeout=10,
-    )
 
 
 def _to_doc(user):
@@ -56,9 +45,9 @@ def _to_doc(user):
 
 def sync_user_to_opensearch(sender, instance, **kwargs):
     if settings.DJANGO_TEST or settings.DATA_IMPORT:
-        # print(Fore.YELLOW + f"[SKIP] OpenSearch indexing skipped")or settings
+        # print(Fore.YELLOW + f"[SKIP] OpenSearch indexing skipped")
         return
-    op = client()
+    op = get_opensearch_client()
     index = settings.OPENSEARCH["USER_INDEX"]
 
     # Handle delete signal
@@ -66,7 +55,7 @@ def sync_user_to_opensearch(sender, instance, **kwargs):
         try:
             op.delete(index=index, id=instance.pk, ignore=[404], refresh="wait_for")
         except NotFoundError:
-            pass
+            print(Fore.RED + f"[ERROR] User with ID {instance.pk} not found in OpenSearch.")
         return
 
     try:

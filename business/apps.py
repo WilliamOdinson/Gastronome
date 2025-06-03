@@ -1,27 +1,14 @@
 import logging
-import urllib3
-
-from colorama import Fore, Style, init
-from opensearchpy import NotFoundError, OpenSearch
-
+from colorama import Fore, init
+from opensearchpy import NotFoundError
 from django.apps import AppConfig
 from django.conf import settings
 from django.db.models.signals import m2m_changed, post_delete, post_save
 
+from Gastronome.opensearch import get_opensearch_client
 
 init(autoreset=True)
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 logger = logging.getLogger(__name__)
-
-
-def client():
-    return OpenSearch(
-        hosts=[settings.OPENSEARCH["HOST"]],
-        http_auth=(settings.OPENSEARCH["USER"], settings.OPENSEARCH["PASSWORD"]),
-        verify_certs=False,
-        retry_on_timeout=True,
-        timeout=10,
-    )
 
 
 def _business_to_doc(biz) -> dict:
@@ -43,16 +30,17 @@ def _business_to_doc(biz) -> dict:
 
 def _sync_business_to_opensearch(sender, instance, **kwargs):
     if settings.DJANGO_TEST or settings.DATA_IMPORT:
-        # print(Fore.YELLOW + f"[SKIP] OpenSearch indexing skipped")or settings
+        # print(Fore.YELLOW + f"[SKIP] OpenSearch indexing skipped")
         return
-    op = client()
+
+    op = get_opensearch_client()
     index = settings.OPENSEARCH["BUSINESS_INDEX"]
 
     if kwargs.get("signal") == post_delete:
         try:
             op.delete(index=index, id=instance.pk, ignore=[404])
         except NotFoundError:
-            pass
+            print(Fore.RED + f"[ERROR] Business with ID {instance.pk} not found in OpenSearch.")
         return
 
     # post_save or m2m_changed: Direct Upsert
@@ -81,6 +69,7 @@ class BusinessConfig(AppConfig):
             sender=Business,
             dispatch_uid="business_to_opensearch_save",
         )
+
         post_delete.connect(
             _sync_business_to_opensearch,
             sender=Business,

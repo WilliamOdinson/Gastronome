@@ -1,29 +1,17 @@
 import logging
-import urllib3
 
 from colorama import Fore, init
-from opensearchpy import NotFoundError, OpenSearch
+from opensearchpy import NotFoundError
 
 from django.apps import AppConfig
 from django.conf import settings
 from django.db.models.signals import post_delete, post_save
 
+from Gastronome.opensearch import get_opensearch_client
+
+
 init(autoreset=True)
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 logger = logging.getLogger(__name__)
-
-
-def client():
-    """
-    Create and return a new OpenSearch client.
-    """
-    return OpenSearch(
-        hosts=[settings.OPENSEARCH["HOST"]],
-        http_auth=(settings.OPENSEARCH["USER"], settings.OPENSEARCH["PASSWORD"]),
-        verify_certs=False,
-        retry_on_timeout=True,
-        timeout=10,
-    )
 
 
 def _review_to_doc(r):
@@ -56,7 +44,7 @@ def sync_review(sender, instance, **kwargs):
         print(Fore.YELLOW + "[SKIP] OpenSearch indexing skipped due to test/import mode")
         return
 
-    op = client()
+    op = get_opensearch_client()
     idx = settings.OPENSEARCH["REVIEW_INDEX"]
 
     if kwargs.get("signal") == post_delete:
@@ -101,7 +89,7 @@ def sync_tip(sender, instance, **kwargs):
         print(Fore.YELLOW + "[SKIP] OpenSearch indexing skipped due to test mode")
         return
 
-    op = client()
+    op = get_opensearch_client()
     idx = settings.OPENSEARCH["TIP_INDEX"]
 
     if kwargs.get("signal") == post_delete:

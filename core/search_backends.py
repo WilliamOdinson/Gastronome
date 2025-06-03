@@ -1,25 +1,14 @@
-import urllib3
 from django.conf import settings
 from opensearchpy import OpenSearch
 
 from core.context_processors import CATEGORY_KEYWORDS
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-
-def client():
-    """Return an OpenSearch client."""
-    return OpenSearch(
-        hosts=[settings.OPENSEARCH["HOST"]],
-        http_auth=(settings.OPENSEARCH["USER"], settings.OPENSEARCH["PASSWORD"]),
-        verify_certs=False,
-        retry_on_timeout=True,
-        timeout=15,
-    )
+from Gastronome.opensearch import get_opensearch_client
 
 
 def search_business(q, city, state, category, page, per_page=20):
-    """Perform OpenSearch query with optional full-text and category filtering."""
+    """
+    Perform OpenSearch query with optional full-text and category filtering.
+    """
     must, filt = [], []
 
     if q:
@@ -59,6 +48,6 @@ def search_business(q, city, state, category, page, per_page=20):
         "size": per_page,
     }
 
-    res = client().search(index=settings.OPENSEARCH["BUSINESS_INDEX"], body=body)
+    res = get_opensearch_client().search(index=settings.OPENSEARCH["BUSINESS_INDEX"], body=body)
     ids = [hit["_id"] for hit in res["hits"]["hits"]]
     return res["hits"]["total"]["value"], ids
