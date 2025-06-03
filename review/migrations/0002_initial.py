@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="reviews",
                 to=settings.AUTH_USER_MODEL,
-                verbose_name="Review Author",
+                verbose_name="Author",
             ),
         ),
         migrations.AddField(

@@ -91,7 +91,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "display_name",
-                    models.CharField(max_length=150, verbose_name="Display Name"),
+                    models.CharField(max_length=150, verbose_name="Nickname"),
                 ),
                 (
                     "email",
@@ -100,7 +100,7 @@ class Migration(migrations.Migration):
                         max_length=254,
                         null=True,
                         unique=True,
-                        verbose_name="User's Email",
+                        verbose_name="Email",
                     ),
                 ),
                 (
@@ -111,35 +111,22 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "review_count",
-                    models.PositiveIntegerField(default=0, verbose_name="Review Count"),
+                    models.PositiveIntegerField(default=0, verbose_name="Review Cnt."),
                 ),
                 (
                     "useful",
-                    models.PositiveIntegerField(default=0, verbose_name="Useful Votes"),
+                    models.PositiveIntegerField(default=0, verbose_name="Useful"),
                 ),
-                (
-                    "funny",
-                    models.PositiveIntegerField(default=0, verbose_name="Funny Votes"),
-                ),
-                (
-                    "cool",
-                    models.PositiveIntegerField(default=0, verbose_name="Cool Votes"),
-                ),
-                (
-                    "fans",
-                    models.PositiveIntegerField(
-                        default=0, verbose_name="Number of Fans"
-                    ),
-                ),
+                ("funny", models.PositiveIntegerField(default=0, verbose_name="Funny")),
+                ("cool", models.PositiveIntegerField(default=0, verbose_name="Cool")),
+                ("fans", models.PositiveIntegerField(default=0, verbose_name="Fans")),
                 (
                     "average_stars",
-                    models.FloatField(default=0.0, verbose_name="Average Stars"),
+                    models.FloatField(default=0.0, verbose_name="Avg. Stars"),
                 ),
                 (
                     "friends",
-                    models.JSONField(
-                        blank=True, default=list, verbose_name="Friend List"
-                    ),
+                    models.JSONField(blank=True, default=list, verbose_name="Friends"),
                 ),
                 (
                     "elite_years",
@@ -149,69 +136,47 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "compliment_hot",
-                    models.PositiveIntegerField(
-                        default=0, verbose_name="Hot Compliments"
-                    ),
+                    models.PositiveIntegerField(default=0, verbose_name="Hot"),
                 ),
                 (
                     "compliment_more",
-                    models.PositiveIntegerField(
-                        default=0, verbose_name="More Compliments"
-                    ),
+                    models.PositiveIntegerField(default=0, verbose_name="More"),
                 ),
                 (
                     "compliment_profile",
-                    models.PositiveIntegerField(
-                        default=0, verbose_name="Profile Compliments"
-                    ),
+                    models.PositiveIntegerField(default=0, verbose_name="Profile"),
                 ),
                 (
                     "compliment_cute",
-                    models.PositiveIntegerField(
-                        default=0, verbose_name="Cute Compliments"
-                    ),
+                    models.PositiveIntegerField(default=0, verbose_name="Cute"),
                 ),
                 (
                     "compliment_list",
-                    models.PositiveIntegerField(
-                        default=0, verbose_name="List Compliments"
-                    ),
+                    models.PositiveIntegerField(default=0, verbose_name="List"),
                 ),
                 (
                     "compliment_note",
-                    models.PositiveIntegerField(
-                        default=0, verbose_name="Note Compliments"
-                    ),
+                    models.PositiveIntegerField(default=0, verbose_name="Note"),
                 ),
                 (
                     "compliment_plain",
-                    models.PositiveIntegerField(
-                        default=0, verbose_name="Plain Compliments"
-                    ),
+                    models.PositiveIntegerField(default=0, verbose_name="Plain"),
                 ),
                 (
                     "compliment_cool",
-                    models.PositiveIntegerField(
-                        default=0, verbose_name="Cool Compliments"
-                    ),
+                    models.PositiveIntegerField(default=0, verbose_name="Cool"),
                 ),
                 (
                     "compliment_funny",
-                    models.PositiveIntegerField(
-                        default=0, verbose_name="Funny Compliments"
-                    ),
+                    models.PositiveIntegerField(default=0, verbose_name="Funny"),
                 ),
                 (
                     "compliment_writer",
-                    models.PositiveIntegerField(
-                        default=0, verbose_name="Writer Compliments"
-                    ),
+                    models.PositiveIntegerField(default=0, verbose_name="Writer"),
                 ),
                 (
                     "compliment_photos",
-                    models.PositiveIntegerField(
-                        default=0, verbose_name="Photo Compliments"
-                    ),
+                    models.PositiveIntegerField(default=0, verbose_name="Photo"),
                 ),
                 (
                     "groups",
@@ -237,6 +202,8 @@ class Migration(migrations.Migration):
                 ),
             ],
             options={
+                "verbose_name": "User",
+                "verbose_name_plural": "Users",
                 "indexes": [
                     models.Index(
                         fields=["review_count"], name="user_user_review__3b8c2d_idx"

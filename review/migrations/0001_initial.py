@@ -34,6 +34,8 @@ class Migration(migrations.Migration):
                 ),
             ],
             options={
+                "verbose_name": "Tip",
+                "verbose_name_plural": "Tips",
                 "ordering": ["-date"],
             },
         ),
@@ -50,31 +52,23 @@ class Migration(migrations.Migration):
                         verbose_name="Review ID",
                     ),
                 ),
-                ("stars", models.PositiveSmallIntegerField(verbose_name="Star Rating")),
+                ("stars", models.PositiveSmallIntegerField(verbose_name="Rating")),
                 (
                     "date",
                     models.DateTimeField(
-                        default=django.utils.timezone.now, verbose_name="Review Date"
+                        default=django.utils.timezone.now, verbose_name="Date"
                     ),
                 ),
-                ("text", models.TextField(verbose_name="Review Text")),
+                ("text", models.TextField(verbose_name="Text")),
                 (
                     "useful",
-                    models.PositiveIntegerField(default=0, verbose_name="Useful Votes"),
+                    models.PositiveIntegerField(default=0, verbose_name="Useful"),
                 ),
-                (
-                    "funny",
-                    models.PositiveIntegerField(default=0, verbose_name="Funny Votes"),
-                ),
-                (
-                    "cool",
-                    models.PositiveIntegerField(default=0, verbose_name="Cool Votes"),
-                ),
+                ("funny", models.PositiveIntegerField(default=0, verbose_name="Funny")),
+                ("cool", models.PositiveIntegerField(default=0, verbose_name="Cool")),
                 (
                     "auto_score",
-                    models.FloatField(
-                        blank=True, null=True, verbose_name="Model automatic scoring"
-                    ),
+                    models.FloatField(blank=True, null=True, verbose_name="Auto-Score"),
                 ),
                 (
                     "business",
@@ -82,11 +76,13 @@ class Migration(migrations.Migration):
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="reviews",
                         to="business.business",
-                        verbose_name="Business Reviewed",
+                        verbose_name="Business",
                     ),
                 ),
             ],
             options={
+                "verbose_name": "Review",
+                "verbose_name_plural": "Reviews",
                 "ordering": ["-date"],
             },
         ),

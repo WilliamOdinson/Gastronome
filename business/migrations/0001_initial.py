@@ -23,6 +23,10 @@ class Migration(migrations.Migration):
                 ),
                 ("name", models.CharField(max_length=50, unique=True)),
             ],
+            options={
+                "verbose_name": "Category",
+                "verbose_name_plural": "Categories",
+            },
         ),
         migrations.CreateModel(
             name="Business",
@@ -43,12 +47,7 @@ class Migration(migrations.Migration):
                 ),
                 ("address", models.CharField(max_length=255, verbose_name="Address")),
                 ("city", models.CharField(max_length=100, verbose_name="City")),
-                (
-                    "state",
-                    models.CharField(
-                        max_length=2, verbose_name="2 Character State Code"
-                    ),
-                ),
+                ("state", models.CharField(max_length=2, verbose_name="State")),
                 (
                     "postal_code",
                     models.CharField(max_length=20, verbose_name="Postal Code"),
@@ -89,6 +88,10 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
+            options={
+                "verbose_name": "Business",
+                "verbose_name_plural": "Businesses",
+            },
         ),
         migrations.CreateModel(
             name="CheckIn",
@@ -116,6 +119,10 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
+            options={
+                "verbose_name": "Check-In",
+                "verbose_name_plural": "Check-Ins",
+            },
         ),
         migrations.CreateModel(
             name="Hour",
@@ -156,6 +163,10 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
+            options={
+                "verbose_name": "Hour",
+                "verbose_name_plural": "Hours",
+            },
         ),
         migrations.CreateModel(
             name="Photo",
@@ -177,6 +188,10 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
+            options={
+                "verbose_name": "Photo",
+                "verbose_name_plural": "Photos",
+            },
         ),
         migrations.AddIndex(
             model_name="business",
