@@ -80,4 +80,6 @@ class User(AbstractUser):
 
 
     def __str__(self):
-        return self.username
+        if self.display_name and self.email:
+            return f"{self.display_name} ({self.email})"
+        return str(self.pk)

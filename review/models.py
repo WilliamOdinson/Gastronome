@@ -9,17 +9,17 @@ class Review(models.Model):
     User-generated review for a specific business.
     """
     review_id = models.CharField(max_length=22, primary_key=True, unique=True, verbose_name="Review ID")
-    user = models.ForeignKey(User, related_name="reviews", on_delete=models.CASCADE, verbose_name="Review Author")
-    business = models.ForeignKey(Business, related_name="reviews", on_delete=models.CASCADE, verbose_name="Business Reviewed")
-    stars = models.PositiveSmallIntegerField(verbose_name="Star Rating")
-    date = models.DateTimeField(default=timezone.now, verbose_name="Review Date")
-    text = models.TextField(verbose_name="Review Text")
-    useful = models.PositiveIntegerField(default=0, verbose_name="Useful Votes")
-    funny = models.PositiveIntegerField(default=0, verbose_name="Funny Votes")
-    cool = models.PositiveIntegerField(default=0, verbose_name="Cool Votes")
+    user = models.ForeignKey(User, related_name="reviews", on_delete=models.CASCADE, verbose_name="Author")
+    business = models.ForeignKey(Business, related_name="reviews", on_delete=models.CASCADE, verbose_name="Business")
+    stars = models.PositiveSmallIntegerField(verbose_name="Rating")
+    date = models.DateTimeField(default=timezone.now, verbose_name="Date")
+    text = models.TextField(verbose_name="Text")
+    useful = models.PositiveIntegerField(default=0, verbose_name="Useful")
+    funny = models.PositiveIntegerField(default=0, verbose_name="Funny")
+    cool = models.PositiveIntegerField(default=0, verbose_name="Cool")
     
     # Auto rating based on user review text
-    auto_score = models.FloatField(null=True, blank=True, verbose_name="Model Automatic Scoring")
+    auto_score = models.FloatField(null=True, blank=True, verbose_name="Auto-Score")
     
     class Meta:
         verbose_name = "Review"
@@ -32,7 +32,10 @@ class Review(models.Model):
         ]
 
     def __str__(self):
-        return f"Review by {self.user.username} for {self.business.name} ({self.stars} stars)"
+        if self.auto_score==self.stars or self.auto_score is None:
+            return f"Review by {self.user.display_name} for {self.business.name} ({self.stars} stars, fair)"
+        else:
+            return f"Review by {self.user.display_name} for {self.business.name} ({self.stars} stars, not-fair)"
 
 
 class Tip(models.Model):
@@ -55,4 +58,4 @@ class Tip(models.Model):
         ]
 
     def __str__(self):
-        return f"Tip by {self.user.username} for {self.business.name}"
+        return f"Tip by {self.user.display_name} for {self.business.name}"

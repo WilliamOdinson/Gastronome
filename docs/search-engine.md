@@ -52,8 +52,78 @@ This snippet triggers the N+1 problem because it implicitly causes:
 - **1 initial query** to fetch matching businesses.
 - **N additional queries** when iterating over these businesses if accessing related fields (such as `categories`) without proper prefetching or selecting related objects.
 
-Without explicit optimization, Django fetches each business’s related categories individually, resulting in many unnecessary database hits. With many matching businesses, database load quickly escalates, significantly reducing performance.
+Without explicit optimization, Django fetches each business's related categories individually, resulting in many unnecessary database hits. With many matching businesses, database load quickly escalates, significantly reducing performance.
 
 > [!NOTE]
 >
 > Fortunately, our monitoring with Sentry continuously identifies and reports occurrences of N+1 queries, allowing timely optimization. For further insights, see the [Sentry documentation on N+1 Queries](https://docs.sentry.io/product/issues/issue-details/performance-issues/n-one-queries/).
+
+## Scalability Constraints
+
+In our admin tables, certain datasets - such as reviews - can quickly grow enormous. For example, the reviews table imported contains approximately 6,990,280 entries, making SQL-based queries increasingly expensive and slow.
+
+To manage scalability and maintain performance, we integrated OpenSearch, allowing us to define custom indexing and query strategies optimized for rapid searching across large, structured, and unstructured datasets. Below, we outline the a complex mapping we implemented for explanation.
+
+**Business Mapping**  (`business/management/commands/index_business.py`)
+
+```python
+MAPPING = {
+    "settings": {
+        # One shard chosen for simplicity and management ease; adjust for scaling.
+        "number_of_shards": 1,
+        "analysis": {
+            "analyzer": {
+                # Analyzer that tokenizes text into edge n-grams for partial matching (autocomplete).
+                "name_ngram": {
+                    "tokenizer": "edge_ngram_tokenizer",
+                    "filter": ["lowercase"]
+                }
+            },
+            "tokenizer": {
+                "edge_ngram_tokenizer": {
+                    "type": "edge_ngram",
+                    "min_gram": 2,   # Minimum character length for n-gram.
+                    "max_gram": 20,  # Maximum character length for n-gram.
+                    "token_chars": ["letter", "digit"]  # Characters included in tokens.
+                }
+            },
+        },
+    },
+    "mappings": {
+        "properties": {
+            # Unique ID for the business, optimized as keyword (exact matching).
+            "business_id": {"type": "keyword"},
+            # Business name field, with standard analysis plus n-gram and exact keyword subfields.
+            "name": {
+                "type": "text",
+                "analyzer": "standard",
+                "fields": {
+                    "ng": {"type": "text", "analyzer": "name_ngram"},
+                    "keyword": {"type": "keyword"},
+                },
+            },
+            # City and state for exact matching queries.
+            "city": {"type": "keyword"},
+            "state": {"type": "keyword"},
+            # Geographic coordinates for efficient spatial searches.
+            "location": {"type": "geo_point"},
+            # Ratings and review count stored numerically for range queries.
+            "stars": {"type": "float"},
+            "review_count": {"type": "integer"},
+            # Boolean to quickly filter by open status.
+            "is_open": {"type": "boolean"},
+            # Categories with English analysis and edge-ngram for autocomplete and precise filtering.
+            "categories": {
+                "type": "text",
+                "analyzer": "english",
+                "fields": {
+                    "keyword": {"type": "keyword"},
+                    "ng": {"type": "text", "analyzer": "name_ngram"}
+                }
+            },
+        }
+    },
+}
+```
+
+By defining and leveraging these OpenSearch mappings, we can efficiently query vast datasets, mitigating SQL-related scalability issues and significantly enhancing performance in search-intensive scenarios.
