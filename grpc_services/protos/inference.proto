@@ -1,0 +1,14 @@
+syntax = "proto3";
+package inference;
+
+service InferenceService {
+  rpc PredictClass (InferenceRequest) returns (InferenceResponse);
+}
+
+message InferenceRequest {
+  string text = 1;
+}
+
+message InferenceResponse {
+  int32 class_id = 1;
+}
