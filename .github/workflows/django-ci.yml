@@ -119,6 +119,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Start gRPC server
+        run: |
+          python -m grpc_services.server &
+          echo "gRPC server launched"
+          sleep 3
+
       - name: Run migrations and tests
         env:
           PGHOST: ${{ env.POSTGRES_HOST }}
