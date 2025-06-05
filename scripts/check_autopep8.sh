@@ -24,6 +24,8 @@ find . -type f -name "*.py" \
         ! -name "urls.py" \
         ! -name "models.py" \
         ! -name "*.ipynb" \
+        ! -name "*_pb2_grpc.py" \
+        ! -name "*_pb2.py" \
         -print0 |
 while IFS= read -r -d '' file; do
     autopep8 "$file" \
