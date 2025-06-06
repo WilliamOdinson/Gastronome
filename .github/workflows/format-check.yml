@@ -8,6 +8,9 @@ on:
     paths:
       - '**.py'
 
+permissions:
+  contents: read
+
 jobs:
   format-check:
     runs-on: ubuntu-latest
