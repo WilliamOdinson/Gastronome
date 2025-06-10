@@ -34,11 +34,11 @@ def _csv_to_list(raw: str | None) -> list:
         return []
     if isinstance(raw, list):
         return raw
-    years = [tok.strip() for tok in raw.split(",") if tok.strip()]
-    
+    years = [tok.strip() for tok in raw.split(",") if tok.strip()]    
+
     # Replace '20' with '2020' if '2020' doesn't already exist
     years = ['2020' if year == '20' and '2020' not in years else year for year in years]
-    
+
     return years
 
 
