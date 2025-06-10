@@ -34,7 +34,12 @@ def _csv_to_list(raw: str | None) -> list:
         return []
     if isinstance(raw, list):
         return raw
-    return [tok.strip() for tok in raw.split(",") if tok.strip()]
+    years = [tok.strip() for tok in raw.split(",") if tok.strip()]
+
+    # Replace '20' with '2020' if '2020' doesn't already exist
+    years = ['2020' if year == '20' and '2020' not in years else year for year in years]
+
+    return years
 
 
 def bulk_insert(model, objects: List, label: str):
@@ -62,7 +67,7 @@ class Command(BaseCommand):
     def _load_users(self, path: Path):
         buf: List[User] = []
 
-        for row in tqdm(stream(path), desc="User pass"):
+        for row in tqdm(stream(path), desc="Importing Users"):
             friends_list = _csv_to_list(row.get("friends"))
             elite_list = _csv_to_list(row.get("elite"))
 
