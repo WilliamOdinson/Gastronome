@@ -267,3 +267,4 @@ PHOTO_BASE_URL = "https://gastronome-recommendation.s3.us-east-1.amazonaws.com/"
 # console cause we don't have a real email server.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+AVAILABLE_STATES: list[str] = os.getenv("AVAILABLE_STATES", "PA").split(",")

@@ -1,0 +1,29 @@
+syntax = "proto3";
+package recommend;
+
+service RecommendationService {
+  rpc GetUserRecs (UserRecRequest) returns (RecListResponse);
+  rpc GetStateHotlist (StateRequest) returns (RecListResponse);
+
+  rpc PredictMatrix (StateRequest) returns (stream RecRow);
+}
+
+message UserRecRequest {
+  string user_id = 1;
+  string state = 2;
+  int32 k = 3;
+}
+
+message StateRequest {
+  string state = 1;
+  int32 k = 2;
+}
+
+message RecListResponse {
+  repeated string business_ids = 1;
+}
+
+message RecRow {
+  string user_id = 1;
+  repeated string business_ids = 2;
+}

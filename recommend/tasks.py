@@ -2,7 +2,6 @@ import json
 import logging
 from typing import Dict, List
 
-import numpy as np
 from celery import shared_task
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
@@ -10,117 +9,105 @@ from django.db.models import Count, OuterRef, Subquery
 
 from business.models import Business
 from review.models import Review
-from recommend.services import (
-    _load_ensemble,
-    get_state_hotlist,
-    TOP_K,
-    USER_TIMEOUT,
-    STATE_TIMEOUT,
-)
+from recommend.services import TOP_K, USER_TIMEOUT, STATE_TIMEOUT
+
+from grpc_services.clients.recommend_client import user_recs, state_hotlist, iter_matrix
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
-def _rows_topk(mat: np.ndarray, k: int) -> List[np.ndarray]:
-    """Return, for every row, the indices of its top-k scores (descending)."""
-    part = np.argpartition(-mat, k - 1, axis=1)[:, :k]
-    scores = mat[np.arange(mat.shape[0])[:, None], part]
-    order = np.argsort(-scores, axis=1)
-    return [part[i, order[i]] for i in range(mat.shape[0])]
-
-
 @shared_task(queue="recommendation")
 def warmup_state_hotlists() -> int:
-    """Cache top-40 hot-lists for every state once at worker start."""
+    """
+    Cache top-40 hot-lists for every state once at worker start.
+    """
+    logger.info("Starting warmup_state_hotlists task")
     total = 0
     for state in Business.objects.values_list("state", flat=True).distinct():
-        bids = get_state_hotlist(state, TOP_K)
+        logger.info("Fetching hotlist from gRPC for state: %s", state)
+        bids = state_hotlist(state, TOP_K)
+        logger.info("Received %d hot businesses for state: %s", len(bids), state)
         cache.set(f"rec:state:{state}", bids, timeout=STATE_TIMEOUT)
+        logger.info("Cached hotlist for state: %s", state)
         total += 1
-    logger.info("warmup_state_hotlists cached %d states", total)
+    logger.info("warmup_state_hotlists completed: %d states cached", total)
     return total
 
 
 @shared_task(queue="recommendation")
-def precache_recommendations(batch: int = 2_000) -> int:
+def precache_recommendations(state: str = "PA", batch: int = 2_000) -> int:
     """
-    Load ensemble_PA.pkl once, dump top-40 personal recs for every user present
-    in the model and with >=10 reviews.  Also refresh state hot-lists.
+    Use gRPC prediction matrix to pull the entire state matrix at once and batch write to cache.
     """
-    model = _load_ensemble("PA")
-    full_pred = model.predict_matrix()
+    logger.info("Starting precache_recommendations for state=%s", state)
 
-    # map matrix row to Django user.pk
-    idx_to_pk: Dict[int, int] = {}
-    for d_user in User.objects.values("pk", "user_id"):
-        if d_user["user_id"] in model.user_map:
-            idx_to_pk[model.user_map[d_user["user_id"]]] = d_user["pk"]
-
-    # only active users (>=10 reviews)
+    logger.info("Filtering active users with >=10 reviews")
     sub = (
         Review.objects.filter(user_id=OuterRef("pk"))
         .values("user_id")
         .annotate(c=Count("*"))
         .values("c")[:1]
     )
-    active = {
-        u.pk for u in User.objects.annotate(rc=Subquery(sub)).filter(rc__gte=10)
+    active: Dict[str, int] = {
+        str(u.pk): u.pk
+        for u in User.objects.annotate(rc=Subquery(sub)).filter(rc__gte=10)
     }
+    logger.info("Found %d active users in DB for state=%s", len(active), state)
 
-    topk_idx = _rows_topk(full_pred, TOP_K)
-
+    logger.info("Calling gRPC iter_matrix to stream recs for state=%s", state)
     pipe = cache.client.get_client(write=True).pipeline()
     written = 0
-    for row, item_idx in enumerate(topk_idx):
-        pk = idx_to_pk.get(row)
-        if pk is None or pk not in active:
+
+    sample_keys = list(active.keys())[:5]
+    logger.debug("Sample active user keys (strings of PK): %s", sample_keys)
+
+    for uid, bids in iter_matrix(state, TOP_K):
+
+        pk = active.get(uid)
+        if not pk:
+            logger.debug("No matching active PK for uid=%r, skipping", uid)
             continue
-        bids = [model.item_map_inv[int(j)] for j in item_idx]
+
         pipe.setex(f"rec:user:{pk}", USER_TIMEOUT, json.dumps(bids))
         written += 1
+
         if written % batch == 0:
             pipe.execute()
+            logger.info("Batch write: %d user recs cached to Redis", written)
+
     pipe.execute()
+    logger.info("Finished user recs: total %d cached", written)
 
-    # refresh state hot-lists as well
-    states = Business.objects.values_list("state", flat=True).distinct()
-    for st in states:
-        cache.set(
-            f"rec:state:{st}",
-            get_state_hotlist(st, TOP_K),
-            timeout=STATE_TIMEOUT,
-        )
-        written += 1
+    logger.info("Fetching and caching state hotlist for state=%s", state)
+    cache.set(f"rec:state:{state}", state_hotlist(state, TOP_K), timeout=STATE_TIMEOUT)
+    logger.info("precache_recommendations done for state=%s", state)
 
-    logger.info("precache_recommendations wrote %d keys", written)
     return written
 
 
 @shared_task(queue="recommendation")
 def compute_user_recs(user_pk: int, state: str, k: int = TOP_K) -> None:
     """
-    Compute personal recs for a single user asynchronously and write to cache.
-    No action if user <10 reviews or we already cached.
+    Single-user real-time recommendation: If the cache is missed, call gRPC.
     """
+    logger.info("Starting compute_user_recs for user_pk=%s, state=%s", user_pk, state)
     cache_key = f"rec:user:{user_pk}"
     if cache.get(cache_key):
+        logger.info("User rec already cached for user_pk=%s", user_pk)
         return
 
     user = User.objects.filter(pk=user_pk).first()
     if not user:
-        return
-    if Review.objects.filter(user=user).count() < 10:
+        logger.warning("User not found for user_pk=%s", user_pk)
         return
 
-    model = _load_ensemble(state)
-    if user.user_id not in model.user_map:
-        cache.set(cache_key, json.dumps(get_state_hotlist(state, TOP_K)), timeout=STATE_TIMEOUT)
-        logger.info("user %s not in model - stored fallback", user_pk)
-        return          # cold-start; nothing to store now
+    review_count = Review.objects.filter(user=user).count()
+    if review_count < 10:
+        logger.info("User %s has only %d reviews, skipping", user.user_id, review_count)
+        return
 
-    bids = [
-        bid for bid, _ in model.predict(user.user_id, n=k)
-    ]
+    logger.info("Calling gRPC user_recs for user_id=%s", user.user_id)
+    bids = user_recs(user.user_id, state, k)
     cache.set(cache_key, bids, timeout=USER_TIMEOUT)
-    logger.info("compute_user_recs cached user:%s (%d ids)", user_pk, len(bids))
+    logger.info("compute_user_recs: cached %d recs for user_pk=%s", len(bids), user_pk)
