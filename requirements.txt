@@ -84,9 +84,9 @@ sympy==1.14.0
 threadpoolctl==3.6.0
 timezonefinder==6.5.9
 tokenizers==0.21.1
-torch==2.7.0
-torchaudio==2.7.0
-torchvision==0.22.0
+torch==2.7.1
+torchaudio==2.7.1
+torchvision==0.22.1
 tornado==6.5.1
 tqdm==4.67.1
 transformers==4.51.3
