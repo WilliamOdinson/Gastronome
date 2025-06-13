@@ -137,3 +137,7 @@ jobs:
           PGDATABASE: ${{ env.POSTGRES_DB }}
         run: |
           python manage.py test business user review api experiments recommend core
+
+      - name: Run pytest for gRPC services
+        run: |
+          pytest -q grpc_services
