@@ -41,7 +41,7 @@ def sync_review(sender, instance, **kwargs):
     Triggered on post_save and post_delete.
     """
     if getattr(settings, "DJANGO_TEST", False) or getattr(settings, "DATA_IMPORT", False):
-        print(Fore.YELLOW + "[SKIP] OpenSearch indexing skipped due to test/import mode")
+        # print(Fore.YELLOW + "[SKIP] OpenSearch indexing skipped")
         return
 
     op = get_opensearch_client()
@@ -86,7 +86,7 @@ def sync_tip(sender, instance, **kwargs):
     Triggered on post_save and post_delete.
     """
     if getattr(settings, "DJANGO_TEST", False):
-        print(Fore.YELLOW + "[SKIP] OpenSearch indexing skipped due to test mode")
+        # print(Fore.YELLOW + "[SKIP] OpenSearch indexing skipped")
         return
 
     op = get_opensearch_client()
