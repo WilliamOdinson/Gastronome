@@ -39,7 +39,9 @@ class LoadEnsembleTests(TestCase):
         cache.clear()
 
     def test_singleton_behavior(self):
-        """_load_ensemble should load once and then reuse the model."""
+        """
+        Test that loading the ensemble model multiple times returns the same instance.
+        """
         class DummyEnsemble:
             load_calls = 0
 
@@ -75,7 +77,9 @@ class GetUserRecommendationsTests(TestCase):
         cache.clear()
 
     def test_returns_business_ids_from_model(self):
-        """Returned list should contain only business_id values."""
+        """
+        Test that get_user_recommendations returns business IDs from the ensemble model's predict method.
+        """
         class FakeModel:
             def predict(self, uid, n=8):
                 return [("b1", 9.9), ("b2", 9.5)]
@@ -92,6 +96,9 @@ class GetStateHotlistTests(TestCase):
 
     @mock.patch("recommend.services.random.shuffle", lambda x: x)
     def test_only_high_rating_and_reviewcount(self):
+        """
+        Test that get_state_hotlist returns businesses with high ratings and review counts.
+        """
         _good1 = _make_business("g1", stars=4.8, reviews=600, state="PA")
         _good2 = _make_business("g2", stars=4.2, reviews=450, state="PA")
         _make_business("b1", stars=3.5, reviews=800, state="PA")
@@ -141,7 +148,10 @@ class FetchRecommendationsTests(TestCase):
             )
 
     def test_authenticated_user_with_enough_reviews(self):
-        """Eligible user but empty cache should trigger a hotlist fallback and async task."""
+        """
+        Test that logged-in users with sufficient reviews get personalized recommendations.
+        Eligible user but empty cache should trigger a hotlist fallback and async task.
+        """
         self._setup_user_reviews(12)
 
         with mock.patch.object(services, "get_state_hotlist", return_value=["a1", "a2"]) as mock_hot:
@@ -152,7 +162,10 @@ class FetchRecommendationsTests(TestCase):
             mock_hot.assert_called_once()
 
     def test_anonymous_user_uses_cached_state_hotlist(self):
-        """Anonymous users rely solely on cached state hotlist."""
+        """
+        Test that anonymous users use the cached state hotlist if available.
+        If not, it should trigger a hotlist calculation.
+        """
         anon = AnonymousUser()
         cache.set("rec:state:PA", '["a1"]', timeout=services.STATE_TIMEOUT)
 
@@ -161,7 +174,10 @@ class FetchRecommendationsTests(TestCase):
             self.assertQuerySetEqual(qs, ["a1"], transform=lambda b: b.business_id)
 
     def test_user_with_few_reviews_falls_back_to_cached(self):
-        """Logged-in user with <10 reviews also falls back to cached hotlist."""
+        """
+        Test that users with fewer reviews than required use the cached state hotlist.
+        If the cache is empty, it should trigger a hotlist calculation.
+        """
         self._setup_user_reviews(2)
         cache.set("rec:state:PA", '["a2"]', timeout=services.STATE_TIMEOUT)
 
@@ -172,14 +188,18 @@ class FetchRecommendationsTests(TestCase):
 
 class SampleKeepOrderTests(TestCase):
     def test_keeps_original_order(self):
-        """Random sample must preserve original sequence order."""
+        """
+        Test that _sample_keep_order returns a sample of k elements while preserving their original order.
+        """
         seq = list("ABCDEFGH")
         picked = services._sample_keep_order(seq, 5)
         self.assertTrue(all(ch in seq for ch in picked))
         self.assertEqual(sorted(seq.index(c) for c in picked), [seq.index(c) for c in picked])
 
     def test_len_smaller_than_k_returns_all(self):
-        """When k exceeds length, return the whole list unchanged."""
+        """
+        If the sequence length is smaller than k, return the entire sequence.
+        """
         seq = ["x", "y"]
         self.assertEqual(services._sample_keep_order(seq, 5), seq)
 
@@ -189,6 +209,9 @@ class LoadEnsemblePerStateTests(TestCase):
         services._MODELS.clear()
 
     def test_two_states_use_two_slots(self):
+        """
+        Test that loading ensembles for different states uses separate slots in _MODELS.
+        """
         calls = {"n": 0}
 
         class Dummy:
@@ -207,9 +230,15 @@ class LoadEnsemblePerStateTests(TestCase):
 
 class SampleKeepOrderEdgeTests(TestCase):
     def test_k_equals_len(self):
+        """
+        Test that if k equals the length of the sequence, it returns the entire sequence.
+        """
         self.assertEqual(services._sample_keep_order(["a", "b", "c"], 3), ["a", "b", "c"])
 
     def test_k_zero(self):
+        """
+        Test that if k is zero, it returns an empty list.
+        """
         self.assertEqual(services._sample_keep_order(["x", "y"], 0), [])
 
 
@@ -219,8 +248,7 @@ class FetchRecommendationsCorruptedCacheTests(TestCase):
 
     def test_non_json_cache_fallback(self):
         """
-        Broken JSON in state cache should be ignored; no hot-list recalculation
-        for anonymous user; function just returns empty QS.
+        Test that if the cache contains non-JSON data, it falls back to fetching the hotlist.
         """
         cache.set("rec:state:PA", "<<<not-json>>>", timeout=services.STATE_TIMEOUT)
 
@@ -235,5 +263,8 @@ class GetStateHotlistUnderflowTests(TestCase):
         cache.clear()
 
     def test_returns_all_if_insufficient(self):
+        """
+        Test that get_state_hotlist returns all businesses if there are fewer than k available.
+        """
         Business.objects.all().delete()
         self.assertEqual(services.get_state_hotlist("PA", 10), [])
