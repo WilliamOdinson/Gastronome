@@ -8,7 +8,7 @@ class CustomUserManager(BaseUserManager):
     """
     Custom manager for the User model, providing methods to create users and superusers.
     """
-    
+
     def create_user(self, email, user_id, password=None, **extra_fields):
         if not email:
             raise ValueError(_('The Email field must be set'))
@@ -70,9 +70,9 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['user_id']
     # USERNAME_FIELD = 'user_id'
     # REQUIRED_FIELDS = []
-    
+
     objects = CustomUserManager()
-    
+
     class Meta:
         verbose_name = "User"
         verbose_name_plural = "Users"
