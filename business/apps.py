@@ -32,6 +32,9 @@ def _sync_business_to_opensearch(sender, instance, **kwargs):
     if settings.DJANGO_TEST or settings.DATA_IMPORT:
         # print(Fore.YELLOW + f"[SKIP] OpenSearch indexing skipped")
         return
+    update_fields = kwargs.get("update_fields")
+    if update_fields and set(update_fields) == {"is_open"}:
+        return
 
     op = get_opensearch_client()
     index = settings.OPENSEARCH["BUSINESS_INDEX"]

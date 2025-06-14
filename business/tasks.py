@@ -8,6 +8,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from business.models import Business
+from business.opensearch_tasks import push_is_open_bulk
 
 logger = logging.getLogger(__name__)
 
@@ -40,11 +41,13 @@ def refresh_open_batch(id_batch: List[str]) -> int:
     )
 
     updates: List[Business] = []
+    changed_ids: List[str] = []
     for business in queryset:
         open_now = business.calculate_open_status(now)
         if open_now != business.is_open:
             business.is_open = open_now
             updates.append(business)
+            changed_ids.append(business.business_id)
 
     changed = len(updates)
     if changed:
@@ -54,6 +57,7 @@ def refresh_open_batch(id_batch: List[str]) -> int:
                 ["is_open"],
                 batch_size=1000
             )
+        push_is_open_bulk.delay(changed_ids)
 
     elapsed = perf_counter() - start_ts
     logger.info(
