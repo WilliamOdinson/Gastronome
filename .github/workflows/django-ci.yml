@@ -123,6 +123,8 @@ jobs:
           pip install -r requirements.txt
 
       - name: Start gRPC server
+        env:
+          DJANGO_TEST: true
         run: |
           python -m grpc_services.server &
           echo "gRPC server launched"
