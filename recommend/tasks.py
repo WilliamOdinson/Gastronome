@@ -13,7 +13,7 @@ from recommend.services import TOP_K, USER_TIMEOUT, STATE_TIMEOUT
 
 from grpc_services.clients.recommend_client import user_recs, state_hotlist, iter_matrix
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("celery.worker.recommendation")
 User = get_user_model()
 
 
