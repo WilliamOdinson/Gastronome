@@ -38,7 +38,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", DJANGO_SETTINGS_MODULE)
 django.setup()
 
 User = get_user_model()
-LOG_FILE = PROJECT_ROOT / "registered_emails.log"
+LOG_FILE = PROJECT_ROOT / "logs" / "registered_emails.log"
 
 
 def main():

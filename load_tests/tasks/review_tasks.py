@@ -28,7 +28,7 @@ with CSV_PATH.open(newline="", encoding="utf-8") as f:
 
 class ReviewTasks(TaskSet):
     def on_start(self):
-        self.reg_log = open("registered_emails.log", "a")
+        self.reg_log = open("logs/registered_emails.log", "a")
 
         # 1. register a new user for posting reviews
         r1 = self.client.get("/user/register/", name="GET /user/register/")

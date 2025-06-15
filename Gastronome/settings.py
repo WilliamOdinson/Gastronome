@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
+import logging
 import os
 import sys
 from pathlib import Path
@@ -184,7 +185,7 @@ CELERY_TASK_ROUTES = {
     "user.tasks.send_verification_email": {"queue": "email"},
 
     # review automatic scoring
-    "review.tasks.compute_auto_score": {"queue": "bert-predict"},
+    "review.tasks.compute_auto_score": {"queue": "bert_predict"},
 }
 CELERY_TIMEZONE = "UTC"
 
@@ -196,6 +197,144 @@ if DJANGO_TEST:
 # ------------------------------
 # XI. LOGGING & MONITORING
 # ------------------------------
+LOG_DIR = BASE_DIR / "logs"
+LOG_DIR.mkdir(exist_ok=True)
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+
+    "formatters": {
+        "default": {
+            "format": "[{asctime}] {levelname} {name}: {message}",
+            "style": "{",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+    },
+
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "WARNING",
+            "formatter": "default",
+        },
+
+        # Django
+        "django_file": {
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "filename": LOG_DIR / "django.log",
+            "when": "midnight",
+            "backupCount": 14,
+            "encoding": "utf-8",
+            "formatter": "default",
+        },
+
+        # Celery Beat
+        "celery_beat_file": {
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "filename": LOG_DIR / "celery-beat.log",
+            "when": "midnight",
+            "backupCount": 14,
+            "encoding": "utf-8",
+            "formatter": "default",
+        },
+
+        # Celery workers
+        "celery_business_status_file": {
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "filename": LOG_DIR / "celery-business_status.log",
+            "when": "midnight",
+            "backupCount": 14,
+            "encoding": "utf-8",
+            "formatter": "default",
+        },
+        "celery_recommendation_file": {
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "filename": LOG_DIR / "celery-recommendation.log",
+            "when": "midnight",
+            "backupCount": 14,
+            "encoding": "utf-8",
+            "formatter": "default",
+        },
+        "celery_email_file": {
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "filename": LOG_DIR / "celery-email.log",
+            "when": "midnight",
+            "backupCount": 14,
+            "encoding": "utf-8",
+            "formatter": "default",
+        },
+        "celery_bert_file": {
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "filename": LOG_DIR / "celery-bert-predict.log",
+            "when": "midnight",
+            "backupCount": 14,
+            "encoding": "utf-8",
+            "formatter": "default",
+        },
+
+        # gRPC
+        "grpc_file": {
+            "class": "logging.handlers.TimedRotatingFileHandler",
+            "filename": LOG_DIR / "grpc.log",
+            "when": "midnight",
+            "backupCount": 14,
+            "encoding": "utf-8",
+            "formatter": "default",
+        },
+    },
+
+    "loggers": {
+        # Django
+        "django": {
+            "handlers": ["django_file", "console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+
+        # Celery Beat
+        "celery.beat": {
+            "handlers": ["celery_beat_file", "console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+
+        # Celery workers
+        "celery.worker.business_status": {
+            "handlers": ["celery_business_status_file", "console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "celery.worker.recommendation": {
+            "handlers": ["celery_recommendation_file", "console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "celery.worker.email": {
+            "handlers": ["celery_email_file", "console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "celery.worker.bert_predict": {
+            "handlers": ["celery_bert_file", "console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+
+        # gRPC
+        "grpc_server": {
+            "handlers": ["grpc_file", "console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+
+    # Fallback
+    "root": {
+        "handlers": ["console"],
+        "level": "WARNING",
+    },
+}
 
 SENTRY_DSN = os.getenv("SENTRY_DSN", "")
 SENTRY_ENVIRONMENT = os.getenv("SENTRY_ENVIRONMENT", "development")

@@ -23,7 +23,7 @@ with CSV_PATH.open() as f:
 class UserTasks(TaskSet):
     def on_start(self):
         # Open a log file to record all registered emails for cleanup
-        self.reg_log = open("registered_emails.log", "a")
+        self.reg_log = open("logs/registered_emails.log", "a")
 
     def on_stop(self):
         # Close the registration log file

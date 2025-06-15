@@ -154,12 +154,12 @@ Locust provides the following key metrics in its web UI:
 
 ## 3  Running Celery Tasks During Load Tests
 
-Make sure your Celery worker is running with the required queues (`bert-predict`, `recommendation`). Optionally include the `business_status` queue. Start Celery workers:
+Make sure your Celery worker is running with the required queues (`bert_predict`, `recommendation`). Optionally include the `business_status` queue. Start Celery workers:
 
 ```bash
-celery -A Gastronome worker -l info -P gevent -Q bert-predict,recommendation
+celery -A Gastronome worker -l info -P gevent -Q bert_predict,recommendation
 # Optional additional queue:
-# celery -A Gastronome worker -l info -P gevent -Q bert-predict,recommendation,business_status
+# celery -A Gastronome worker -l info -P gevent -Q bert_predict,recommendation,business_status
 ```
 
 ### Pre-caching Recommendations (Recommended)
@@ -180,13 +180,13 @@ Wait until caching completes before initiating your load tests for best results.
 
 ## 4  Cleaning Up Test Users After Load Tests
 
-Running the `UserTasks` in Locust will automatically register a set of dummy accounts to verify the robustness of the registration endpoint. These test accounts are logged in `registered_emails.log` at the project root (next to `manage.py`). Once your load test finishes, remove all of these accounts by executing:
+Running the `UserTasks` in Locust will automatically register a set of dummy accounts to verify the robustness of the registration endpoint. These test accounts are logged in `logs/registered_emails.log` at the project root (next to `manage.py`). Once your load test finishes, remove all of these accounts by executing:
 
 ```bash
 python scripts/cleanup_registered_users.py
 ```
 
-This cleanup script reads each email from `registered_emails.log` and deletes the matching user records from the database. To confirm that no test accounts remain, connect to PostgreSQL:
+This cleanup script reads each email from `logs/registered_emails.log` and deletes the matching user records from the database. To confirm that no test accounts remain, connect to PostgreSQL:
 
 ```bash
 psql -h localhost -U postgres -d gastronome -p 5432

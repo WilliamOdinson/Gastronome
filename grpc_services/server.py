@@ -1,5 +1,6 @@
 import os
 import logging
+import logging.config
 from concurrent.futures import ThreadPoolExecutor
 
 import grpc
@@ -28,11 +29,8 @@ from grpc_services import (  # noqa
 )
 
 # Configure module-level logger
-logger = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-)
+logging.config.dictConfig(settings.LOGGING)
+logger = logging.getLogger("grpc_server")
 
 
 def _rows_topk(mat: np.ndarray, k: int) -> np.ndarray:
