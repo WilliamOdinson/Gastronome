@@ -128,6 +128,13 @@ DATABASES = {
     }
 }
 
+if LOAD_TEST:
+    DATABASES["default"].update({
+        "HOST": "127.0.0.1",
+        "PORT": "6432",
+        "CONN_MAX_AGE": None,
+    })
+
 # ------------------------------
 # VIII. CACHES
 # ------------------------------
