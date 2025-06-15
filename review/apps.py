@@ -40,7 +40,7 @@ def sync_review(sender, instance, **kwargs):
     Index or delete a Review document in OpenSearch when the model changes.
     Triggered on post_save and post_delete.
     """
-    if getattr(settings, "DJANGO_TEST", False) or getattr(settings, "DATA_IMPORT", False):
+    if settings.DJANGO_TEST or settings.DATA_IMPORT:
         # print(Fore.YELLOW + "[SKIP] OpenSearch indexing skipped")
         return
 
@@ -85,7 +85,7 @@ def sync_tip(sender, instance, **kwargs):
     Index or delete a Tip document in OpenSearch when the model changes.
     Triggered on post_save and post_delete.
     """
-    if getattr(settings, "DJANGO_TEST", False):
+    if settings.DJANGO_TEST or settings.DATA_IMPORT:
         # print(Fore.YELLOW + "[SKIP] OpenSearch indexing skipped")
         return
 
