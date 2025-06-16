@@ -1,15 +1,26 @@
 import time
 import uuid
+from importlib import reload
 
+from cryptography.fernet import Fernet
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core import mail
 from django.core.cache import cache
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
+
+FERNET_KEY = "tbEyG_pnHQBeT9XmsiflMK_IgDMoW6ciBdfb2AwKVxU="
+
 User = get_user_model()
 
 
+@override_settings(
+    CELERY_TASK_ALWAYS_EAGER=True,
+    CELERY_TASK_EAGER_PROPAGATES=True,
+    FERNET_KEY=FERNET_KEY,
+)
 class UserRegisterTests(TestCase):
 
     def setUp(self):
@@ -21,6 +32,9 @@ class UserRegisterTests(TestCase):
         self.display = "test"
         self.pass1 = "Passw0rd!"
         self.pass2 = self.pass1
+
+        from user import tasks
+        tasks.FERNET = Fernet(settings.FERNET_KEY.encode())
 
     def _set_captcha(self, code="ABCD"):
         sess = self.client.session
