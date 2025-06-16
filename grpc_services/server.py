@@ -1,6 +1,7 @@
 import os
 import logging
 import logging.config
+import threading
 from concurrent.futures import ThreadPoolExecutor
 
 import grpc
@@ -124,59 +125,59 @@ class CachedState:
         self.user_topk = None
         self.hotlist = None
 
+        self._lock = threading.Lock()
+
         logger.info("CachedState created for state '%s' (k=%d), not yet loaded", self.state, self.k)
 
     def _ensure_loaded(self):
         """
-        If the model and prediction data are not loaded, perform:
-          1. Load trained ensemble model.
-          2. Build user_id <-> row index mappings.
-          3. Build item index <-> business_id mappings.
-          4. Compute full prediction matrix via model.predict_matrix().
-          5. Compute top-k indices per row and map to business_ids.
-          6. Compute hotlist for fallback recommendations.
+        Lazily load all model artifacts once, in a thread-safe manner.
         """
-        if self.model is not None:
+        if self.model is not None:          # fast path
             logger.debug("CachedState for '%s' already loaded, skipping", self.state)
             return
 
-        # Step 1: load ensemble model
-        logger.info("Loading ensemble model for state '%s'", self.state)
-        self.model = _load_ensemble(self.state)
+        with self._lock:                    # only one thread proceeds
+            if self.model is not None:      # another thread might have loaded while we waited
+                return
 
-        # Step 2: build user_id -> row_index, and inverse mapping
-        logger.debug("Building user_id mappings")
-        self.user_map = self.model.user_map
-        self.user_map_inv = {idx: uid for uid, idx in self.user_map.items()}
+            # Step 1: load ensemble model
+            logger.info("Loading ensemble model for state '%s'", self.state)
+            self.model = _load_ensemble(self.state)
 
-        # Step 3: build item index -> business_id, inverse mapping
-        logger.debug("Building item index mappings")
-        self.item_map = self.model.item_map
-        self.item_map_inv = {idx: bid for bid, idx in self.item_map.items()}
+            # Step 2: build user_id -> row_index, and inverse mapping
+            logger.debug("Building user_id mappings")
+            self.user_map = self.model.user_map
+            self.user_map_inv = {idx: uid for uid, idx in self.user_map.items()}
 
-        # Step 4: compute full prediction matrix (numpy array shape: [num_users, num_items])
-        logger.info("Computing full prediction matrix for state '%s'", self.state)
-        preds = self.model.predict_matrix()
-        logger.info("Full prediction matrix shape: %s", preds.shape)
+            # Step 3: build item index -> business_id, inverse mapping
+            logger.debug("Building item index mappings")
+            self.item_map = self.model.item_map
+            self.item_map_inv = {idx: bid for bid, idx in self.item_map.items()}
 
-        # Step 5: compute top-k indices per row
-        idx_topk = _rows_topk(preds, self.k)
+            # Step 4: compute full prediction matrix (numpy array shape: [num_users, num_items])
+            logger.info("Computing full prediction matrix for state '%s'", self.state)
+            preds = self.model.predict_matrix()
+            logger.info("Full prediction matrix shape: %s", preds.shape)
 
-        # Build user_topk: map user_id to list of top-k business_ids
-        logger.info("Building user_topk dictionary")
-        self.user_topk = {}
-        for row_idx, item_indices in enumerate(idx_topk):
-            uid = self.user_map_inv[row_idx]
-            bids = [self.item_map_inv[col_idx] for col_idx in item_indices]
-            self.user_topk[uid] = bids
+            # Step 5: compute top-k indices per row
+            idx_topk = _rows_topk(preds, self.k)
 
-        # Step 6: compute hotlist for fallback recommendations
-        logger.info("Computing hotlist for state '%s'", self.state)
-        self.hotlist = get_state_hotlist(self.state, self.k)
-        logger.info("Hotlist for state '%s' loaded from database", self.state)
+            # Build user_topk: map user_id to list of top-k business_ids
+            logger.info("Building user_topk dictionary")
+            self.user_topk = {}
+            for row_idx, item_indices in enumerate(idx_topk):
+                uid = self.user_map_inv[row_idx]
+                bids = [self.item_map_inv[col_idx] for col_idx in item_indices]
+                self.user_topk[uid] = bids
 
-        logger.info("Finished loading '%s': %d users cached, hotlist ready",
-                    self.state, len(self.user_topk))
+            # Step 6: compute hotlist for fallback recommendations
+            logger.info("Computing hotlist for state '%s'", self.state)
+            self.hotlist = get_state_hotlist(self.state, self.k)
+            logger.info("Hotlist for state '%s' loaded from database", self.state)
+
+            logger.info("Finished loading '%s': %d users cached, hotlist ready",
+                        self.state, len(self.user_topk))
 
     def get_user_recs(self, user_id: str, k: int):
         """
