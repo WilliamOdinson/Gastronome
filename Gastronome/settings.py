@@ -15,6 +15,7 @@ import sys
 from pathlib import Path
 
 from colorama import Fore, Style, init
+from cryptography.fernet import Fernet
 from dotenv import load_dotenv
 import sentry_sdk
 from sentry_sdk.integrations.celery import CeleryIntegration
@@ -189,7 +190,8 @@ CELERY_TASK_ROUTES = {
     "recommend.tasks.compute_user_recs": {"queue": "recommendation"},
 
     # user e-mail dispatch
-    "user.tasks.send_verification_email": {"queue": "email"},
+    "user.tasks.send_verification_email": {"queue": "account"},
+    "user.tasks.prepare_registration": {"queue": "account"},
 
     # review automatic scoring
     "review.tasks.compute_auto_score": {"queue": "bert_predict"},
@@ -263,9 +265,9 @@ LOGGING = {
             "encoding": "utf-8",
             "formatter": "default",
         },
-        "celery_email_file": {
+        "celery_account_file": {
             "class": "logging.handlers.TimedRotatingFileHandler",
-            "filename": LOG_DIR / "celery-email.log",
+            "filename": LOG_DIR / "celery-account.log",
             "when": "midnight",
             "backupCount": 14,
             "encoding": "utf-8",
@@ -317,8 +319,8 @@ LOGGING = {
             "level": "INFO",
             "propagate": False,
         },
-        "celery.worker.email": {
-            "handlers": ["celery_email_file", "console"],
+        "celery.worker.account": {
+            "handlers": ["celery_account_file", "console"],
             "level": "INFO",
             "propagate": False,
         },
@@ -383,6 +385,17 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+FERNET_KEY = os.getenv("FERNET_KEY")
+if not FERNET_KEY:
+    print(Fore.RED + "[ERROR] FERNET_KEY environment variable is not set.")
+    print(Fore.YELLOW + "You can generate one via Fernet.generate_key().decode()")
+    sys.exit(1)
+
+try:
+    FERNET = Fernet(FERNET_KEY.encode())
+except Exception as e:
+    print(Fore.RED + f"[ERROR] Invalid FERNET_KEY: {e}")
+    sys.exit(1)
 
 # ------------------------------
 # XIII. INTERNATIONALIZATION

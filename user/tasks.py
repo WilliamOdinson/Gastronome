@@ -1,22 +1,65 @@
+import secrets
 import time
-from celery import shared_task
+from celery import shared_task, chain
 from celery.utils.log import get_task_logger
+from cryptography.fernet import Fernet, InvalidToken
+from django.conf import settings
+from django.contrib.auth.hashers import make_password
+from django.core.cache import cache
 from django.core.mail import send_mail
 
-logger = get_task_logger("celery.worker.email")
+logger = get_task_logger("celery.worker.account")
+FERNET = Fernet(settings.FERNET_KEY.encode())
 
 
-@shared_task(queue="email", bind=True)
-def send_verification_email(self, email: str, verification_code: str) -> None:
+@shared_task(queue="account", bind=True,
+             autoretry_for=(Exception,), retry_backoff=True, max_retries=3)
+def prepare_registration(self, email: str, enc_pwd: str, display_name: str) -> dict:
     """
-    Asynchronously send a verification email to the user.
+    Prepare the user registration by decrypting the password, hashing it,
+    generating a verification code, and storing everything in the cache.
     """
-    start_ts = time.perf_counter()
-    logger.debug(
-        "verification-email task received email=%s code_len=%d",
-        email,
-        len(verification_code)
+    start = time.perf_counter()
+
+    try:
+        raw_password = FERNET.decrypt(enc_pwd.encode(), ttl=600).decode()
+    except InvalidToken as exc:
+        logger.warning("password decryption failed email=%s err=%s", email, exc)
+        raise
+
+    verification_code = "".join(str(secrets.randbelow(10)) for _ in range(6))
+    password_hash = make_password(raw_password)
+
+    cache.set(
+        f"pending_register:{email}",
+        {
+            "password_hash": password_hash,
+            "display_name": display_name,
+            "verification_code": verification_code,
+        },
+        timeout=600,
     )
+
+    elapsed_ms = (time.perf_counter() - start) * 1000
+    logger.info(
+        "prepare_registration completed email=%s elapsed_ms=%.1f",
+        email,
+        elapsed_ms,
+    )
+
+    # Hand over to the next task in the chain.
+    return {"email": email, "verification_code": verification_code}
+
+
+@shared_task(queue="account", bind=True,
+             autoretry_for=(Exception,), retry_backoff=True, max_retries=5)
+def send_verification_email(self, payload: dict) -> None:
+    """
+    Send a verification email to the user.
+    """
+    email = payload["email"]
+    code = payload["verification_code"]
+    start = time.perf_counter()
 
     try:
         send_mail(
@@ -25,7 +68,7 @@ def send_verification_email(self, email: str, verification_code: str) -> None:
                 "Hello,\n\n"
                 "Thank you for registering with Gastronome.\n"
                 "To complete your account setup, please enter the verification code below:\n\n"
-                f"    {verification_code}\n\n"
+                f"    {code}\n\n"
                 "This code will expire in 10 minutes. "
                 "If you did not request this code, simply disregard this message "
                 "or contact our support team at support@gastronome.com.\n\n"
@@ -40,9 +83,9 @@ def send_verification_email(self, email: str, verification_code: str) -> None:
         logger.exception("failed to send verification email email=%s", email)
         raise  # re-raise the exception to mark the task as failed
 
-    elapsed_ms = (time.perf_counter() - start_ts) * 1000
+    elapsed_ms = (time.perf_counter() - start) * 1000
     logger.info(
         "verification e-mail dispatched email=%s elapsed_ms=%.1f",
         email,
-        elapsed_ms
+        elapsed_ms,
     )

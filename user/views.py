@@ -1,21 +1,20 @@
-import random
 import uuid
 import secrets
 import re
 
+from celery import chain
+from cryptography.fernet import Fernet
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.hashers import make_password
 from django.core.cache import cache
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_http_methods
-from django.utils.crypto import get_random_string
 
 from review.models import Review, Tip
 from user.models import User
-from user.tasks import send_verification_email
+from user.tasks import prepare_registration, send_verification_email
 
 
 @csrf_protect
@@ -97,22 +96,11 @@ def register(request):
                 "error": "This email is already registered."
             })
 
-        verification_code = "".join(str(secrets.randbelow(10)) for _ in range(6))
-        password_hash = make_password(password1)
+        fernet = Fernet(settings.FERNET_KEY.encode())
+        enc_pwd = fernet.encrypt(password1.encode()).decode()
 
-        cache.set(
-            f"pending_register:{email}",
-            {
-                "password_hash": password_hash,
-                "display_name": display_name,
-                "verification_code": verification_code,
-            },
-            timeout=600,
-        )
-
-        # asynchronous e-mail; returns immediately
-        send_verification_email.delay(email, verification_code)
-        print(f"Verification code {verification_code} queued for {email}")
+        chain(prepare_registration.s(email, enc_pwd, display_name)
+              | send_verification_email.s()).delay()
 
         request.session["pending_email"] = email
         return redirect("user:verify_email")
@@ -148,25 +136,27 @@ def verify_email(request):
         data = cache.get(f"pending_register:{email}")
         if not data:
             return render(request, "verify_email.html", {
-                          "error": "Verification expired, please register again."})
+                "error": "Verification expired, please register again."
+            })
 
-        if data["verification_code"] == code:
-            user = User.objects.create(
-                email=email,
-                display_name=data["display_name"],
-                username=email,
-                user_id=uuid.uuid4().hex[:22],
-            )
-            user.password = data["password_hash"]
-            user.save()
+        if data["verification_code"] != code:
+            return render(request, "verify_email.html", {
+                "error": "Invalid verification code."
+            })
 
-            cache.delete(f"pending_register:{email}")
+        user = User.objects.create(
+            email=email,
+            display_name=data["display_name"],
+            username=email,
+            user_id=uuid.uuid4().hex[:22],
+        )
+        user.password = data["password_hash"]
+        user.save()
 
-            login(request, user)
-            return redirect('core:index')
-        else:
-            return render(request, "verify_email.html",
-                          {"error": "Invalid verification code."})
+        cache.delete(f"pending_register:{email}")
+        login(request, user)
+        return redirect("core:index")
+
     return render(request, "verify_email.html")
 
 
@@ -187,8 +177,5 @@ def resend_verification(request):
     data["verification_code"] = new_code
     cache.set(f"pending_register:{email}", data, timeout=1800)
 
-    # asynchronous e-mail
-    send_verification_email.delay(email, new_code)
-    print(f"New verification code {new_code} queued for {email}")
-
+    send_verification_email.delay({"email": email, "verification_code": new_code})
     return redirect("user:verify_email")

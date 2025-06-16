@@ -17,12 +17,20 @@ These variables control Django's runtime behavior and security settings.
 DJANGO_SECRET_KEY="<your-django-secret-key>"
 LOAD_TEST="False"    # Set to "True" only in load test environments
 DJANGO_DEBUG="True"  # Set to "False" in production environments
+FERNET_KEY="tbEyG_pnHQBeT9XmsiflMK_IgDMoW6ciBdfb2AwKVxU="   # Example only — generate your own!
 DJANGO_ALLOWED_HOSTS="localhost,127.0.0.1"  # Add your production domains as needed
 ```
 
 - **`DJANGO_SECRET_KEY`**: Used for cryptographic signing and session management. Keep it secret.
 - **`LOAD_TEST`**: Enables optimizations specific to automated load testing. For more information, refer to [load_tests/README.md](https://github.com/WilliamOdinson/Gastronome/blob/main/load_tests/README.md)
 - **`DJANGO_DEBUG`**: Controls debug mode; disable (`False`) in production.
+- **`FERNET_KEY`**: A cryptographic key used by the Gastronome application for secure, symmetric encryption and decryption of sensitive data, particularly user passwords before they are processed by background tasks in Celery. This key must be exactly 32 URL-safe base64-encoded bytes. You can generate a suitable key using the Python cryptography package.
+
+  ```bash
+  python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+  # output: tbEyG_pnHQBeT9XmsiflMK_IgDMoW6ciBdfb2AwKVxU=
+  ```
+
 - **`DJANGO_ALLOWED_HOSTS`**: A comma-separated list of allowed domain names/IPs.
 
 ## 2  PostgreSQL Database Settings
