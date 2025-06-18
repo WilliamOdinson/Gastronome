@@ -30,7 +30,12 @@ MAPPING = {
         "dynamic": "strict",
         "properties": {
             "user_id": {"type": "keyword"},
-            "email": {"type": "keyword"},
+            "email": {
+                "type": "text",
+                "fields": {
+                    "keyword": {"type": "keyword", "ignore_above": 256}
+                }
+            },
             "display_name": {
                 "type": "text",
                 "analyzer": "standard",

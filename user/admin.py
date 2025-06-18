@@ -121,7 +121,10 @@ class OSUserChangeList(ChangeList):
                 # Ignore unsupported fields
                 continue
             direction = "desc" if ordering.startswith("-") else "asc"
-            sort_clause.append({field: {"order": direction}})
+            if field in ("email", "display_name"):
+                sort_clause.append({f"{field}.keyword": {"order": direction}})
+            else:
+                sort_clause.append({field: {"order": direction}})
         if not sort_clause:
             # Fall back to a stable order by email ascending
             sort_clause = [{"email": {"order": "asc"}}]
