@@ -8,6 +8,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_http_methods
@@ -49,16 +50,53 @@ def user_logout(request):
 
 
 @login_required
+@require_http_methods(["GET"])
 def user_profile(request):
+    """
+    Display the user's profile page, including their reviews and tips.
+    """
     user = request.user
-    reviews = Review.objects.filter(user=user).select_related("business")
-    tips = Tip.objects.filter(user=user).select_related("business")
 
-    return render(request, "profile.html", {
-        "user_obj": user,
-        "reviews": reviews,
-        "tips": tips,
-    })
+    # Fetch reviews and tips for the user, with pagination
+    review_qs = (
+        Review.objects
+        .filter(user=user)
+        .select_related("business")
+        .order_by("-date")
+    )
+    tip_qs = (
+        Tip.objects
+        .filter(user=user)
+        .select_related("business")
+        .order_by("-date")
+    )
+
+    review_paginator = Paginator(review_qs, 10)
+    tip_paginator = Paginator(tip_qs, 10)
+
+    try:
+        reviews = review_paginator.page(request.GET.get("reviews_page", 1))
+    except PageNotAnInteger:
+        reviews = review_paginator.page(1)
+    except EmptyPage:
+        reviews = review_paginator.page(review_paginator.num_pages)
+
+    try:
+        tips = tip_paginator.page(request.GET.get("tips_page", 1))
+    except PageNotAnInteger:
+        tips = tip_paginator.page(1)
+    except EmptyPage:
+        tips = tip_paginator.page(tip_paginator.num_pages)
+
+    return render(
+        request,
+        "profile.html",
+        {
+            "user_obj": user,
+            "reviews": reviews,
+            "tips": tips,
+        },
+    )
 
 
 @csrf_protect
