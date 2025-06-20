@@ -253,11 +253,11 @@ class RecommendationServicer(recommend_pb2_grpc.RecommendationServiceServicer):
         """
         logger.info("Received GetStateHotlist request: state='%s', k=%d", request.state, request.k)
         st = request.state.upper()
-        cache = self.cached.get(st)
-        if cache is None:
-            logger.error("State '%s' not loaded", st)
-            context.abort(grpc.StatusCode.NOT_FOUND, f"state {st} not loaded")
-        hotlist = cache.get_hotlist(request.k)
+
+        # Call the modified get_state_hotlist function to get the top-k businesses
+        # based on ratings and review count
+        hotlist = get_state_hotlist(st, request.k)  # Directly call get_state_hotlist function
+
         logger.info("Returning hotlist of length %d for state '%s'", len(hotlist), st)
         return recommend_pb2.RecListResponse(business_ids=hotlist)
 

@@ -49,15 +49,28 @@ def get_user_recommendations(user, state: str, k: int = TOP_K) -> List[str]:
 
 
 def get_state_hotlist(state: str = "PA", k: int = TOP_K) -> List[str]:
-    qs = (
-        Business.objects.filter(state=state)
-        .filter(stars__gte=4.0, review_count__gte=400)
-        .annotate(rc=Count("reviews"))
-        .order_by("-stars", "-rc")[:64]
-    )
-    ids = list(qs.values_list("business_id", flat=True))
-    random.shuffle(ids)
-    return ids[:k]
+    cache_key = f"hotlist:{state}:{k}"
+    hotlist = cache.get(cache_key)
+
+    if not hotlist:
+        logger.info(f"Cache miss for {state} hotlist, fetching from DB...")
+        qs = (
+            Business.objects.filter(state=state)
+            .filter(stars__gte=4.0, review_count__gte=400)
+            .annotate(rc=Count("reviews"))
+            .order_by("-stars", "-rc")[:64]
+        )
+        ids = list(qs.values_list("business_id", flat=True))
+        random.shuffle(ids)
+        hotlist = ids[:k]
+
+        # Set cache with a timeout of 12 hours
+        cache.set(cache_key, hotlist, timeout=43200)
+    else:
+        logger.info(f"Cache hit for {state} hotlist")
+
+    return hotlist
+
 
 
 def fetch_recommendations(user, state: str = "PA", n: int = RETURN_N):
