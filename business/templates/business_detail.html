@@ -146,6 +146,69 @@
             </aside>
         </div>
     </div>
+
+    <section id="similar" class="container margin_60_35">
+    <h2 class="mb-4">You may also like</h2>
+
+    <div class="row">
+        {% for rec in recommendations %}
+            <div class="col-md-6">
+                <div class="strip grid">
+                    <figure>
+                        <a href="#0" class="wish_bt"></a>
+                        <a href="{% url 'business:business_detail' rec.business_id %}">
+                            <img src="{{ rec.photos.first.image_url|default:'https://placehold.co/400x266' }}"
+                                 class="img-fluid" alt="{{ rec.name }}">
+                            <div class="read_more"><span>Read more</span></div>
+                        </a>
+                        <small>
+                            {% firstof rec.categories.first.name "Business" %}
+                        </small>
+                    </figure>
+
+                    <div class="wrapper">
+                        <h3 class="ellipsis">
+                            <a href="{% url 'business:business_detail' rec.business_id %}">
+                                {{ rec.name }}
+                            </a>
+                        </h3>
+                        <small>{{ rec.address|default:rec.city }}, {{ rec.state }}</small>
+                        <p class="two-lines">{{ rec.attributes.description|truncatechars:120 }}</p>
+
+                        <a class="address"
+                           href="https://www.openstreetmap.org/?mlat={{ rec.latitude }}&mlon={{ rec.longitude }}#map=17/{{ rec.latitude }}/{{ rec.longitude }}"
+                           target="_blank">
+                           Get directions
+                        </a>
+                    </div>
+
+                    <ul>
+                        <li>
+                            {% if rec.is_open %}
+                                <span class="loc_open">Now Open</span>
+                            {% else %}
+                                <span class="loc_closed">Now Closed</span>
+                            {% endif %}
+                        </li>
+                        <li>
+                            <div class="score">
+                                <span>
+                                    {% if rec.stars >= 8 %}Superb{% elif rec.stars >= 7 %}
+                                        Good{% else %}Okay{% endif %}
+                                    <em>{{ rec.review_count }} Reviews</em>
+                                </span>
+                                <strong>{{ rec.stars|floatformat:1 }}</strong>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        {% empty %}
+            <p class="text-muted">No similar places found.</p>
+        {% endfor %}
+    </div>
+</section>
+
 </main>
 {% endblock %}
 

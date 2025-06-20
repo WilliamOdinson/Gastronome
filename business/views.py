@@ -1,18 +1,52 @@
-from ast import literal_eval
-import hashlib
 import json
 import pickle
+from ast import literal_eval
+from typing import List, Dict
 
 from django.core.cache import cache
 from django.shortcuts import get_object_or_404, render
 
 from business.models import Business
 from review.models import Review
+from recommend.services import log_click, get_click_recommendations
 
 
-def business_detail(request, business_id):
+def parse_amenities(attrs: Dict) -> List[str]:
     """
-    Display detailed information of a single business.
+    Turn the nested JSON attributes field into a flat list of printable strings.
+    """
+    amenities: List[str] = []
+
+    def _flatten(key: str, val):
+        # value may be stored as a str representation of a dict
+        if isinstance(val, str) and val.startswith("{") and val.endswith("}"):
+            try:
+                val = literal_eval(val)
+            except Exception:
+                return
+
+        if isinstance(val, dict):
+            for subk, subv in val.items():
+                _flatten(f"{key}.{subk}", subv)
+        else:
+            # skip obvious negatives
+            falsy = {"False", "None", "u'none'", "'no'", "no", "none", "", None}
+            if str(val) in falsy:
+                return
+            if str(val) == "True":
+                amenities.append(key)
+            else:
+                amenities.append(f"{key}: {val}")
+
+    for k, v in attrs.items():
+        _flatten(k, v)
+
+    return amenities
+
+
+def business_detail(request, business_id: str):
+    """
+    Render a single business detail page and record the page-view click.
     """
     cache_key = f"biz_detail:{business_id}"
     cached = cache.get(cache_key)
@@ -22,19 +56,27 @@ def business_detail(request, business_id):
     else:
         business = get_object_or_404(Business, pk=business_id)
         business.stars = round(business.stars, 2)
-        recent_checkins = business.checkins.order_by('-checkin_time')[:10]
-        reviews = business.reviews.select_related('user').order_by('-date')[:50]
-        cache.set(cache_key, pickle.dumps((business, recent_checkins, reviews)), timeout=86400)
+        recent_checkins = business.checkins.order_by("-checkin_time")[:10]
+        reviews = (business.reviews.select_related("user").order_by("-date")[:50])
+        cache.set(
+            cache_key,
+            pickle.dumps((business, recent_checkins, reviews)),
+            timeout=86400,
+        )
 
-    user_has_review = False
-    if request.user.is_authenticated:
-        user_has_review = business.reviews.filter(user=request.user).exists()
-    hours = business.hours.values('day', 'open_time', 'close_time')
+    log_click(request, business)
+    rec_queryset = get_click_recommendations(business_id, n=8)
+
+    user_has_review = (
+        request.user.is_authenticated
+        and business.reviews.filter(user=request.user).exists()
+    )
+    hours = business.hours.values("day", "open_time", "close_time")
     hours_json = [
         {
-            'day': h['day'],
-            'open_time': h['open_time'].strftime('%H:%M'),
-            'close_time': h['close_time'].strftime('%H:%M'),
+            "day": h["day"],
+            "open_time": h["open_time"].strftime("%H:%M"),
+            "close_time": h["close_time"].strftime("%H:%M"),
         }
         for h in hours
     ]
@@ -43,40 +85,18 @@ def business_detail(request, business_id):
     split_index = (len(parsed_amenities) + 1) // 2
     rating_range = range(1, 6)
 
-    return render(request, 'business_detail.html', {
-        'business': business,
-        'recent_checkins': recent_checkins,
-        'reviews': reviews,
-        'rating_range': rating_range,
-        "user_has_review": user_has_review,
-        'hours_json': json.dumps(hours_json),
-        'parsed_amenities': parsed_amenities,
-        'amenities_split_index': split_index,
-    })
-
-
-def parse_amenities(attributes: dict) -> list[str]:
-    amenities = []
-
-    def flatten(k, v):
-        """Flatten nested dict entries and handle value types"""
-        if isinstance(v, str) and v.startswith("{") and v.endswith("}"):
-            try:
-                v = literal_eval(v)
-            except Exception:
-                return  # skip invalid dict string
-        if isinstance(v, dict):
-            for subk, subv in v.items():
-                flatten(f"{k}.{subk}", subv)
-        else:
-            if str(v) in ["False", "None", "u'none'", "'no'", "no", "none", "", None]:
-                return
-            if str(v) == "True":
-                amenities.append(k)
-            else:
-                amenities.append(f"{k}: {v}")
-
-    for key, value in attributes.items():
-        flatten(key, value)
-
-    return amenities
+    return render(
+        request,
+        "business_detail.html",
+        {
+            "business": business,
+            "recent_checkins": recent_checkins,
+            "reviews": reviews,
+            "recommendations": rec_queryset,
+            "rating_range": rating_range,
+            "user_has_review": user_has_review,
+            "hours_json": json.dumps(hours_json),
+            "parsed_amenities": parsed_amenities,
+            "amenities_split_index": split_index,
+        },
+    )

@@ -20,6 +20,7 @@ Django==5.2.2
 django-redis==5.4.0
 dotenv==0.9.9
 Events==0.5
+faiss-cpu==1.11.0
 filelock==3.18.0
 Flask==3.1.1
 flask-cors==6.0.0
