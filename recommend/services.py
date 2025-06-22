@@ -7,7 +7,6 @@ from typing import Dict, List
 
 import faiss
 import numpy as np
-import pandas as pd
 from django.conf import settings
 from django.core.cache import cache
 from django.db.models import Count
@@ -31,48 +30,36 @@ _MODELS: Dict[str, object] = {}
 _INDEX = None
 _IDS: np.ndarray | None = None
 _STR2INT: Dict[str, int] | None = None
-_VEC_MAT: np.ndarray | None = None
+_VEC_MM: np.memmap | None = None
 _LOCK = threading.Lock()
 
-# disk paths
-WEIGHTS_DIR = Path(settings.BASE_DIR) / "assets" / "weights"
+ROOT = Path(settings.BASE_DIR)
+WEIGHTS_DIR = ROOT / "assets" / "weights"
 INDEX_PATH = WEIGHTS_DIR / "biz_hnsw.index"
 MAP_PATH = WEIGHTS_DIR / "biz_id.npy"
-EMB_PATH = Path(settings.BASE_DIR) / "database" / "embeddings.csv"
+MM_PATH = WEIGHTS_DIR / "biz_emb.f32"
 
 
 def _load_knn_index():
     """
     Thread-safe lazy loading of the FAISS index and embedding matrix.
     """
-    global _INDEX, _IDS, _STR2INT, _VEC_MAT
-    if _INDEX is None or _VEC_MAT is None:
+    global _INDEX, _IDS, _STR2INT, _VEC_MM
+    if _INDEX is None:
         with _LOCK:
-            if _INDEX is None or _VEC_MAT is None:
+            if _INDEX is None:
                 # 1. index + id map
                 _INDEX = faiss.read_index(str(INDEX_PATH))
                 _IDS = np.load(str(MAP_PATH), allow_pickle=True)
                 _STR2INT = {s: i for i, s in enumerate(_IDS)}
                 faiss.omp_set_num_threads(4)
 
-                # 2. embedding matrix
-                emb = pd.read_csv(EMB_PATH)
-                biz = emb[emb.id.str.endswith("_b")].copy()
-                biz["business_id"] = biz.id.str.rstrip("_b")
-                biz.drop(columns="id", inplace=True)
-                # re-index to the same order as _IDS
-                biz.set_index("business_id", inplace=True)
-                mat = biz.loc[_IDS].to_numpy(dtype=np.float32)
-                mat = np.ascontiguousarray(mat)
-                faiss.normalize_L2(mat)
-                _VEC_MAT = mat
+                # 2. memory-mapped vectors
+                rows, dims = _INDEX.ntotal, _INDEX.d
+                _VEC_MM = np.memmap(MM_PATH, dtype="float32", mode="r", shape=(rows, dims))
 
-                logger.info(
-                    "FAISS index loaded: %d vectors, dim=%d",
-                    _INDEX.ntotal,
-                    _INDEX.d,
-                )
-    return _INDEX, _IDS, _STR2INT, _VEC_MAT
+                logger.info("FAISS index loaded: %d vectors × %d dims, mem-map ready", rows, dims)
+    return _INDEX, _IDS, _STR2INT, _VEC_MM
 
 
 def get_similar_businesses(anchor_id: str, k: int = TOP_K, same_state: bool = True) -> List[str]:
@@ -81,13 +68,13 @@ def get_similar_businesses(anchor_id: str, k: int = TOP_K, same_state: bool = Tr
     (cosine distance on node2vec embeddings).
     Results are restricted to the same US state if same_state is True.
     """
-    index, ids_arr, str2int, vec_mat = _load_knn_index()
+    index, ids_arr, str2int, vec_mm = _load_knn_index()
     if anchor_id not in str2int:
         return []
-    int_id: int = str2int[anchor_id]
-    vec = vec_mat[int_id]
+    int_id = str2int[anchor_id]
+    vec = np.asarray(vec_mm[int_id])
     _, ind = index.search(vec[None, :], k + 1)
-    cand: list[str] = [ids_arr[j] for j in ind[0] if ids_arr[j] != anchor_id]
+    cand = [ids_arr[j] for j in ind[0] if ids_arr[j] != anchor_id]
 
     if same_state:
         anchor_state = (
@@ -123,20 +110,20 @@ def log_click(request, business: Business) -> None:
             )
 
         cache_key = f"biz:clickcnt:{business.business_id}"
-        # Initialize the key with 0 if it doesn't exist
-        if not cache.get(cache_key):
-            cache.set(cache_key, 0, timeout=86400)
 
-        # Increment the click count
+        # create the key with TTL = 24 h if it does not exist
+        cache.add(cache_key, 0, timeout=86400)
+        # now we can increment safely
         cache.incr(cache_key)
-        cache.expire(cache_key, 86400)
+
     except Exception:
         logger.exception("log_click failed")
 
 
 def get_click_recommendations(business_id: str, n: int = RETURN_N) -> List[Business]:
     """
-    Called by business detail view.
+    Retrieve n similar businesses for the detail page.
+    Falls back to the same-state hot list if fewer than n neighbors are available.
     Cache key: rec:click:<biz_id>
     """
     cache_key = f"rec:click:{business_id}"
@@ -164,6 +151,9 @@ def get_click_recommendations(business_id: str, n: int = RETURN_N) -> List[Busin
 
 
 def _load_ensemble(state: str = "PA"):
+    """
+    Lazy load the per-state ensemble recommender pickle.
+    """
     state = state.lower()
     if state not in _MODELS:
         mod = import_module("recommend.algorithm.ensemble_recommender")
@@ -173,6 +163,9 @@ def _load_ensemble(state: str = "PA"):
 
 
 def _sample_keep_order(seq: List[str], k: int) -> List[str]:
+    """
+    Randomly sample k elements while preserving the original order in seq.
+    """
     if len(seq) <= k:
         return seq
     idx = sorted(random.sample(range(len(seq)), k))
@@ -180,12 +173,18 @@ def _sample_keep_order(seq: List[str], k: int) -> List[str]:
 
 
 def get_user_recommendations(user, state: str, k: int = TOP_K) -> List[str]:
+    """
+    Personalized top-K business ids predicted by the ensemble model for a given user.
+    """
     model = _load_ensemble(state)
     pairs = model.predict(user.user_id, n=k)
     return [bid for bid, _ in pairs]
 
 
 def get_state_hotlist(state: str = "PA", k: int = TOP_K) -> List[str]:
+    """
+    Return k high-quality businesses within a state based on star rating and review count.
+    """
     cache_key = f"hotlist:{state}:{k}"
     hotlist = cache.get(cache_key)
 
@@ -211,7 +210,9 @@ def get_state_hotlist(state: str = "PA", k: int = TOP_K) -> List[str]:
 
 def fetch_recommendations(user, state: str = "PA", n: int = RETURN_N):
     """
-    Main entry used by views.  Returns queryset of length n.
+    Fetch n business recommendations for a user or state.
+    If the user is authenticated and has at least 10 reviews, compute personalized recommendations.
+    Otherwise, return a state-based hot list.
     """
     state = state.upper()
 
@@ -244,8 +245,7 @@ def fetch_recommendations(user, state: str = "PA", n: int = RETURN_N):
 
     # still no ids: take hot-list (cold-start)
     if not ids:
-        if user.is_authenticated and Review.objects.filter(user=user).count() >= 10:
-            # fallback + trigger celery job
+        if eligible:
             from recommend.tasks import compute_user_recs
             compute_user_recs.delay(user.pk, state)
             ids = get_state_hotlist(state, TOP_K)
