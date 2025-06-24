@@ -17,7 +17,7 @@ These variables control Django's runtime behavior and security settings.
 DJANGO_SECRET_KEY="<your-django-secret-key>"
 LOAD_TEST="False"    # Set to "True" only in load test environments
 DJANGO_DEBUG="True"  # Set to "False" in production environments
-FERNET_KEY="tbEyG_pnHQBeT9XmsiflMK_IgDMoW6ciBdfb2AwKVxU="   # Example only — generate your own!
+FERNET_KEY="tbEyG_pnHQBeT9XmsiflMK_IgDMoW6ciBdfb2AwKVxU="   # Example only - generate your own!
 DJANGO_ALLOWED_HOSTS="localhost,127.0.0.1"  # Add your production domains as needed
 ```
 
