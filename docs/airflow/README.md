@@ -1,6 +1,6 @@
 # Apache Airflow 3.x Quick Start Guide
 
-This guide provides a concise quick-start procedure for setting up Apache Airflow 3.x, focusing on key configuration steps for a robust deployment.
+This guide provides a concise quick-start procedure for setting up Apache Airflow 3.x, focusing on key configuration steps for a robust deployment. An example configuration with custom settings is provided in [docs/airflow/airflow.cfg](https://github.com/WilliamOdinson/Gastronome/blob/main/docs/airflow/airflow.cfg).
 
 ## 1  Environment Setup
 
@@ -104,3 +104,28 @@ Once started, open your browser and navigate to [http://localhost:8080](http://l
 > SimpleAuthManager is designed for simplicity for development and testing environments.
 >
 > For production deployments, consider using more robust authentication mechanisms. The [AWS Auth Manager](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/auth-manager/index.html) is available but still experimental. <u>If your Airflow deployment is only accessible from an internal network, the security risk is reduced</u>; however, always evaluate your organization's security requirements before deploying in production.
+
+## 7  Email Notifications via SMTP
+
+Airflow supports sending task failure alerts and other notifications via SMTP out of the box. This enables you to receive timely notifications for operational issues. Configure SMTP settings in the `airflow.cfg` file as follows:
+
+```ini
+[email]
+email_backend = airflow.utils.email.send_email_smtp
+from_email = "Airflow Alert <airflow@example.com>"
+
+[smtp]
+smtp_host = smtp.example.com
+smtp_port = 587
+smtp_user = airflow
+smtp_password = yourpassword
+smtp_mail_from = airflow@example.com
+smtp_starttls = True
+smtp_ssl = False
+```
+
+To test email delivery, trigger a failed task in a sample DAG or use the Airflow CLI. If no email arrives, check the Airflow scheduler logs for authentication or delivery errors.
+
+> [!NOTE]
+>
+> For advanced configuration (including Amazon SES, SendGrid, and provider-based backends), see the [official Airflow email documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/email-config.html).
