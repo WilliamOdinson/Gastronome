@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 
+#
 # Usage:
 #   ./airflow_server.sh start
 #   ./airflow_server.sh stop
@@ -14,16 +14,20 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOG_DIR="$ROOT_DIR/logs/airflow"
 PID_DIR="$ROOT_DIR/.pids"
 PASSWORD_FILE="${AIRFLOW_HOME:-$HOME/airflow}/simple_auth_manager_passwords.json.generated"
+DAG_DIR="${AIRFLOW_DAG_DIR:-${AIRFLOW_HOME:-$HOME/airflow}/dags}"
+
+SERVICES=("api-server" "scheduler" "dag-processor" "triggerer")
 
 activate_env() {
   if ! command -v pyenv >/dev/null; then
     echo "[ERROR] pyenv not found in PATH" >&2
     exit 1
   fi
-  eval "$(pyenv init -)" >/dev/null
+  eval "$(pyenv init -)"   >/dev/null
   eval "$(pyenv virtualenv-init -)" >/dev/null
   pyenv activate "$PYENV_VENV"
   export AIRFLOW__DATABASE__SQL_ALCHEMY_CONN="postgresql+psycopg2://airflow:airflow@localhost:5432/airflow"
+  export  AIRFLOW__CORE__LOAD_EXAMPLES=false
 }
 
 assert_airflow3() {
@@ -40,9 +44,8 @@ assert_airflow3() {
 }
 
 check_db_url() {
-  if [[ -z "${AIRFLOW__DATABASE__SQL_ALCHEMY_CONN:-}" ]]; then
+  [[ -n "${AIRFLOW__DATABASE__SQL_ALCHEMY_CONN:-}" ]] || \
     echo "[WARN] AIRFLOW__DATABASE__SQL_ALCHEMY_CONN not set. Will use SQLite."
-  fi
 }
 
 init_or_migrate_db() {
@@ -57,26 +60,49 @@ make_dirs() {
   mkdir -p "$LOG_DIR" "$PID_DIR"
 }
 
+link_dags() {
+  echo ">>> Linking local DAGs into $DAG_DIR"
+  mkdir -p "$DAG_DIR"
+
+  shopt -s nullglob
+  local matched=()
+
+  for f in "$ROOT_DIR"/airflow/*_dag.py; do
+    matched+=("$f")
+    base=$(basename "$f")
+    ln -sf "$f" "$DAG_DIR/$base"
+    echo "    ↪ linked $base"
+  done
+
+  shopt -u nullglob
+
+  if [[ ${#matched[@]} -eq 0 ]]; then
+    echo -e "\033[0;33m[WARN] No DAG files matched the patterns in $ROOT_DIR\033[0m"
+  else
+    echo ">>> Total DAGs linked: ${#matched[@]}"
+  fi
+}
+
+
 bg_start() {
   local name=$1; shift
-  "$@" > "$LOG_DIR/$name.out" 2>&1 &
-  echo $! > "$PID_DIR/$name.pid"
+  "$@" >"$LOG_DIR/$name.out" 2>&1 &
+  echo $! >"$PID_DIR/$name.pid"
 }
 
 start_services() {
   local already=false
-  for svc in api-server scheduler; do
+  for svc in "${SERVICES[@]}"; do
     pid_file="$PID_DIR/${svc}.pid"
     if [[ -f "$pid_file" ]] && kill -0 "$(cat "$pid_file")" 2>/dev/null; then
       echo "[INFO] $svc already running (pid $(cat "$pid_file"))"
       already=true
     fi
   done
-  if $already; then
-    echo "[WARN] Airflow services are already active; aborting start."
-    return 0
-  fi
+  $already && { echo "[WARN] Airflow services are already active; aborting start."; return; }
+
   make_dirs
+  link_dags
   check_db_url
   init_or_migrate_db
 
@@ -84,21 +110,36 @@ start_services() {
   bg_start api-server airflow api-server --port "$WEB_PORT"
 
   echo ">>> Starting scheduler"
-  bg_start scheduler  airflow scheduler
+  bg_start scheduler airflow scheduler
+
+  echo ">>> Starting dag-processor"
+  bg_start dag-processor airflow dag-processor
+
+  echo ">>> Starting triggerer"
+  bg_start triggerer airflow triggerer
 
   status_services
   show_admin_password
 
-  if [[ "$AIRFLOW__DATABASE__SQL_ALCHEMY_CONN" == postgresql+psycopg2://airflow:airflow@localhost:5432/airflow ]]; then
-    echo -e "\033[0;31m[WARNING] Your PostgreSQL 'airflow' user password is set to the default 'airflow'."
-    echo -e "Please change this database password to a secure value IMMEDIATELY"
-    echo -e "psql -c \"ALTER USER airflow WITH PASSWORD '<your-strong-password>';\" -U postgres\033[0m"
+  conn="${AIRFLOW__DATABASE__SQL_ALCHEMY_CONN:-}"
+  if [[ "$conn" =~ postgresql\+psycopg2://([^:]+):([^@]+)@ ]]; then
+    user="${BASH_REMATCH[1]}"
+    pass="${BASH_REMATCH[2]}"
+    if [[ "$user" == "airflow" && "$pass" == "airflow" ]]; then
+      echo -e "\033[0;31m[WARNING] Your PostgreSQL username and password are both 'airflow'."
+      echo -e "Please change them IMMEDIATELY:"
+      echo -e "psql -c \"ALTER USER airflow WITH PASSWORD '<your-strong-password>';\" -U postgres\033[0m"
+    elif [[ "$pass" == "airflow" ]]; then
+      echo -e "\033[0;31m[WARNING] Your PostgreSQL password is 'airflow'."
+      echo -e "Please change it IMMEDIATELY:"
+      echo -e "psql -c \"ALTER USER $user WITH PASSWORD '<your-strong-password>';\" -U postgres\033[0m"
+    fi
   fi
 }
 
 stop_services() {
   echo ">>> Stopping Airflow processes"
-  for svc in api-server scheduler; do
+  for svc in "${SERVICES[@]}"; do
     pid_file="$PID_DIR/${svc}.pid"
     if [[ -f "$pid_file" ]]; then
       pid=$(cat "$pid_file")
@@ -112,7 +153,7 @@ stop_services() {
 }
 
 status_services() {
-  for svc in api-server scheduler; do
+  for svc in "${SERVICES[@]}"; do
     pid_file="$PID_DIR/${svc}.pid"
     if [[ -f "$pid_file" ]] && kill -0 "$(cat "$pid_file")" 2>/dev/null; then
       echo "$svc running (pid $(cat "$pid_file"))"
@@ -127,7 +168,7 @@ show_admin_password() {
     echo ">>> SimpleAuth admin passwords:"
     cat "$PASSWORD_FILE"
   else
-    echo "[INFO] Password file not generated yet, please check again after first boot."
+    echo "[INFO] Password file not generated yet; check again after first boot."
   fi
 }
 
