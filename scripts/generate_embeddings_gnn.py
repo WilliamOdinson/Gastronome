@@ -246,11 +246,27 @@ def main():
             tot_examples += pos_edge.size(1)
         avg = tot_loss / tot_examples
         logging.info(f"Epoch {epoch} - avg BPR loss: {avg:.6f}")
+        return avg
+
+    # early-stopping params
+    max_epochs = 50
+    min_delta = 1e-3
+    patience = 3
+    best_loss = float("inf")
+    stagnate = 0
 
     logging.info("Training ...")
     with logging_redirect_tqdm():
-        for ep in range(1, 6):
-            train_epoch(ep)
+        for ep in range(1, max_epochs + 1):
+            cur_loss = train_epoch(ep)
+            if best_loss - cur_loss > min_delta:
+                best_loss = cur_loss
+                stagnate = 0
+            else:
+                stagnate += 1
+            if stagnate >= patience:
+                logging.info(f"Early stop: no improvement >={min_delta} for {patience} epochs.")
+                break
 
     # dump embeddings
     logging.info("Computing final embeddings on CPU to avoid GPU OOM ...")
