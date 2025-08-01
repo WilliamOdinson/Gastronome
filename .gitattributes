@@ -1,3 +1,4 @@
+# Git LFS patterns
 *.h5 filter=lfs diff=lfs merge=lfs -text
 *.pth filter=lfs diff=lfs merge=lfs -text
 *.keras filter=lfs diff=lfs merge=lfs -text
@@ -7,3 +8,7 @@
 *.index filter=lfs diff=lfs merge=lfs -text
 *.gz filter=lfs diff=lfs merge=lfs -text
 *.f32 filter=lfs diff=lfs merge=lfs -text
+
+# Linguist overrides
+# Mark Jupyter notebooks as documentation so they are NOT counted in GitHub language statistics.
+*.ipynb linguist-documentation
