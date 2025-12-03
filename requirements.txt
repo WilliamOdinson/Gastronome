@@ -16,7 +16,7 @@ click-repl==0.3.0
 colorama==0.4.6
 ConfigArgParse==1.7.1
 cryptography==44.0.2
-Django==5.2.2
+Django==5.2.9
 django-redis==5.4.0
 dotenv==0.9.9
 Events==0.5
