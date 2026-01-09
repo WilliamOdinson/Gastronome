@@ -153,7 +153,7 @@ vine==5.1.0
 watchfiles==1.0.5
 wcwidth==0.2.13
 websockets==14.2
-Werkzeug==2.2.3
+Werkzeug==3.1.5
 wirerope==1.0.0
 wrapt==1.17.2
 WTForms==3.2.1
