@@ -1,3 +1,14 @@
+"""
+API view functions.
+
+Provides two HTTP endpoints:
+- ``predict_review_api`` — accepts a JSON body ``{"review": "..."}`` via POST
+  and returns the DistilBERT-predicted star rating.
+- ``get_captcha_image``  — generates a randomised CAPTCHA PNG with
+  noise lines and dot interference, storing the verification code in
+  the user's Django session.
+"""
+
 import json
 import random
 import time

@@ -1,3 +1,10 @@
+"""
+CAPTCHA text generator.
+
+Produces a cryptographically random alphanumeric string used as the
+verification code embedded in CAPTCHA images returned by :func:`api.views.get_captcha_image`.
+"""
+
 import secrets
 import string
 
