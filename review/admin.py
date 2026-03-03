@@ -1,3 +1,16 @@
+"""
+Django admin configuration for the ``review`` application.
+
+Registers ``Review`` and ``Tip`` with custom OpenSearch-backed
+``ChangeList`` classes (``OSReviewChangeList``, ``OSTipChangeList``).
+All searching, filtering, sorting, and pagination happen in OpenSearch;
+only the IDs for the current page are hydrated from the database to
+keep Django admin templates fully functional.
+
+Provides bulk actions for CSV export, auto-score recomputation via
+Celery, and incrementing reaction counters (useful / funny / cool).
+"""
+
 import csv
 import datetime
 from math import ceil

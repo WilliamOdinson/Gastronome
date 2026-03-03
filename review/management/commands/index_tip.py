@@ -1,3 +1,11 @@
+"""
+Management command: ``index_tip``
+
+Creates the OpenSearch ``gastronome-tip`` index and bulk-indexes every
+``Tip`` row, including denormalised user and business names for
+full-text search in the admin interface.
+"""
+
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from opensearchpy import helpers

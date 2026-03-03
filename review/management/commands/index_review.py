@@ -1,3 +1,12 @@
+"""
+Management command: ``index_review``
+
+Creates the OpenSearch ``gastronome-review`` index (with edge-ngram
+analysers for autocomplete on text, user, and business name fields)
+and bulk-indexes every ``Review`` row. Intended as a one-time bootstrap
+or full reindex operation.
+"""
+
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from opensearchpy import helpers

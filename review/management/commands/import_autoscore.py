@@ -1,3 +1,11 @@
+"""
+Management command: ``import_autoscore``
+
+Bulk-imports pre-computed ``predicted_stars`` values from a JSON-lines
+file into the ``Review.auto_score`` column. Used for back-filling scores
+produced by the offline DistilBERT batch-inference pipeline.
+"""
+
 import json
 from pathlib import Path
 from typing import Dict, List, Iterable

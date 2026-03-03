@@ -1,3 +1,12 @@
+"""
+Management command: ``import_review``
+
+Bulk-imports review records from the Yelp Academic Dataset JSON-lines
+file into the ``Review`` model. Only reviews whose ``user_id`` already
+exists in the ``User`` table are imported to satisfy the foreign-key
+constraint.
+"""
+
 import json
 from datetime import datetime
 from pathlib import Path

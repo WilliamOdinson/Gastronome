@@ -1,3 +1,11 @@
+"""
+Form definitions for the ``review`` application.
+
+``ReviewForm`` is a ModelForm for creating new reviews. It validates
+that the text field is non-empty after stripping whitespace and provides
+Bootstrap-compatible widget attributes.
+"""
+
 from django import forms
 from review.models import Review
 

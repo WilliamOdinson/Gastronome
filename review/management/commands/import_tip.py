@@ -1,3 +1,10 @@
+"""
+Management command: ``import_tip``
+
+Bulk-imports tip records from the Yelp Academic Dataset JSON-lines file
+into the ``Tip`` model.
+"""
+
 import json
 from datetime import datetime
 from pathlib import Path

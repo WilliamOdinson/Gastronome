@@ -1,3 +1,16 @@
+"""
+View functions for the ``review`` application.
+
+``create_review`` enforces rate limits (one per business per 24 h, three
+total per hour), persists the review inside an atomic transaction,
+incrementally updates the business's and user's aggregate statistics
+(star average + count) using F-expressions, and dispatches the
+``compute_auto_score`` Celery task on commit.
+
+``delete_review`` reverses the same aggregate statistics and invalidates
+the business detail cache.
+"""
+
 import uuid
 from datetime import timedelta
 

@@ -1,3 +1,11 @@
+"""
+URL routing for the ``review`` application.
+
+Endpoints:
+    ``/review/add/<business_id>/``    — create a new review (GET form / POST submit).
+    ``/review/delete/<review_id>/``   — delete the user's own review (POST only).
+"""
+
 from django.urls import path
 from review.views import create_review, delete_review
 

@@ -1,3 +1,12 @@
+"""
+Django AppConfig for the ``review`` application.
+
+Connects ``post_save`` / ``post_delete`` signals on ``Review`` and ``Tip``
+models to keep the corresponding OpenSearch indices in real-time sync
+with the database. Signal handlers are skipped during test runs and
+bulk data imports.
+"""
+
 import logging
 
 from colorama import Fore, init

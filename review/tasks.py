@@ -1,3 +1,12 @@
+"""
+Celery tasks for the ``review`` application.
+
+``compute_auto_score`` is dispatched after a new review is committed.
+It calls the gRPC DistilBERT inference service to predict a star rating
+from the review text and persists the result as ``Review.auto_score``.
+The task runs on the ``bert_predict`` queue to isolate ML workloads.
+"""
+
 import time
 from typing import Optional
 
