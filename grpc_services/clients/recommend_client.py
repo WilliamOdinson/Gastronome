@@ -1,3 +1,16 @@
+"""
+gRPC client for the RecommendationService.
+
+Exposes three convenience functions consumed by Celery tasks:
+
+- ``user_recs``      — personalised top-K for one user.
+- ``state_hotlist``   — popularity-based top-K for a state.
+- ``iter_matrix``     — server-streaming RPC that yields the full
+  ``(user_id, business_ids[])`` prediction matrix for Redis bulk write.
+
+The gRPC stub is created once via ``lru_cache``.
+"""
+
 import grpc
 import logging
 from functools import lru_cache

@@ -1,3 +1,11 @@
+"""
+gRPC client for the InferenceService.
+
+Provides ``predict_class(text) → int`` which sends a review text string
+to the DistilBERT inference server and returns the predicted star class
+(0–5). The gRPC stub is created once and reused via ``lru_cache``.
+"""
+
 import grpc
 from functools import lru_cache
 from grpc_services import inference_pb2, inference_pb2_grpc

@@ -1,3 +1,25 @@
+"""
+Standalone gRPC server hosting two services:
+
+1. **InferenceService** — loads a fine-tuned DistilBERT model and exposes
+   ``PredictClass(text) → class_id`` for review star-rating prediction.
+2. **RecommendationService** — lazily loads per-state ensemble models,
+   pre-computes the full prediction matrix, and serves three RPCs:
+
+   - ``GetUserRecs``     — personalised top-K for a single user.
+   - ``GetStateHotlist``  — popularity-based fallback for a state.
+   - ``PredictMatrix``    — server-streaming RPC that yields the entire
+     ``(user_id, business_ids[])`` matrix for bulk Redis caching.
+
+Model artifacts are loaded on first request (lazy ``CachedState``) to
+keep startup fast and memory usage proportional to the states actually
+queried.
+
+Usage::
+
+    python -m grpc_services.server
+"""
+
 import os
 import logging
 import logging.config
