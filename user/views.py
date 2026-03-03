@@ -1,3 +1,20 @@
+"""
+View functions for the ``user`` application.
+
+Handles the full authentication lifecycle:
+
+- ``user_login``     — CAPTCHA-validated email/password login.
+- ``user_logout``    — session logout (POST only).
+- ``register``       — validates inputs, Fernet-encrypts the password,
+  and chains ``prepare_registration`` → ``send_verification_email``
+  Celery tasks.
+- ``verify_email``   — checks the user-submitted code against the
+  cached verification bundle and creates the ``User`` row on match.
+- ``resend_verification`` — regenerates the code and re-dispatches the
+  email task.
+- ``user_profile``   — paginated display of the user's reviews and tips.
+"""
+
 import uuid
 import secrets
 import re

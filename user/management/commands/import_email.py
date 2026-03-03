@@ -1,3 +1,12 @@
+"""
+Management command: ``import_email``
+
+Generates synthetic ``@gastronome.com`` email addresses for imported
+Yelp users who lack one. Display names are normalised to ASCII slugs
+to produce a unique local-part, with a numeric suffix appended on
+collision.
+"""
+
 import re
 import unicodedata
 from django.core.management.base import BaseCommand

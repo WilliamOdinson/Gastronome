@@ -1,3 +1,16 @@
+"""
+Django admin configuration for the ``user`` application.
+
+Registers the custom ``User`` model with an OpenSearch-backed
+``ChangeList`` (``OSUserChangeList``) so that searching, filtering, and
+sorting in the admin list view are performed via OpenSearch rather than
+the database.
+
+Provides custom creation/change forms, an elite-year sidebar filter,
+and bulk actions for CSV export, activation/deactivation, elite-year
+assignment, and verification email resending.
+"""
+
 import csv
 import datetime
 from typing import Any, Dict, List

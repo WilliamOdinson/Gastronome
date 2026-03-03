@@ -1,3 +1,15 @@
+"""
+URL routing for the ``user`` application.
+
+Endpoints:
+    ``/user/login/``                — login form (CAPTCHA-protected).
+    ``/user/logout/``               — logout (POST only).
+    ``/user/profile/``              — authenticated user's profile page.
+    ``/user/register/``             — registration form (CAPTCHA-protected).
+    ``/user/verify-email/``         — email verification code entry.
+    ``/user/resend-verification/``  — resend the verification code.
+"""
+
 from django.urls import path
 from user.views import user_login, user_logout, user_profile, register, verify_email, resend_verification
 

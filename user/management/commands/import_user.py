@@ -1,3 +1,12 @@
+"""
+Management command: ``import_user``
+
+Bulk-imports user accounts from the Yelp Academic Dataset JSON-lines
+file into the ``User`` model, including profile fields (review count,
+compliments, friends list, elite years). Passwords and emails are *not*
+set here — use ``import_password`` and ``import_email`` afterwards.
+"""
+
 import json
 from datetime import datetime
 from pathlib import Path

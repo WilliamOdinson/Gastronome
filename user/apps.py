@@ -1,3 +1,11 @@
+"""
+Django AppConfig for the ``user`` application.
+
+Connects ``post_save`` / ``post_delete`` signals on the ``User`` model
+to keep the OpenSearch user index in sync. Signal handlers are skipped
+during test runs and bulk data imports.
+"""
+
 import logging
 
 from colorama import Fore, init

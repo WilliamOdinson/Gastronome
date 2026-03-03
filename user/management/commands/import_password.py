@@ -1,3 +1,12 @@
+"""
+Management command: ``import_password``
+
+Sets a uniform initial password (from the ``DEFAULT_USER_PASSWORD``
+env var) for every imported Yelp user whose ``password`` field is
+still empty. This allows bulk-imported accounts to be logged into
+during development and demos.
+"""
+
 from pathlib import Path
 import os
 

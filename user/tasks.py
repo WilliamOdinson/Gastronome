@@ -1,3 +1,16 @@
+"""
+Celery tasks for the ``user`` application.
+
+``prepare_registration`` — decrypts the Fernet-encrypted password,
+hashes it with Django's ``make_password``, generates a 6-digit
+verification code, and stores the bundle in Redis with a 10-minute TTL.
+
+``send_verification_email`` — dispatches the verification code email
+via Django's ``send_mail``. The two tasks are chained together at
+registration time so the email is sent only after the cache entry
+is safely persisted.
+"""
+
 import secrets
 import time
 from celery import shared_task, chain

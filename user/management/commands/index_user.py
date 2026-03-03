@@ -1,3 +1,12 @@
+"""
+Management command: ``index_user``
+
+Creates the OpenSearch ``gastronome-user`` index (with edge-ngram
+analysers for autocomplete on display name) and bulk-indexes every
+``User`` row including compliment fields, elite years, and permission
+flags. Intended as a one-time bootstrap or full reindex operation.
+"""
+
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from opensearchpy import helpers
