@@ -1,3 +1,12 @@
+"""
+OpenSearch client factory.
+
+Provides a single ``get_opensearch_client()`` helper that returns an
+``OpenSearch`` instance configured from ``settings.OPENSEARCH``.
+TLS certificate verification is disabled because the cluster uses
+self-signed certificates in development and staging environments.
+"""
+
 import urllib3
 from django.conf import settings
 from opensearchpy import OpenSearch

@@ -1,3 +1,12 @@
+"""
+Lightweight pagination helpers for OpenSearch-backed admin views.
+
+The ``DummyPaginator`` class satisfies the interface that Django admin
+templates expect (``count``, ``num_pages``, ``page_range``,
+``get_elided_page_range``) without requiring all objects to be loaded
+into memory, since the true total comes from OpenSearch hit counts.
+"""
+
 from math import ceil
 from django.core.paginator import Paginator
 

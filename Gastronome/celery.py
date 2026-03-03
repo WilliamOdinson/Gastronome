@@ -1,3 +1,13 @@
+"""
+Celery application configuration for the Gastronome project.
+
+Defines the Celery app, auto-discovers tasks from all installed Django apps,
+and registers periodic Beat schedules for background maintenance jobs:
+
+- ``refresh_open_status``  — recalculates every business's is_open flag (every 5 min).
+- ``precache_recommendations`` — refreshes the personalised recommendation cache (every 12 h).
+"""
+
 import os
 from datetime import timedelta
 

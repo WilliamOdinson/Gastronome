@@ -1,3 +1,11 @@
+"""
+Root URL configuration for the Gastronome project.
+
+Routes top-level prefixes to each Django application's own ``urls.py``
+and registers custom HTTP error handlers (400, 403, 404, 500).
+Static files are served directly only when ``DEBUG`` is enabled.
+"""
+
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
