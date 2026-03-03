@@ -1,3 +1,11 @@
+"""
+Management command: ``import_business``
+
+Bulk-imports business records from a Yelp Academic Dataset JSON-lines file
+into the ``Business`` model. Categories are linked via ManyToMany after
+creation using an in-memory cache to minimise queries.
+"""
+
 import json
 import re
 from decimal import Decimal, ROUND_HALF_UP

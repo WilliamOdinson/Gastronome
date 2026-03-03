@@ -1,3 +1,10 @@
+"""
+URL routing for the ``business`` application.
+
+Endpoints:
+    ``/business/<business_id>/`` — detail page for a single business.
+"""
+
 from django.urls import path
 from business.views import business_detail
 

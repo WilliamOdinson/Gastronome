@@ -1,3 +1,11 @@
+"""
+Management command: ``import_category``
+
+Scans a Yelp business JSON-lines file and extracts all unique category
+names, bulk-inserting any that do not already exist in the ``Category``
+table. Should be run *before* ``import_business``.
+"""
+
 import json
 from pathlib import Path
 from typing import Iterable, Set

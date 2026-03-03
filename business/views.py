@@ -1,3 +1,12 @@
+"""
+View functions for the ``business`` application.
+
+Renders the business detail page, including reviews, check-in history,
+operating hours, amenities, and FAISS-based "similar business"
+recommendations. Results are cached with pickle for 24 hours to reduce
+database load.
+"""
+
 import json
 import pickle
 from ast import literal_eval

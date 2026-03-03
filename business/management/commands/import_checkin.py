@@ -1,3 +1,11 @@
+"""
+Management command: ``import_checkin``
+
+Imports customer check-in timestamps from the Yelp check-in JSON-lines
+file. Each comma-separated datetime in a row's ``date`` field becomes an
+individual ``CheckIn`` row linked to the parent business.
+"""
+
 import json
 from datetime import datetime
 from pathlib import Path

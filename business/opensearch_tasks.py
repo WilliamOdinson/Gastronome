@@ -1,3 +1,11 @@
+"""
+Celery tasks for bulk-updating business documents in OpenSearch.
+
+Contains a single shared task ``push_is_open_bulk`` that performs a
+partial ``_update`` on the ``is_open`` field for a batch of businesses,
+avoiding a full document reindex.
+"""
+
 from typing import List
 
 from celery import shared_task

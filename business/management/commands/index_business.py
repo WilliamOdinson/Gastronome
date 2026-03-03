@@ -1,3 +1,11 @@
+"""
+Management command: ``index_business``
+
+Creates the OpenSearch ``gastronome-business`` index (with edge-ngram
+analysers for autocomplete) and bulk-indexes every ``Business`` row.
+Intended as a one-time bootstrap or full reindex operation.
+"""
+
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from opensearchpy import helpers

@@ -1,3 +1,12 @@
+"""
+Management command: ``import_photo``
+
+Bulk-imports photo metadata from a Yelp photos JSON-lines file into
+the ``Photo`` model. Actual image files are hosted on AWS S3; only
+the ``photo_id``, ``business_id``, ``caption``, and ``label`` are stored
+in the database.
+"""
+
 import json
 from pathlib import Path
 from typing import Iterable, List

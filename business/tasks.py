@@ -1,3 +1,12 @@
+"""
+Celery tasks for periodic business open-status maintenance.
+
+The Beat scheduler invokes ``refresh_open_status`` every 5 minutes, which
+fans out parallel ``refresh_open_batch`` sub-tasks. Each batch evaluates
+business operating hours against the current local time, bulk-updates
+changed rows in PostgreSQL, and pushes the delta to OpenSearch.
+"""
+
 import logging
 from itertools import islice
 from time import perf_counter

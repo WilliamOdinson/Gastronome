@@ -1,3 +1,11 @@
+"""
+Management command: ``import_hour``
+
+Re-imports businesses from the Yelp JSON-lines file, additionally
+parsing the ``hours`` dict (``{"Monday": "9:0-17:0", ...}``) into
+``Hour`` model records. Categories are linked in the same pass.
+"""
+
 import json
 import re
 from pathlib import Path

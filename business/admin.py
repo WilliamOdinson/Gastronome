@@ -1,3 +1,12 @@
+"""
+Django admin configuration for the ``business`` application.
+
+Registers ``Business``, ``Category``, ``Hour``, ``Photo``, and ``CheckIn``
+models with the admin site. Provides bulk actions for CSV export,
+is_open status recalculation, Celery-based background refresh, and
+detail-page cache invalidation.
+"""
+
 import csv
 import datetime
 from typing import Any, Dict

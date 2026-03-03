@@ -1,3 +1,12 @@
+"""
+Django AppConfig for the ``business`` application.
+
+On application startup, connects Django model signals (``post_save``,
+``post_delete``, ``m2m_changed``) to keep the OpenSearch business index
+in sync with the database. Indexing is skipped during test runs and
+bulk data imports to avoid unnecessary network calls.
+"""
+
 import logging
 from colorama import Fore, init
 from opensearchpy import NotFoundError
