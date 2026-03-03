@@ -1,3 +1,12 @@
+"""
+View functions for the ``core`` application.
+
+Handles the homepage (category counts + personalised or state-based
+recommendations), the search results page (delegating to OpenSearch via
+``search_backends``), static informational pages, and the custom HTTP
+error handlers used project-wide.
+"""
+
 from collections import defaultdict
 from datetime import datetime
 from hashlib import blake2s

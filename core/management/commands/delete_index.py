@@ -1,3 +1,11 @@
+"""
+Management command: ``delete_index``
+
+Deletes a single OpenSearch index by name or by symbolic key from
+``settings.OPENSEARCH`` (e.g. ``REVIEW_INDEX`` → ``gastronome-review``).
+Useful for development resets and reindex workflows.
+"""
+
 from colorama import Fore, init
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError

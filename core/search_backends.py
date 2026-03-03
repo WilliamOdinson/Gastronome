@@ -1,3 +1,12 @@
+"""
+OpenSearch query builder for the public business search page.
+
+``search_business`` constructs a Bool query with optional full-text
+matching (multi_match with fuzziness), city/state term filters, and
+category keyword matching. Returns the total hit count and a list of
+business IDs for the requested page.
+"""
+
 from django.conf import settings
 from opensearchpy import OpenSearch
 
