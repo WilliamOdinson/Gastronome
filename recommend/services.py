@@ -1,3 +1,22 @@
+"""
+Recommendation service layer.
+
+Centralises all recommendation logic consumed by views and Celery tasks:
+
+- **FAISS KNN** — ``get_similar_businesses`` performs approximate nearest-
+  neighbour search over node2vec business embeddings stored in a
+  memory-mapped matrix, returning same-state results.
+- **Ensemble model** — ``get_user_recommendations`` loads the per-state
+  ALS+SGD+SVD ensemble pickle and returns personalised top-K business IDs.
+- **State hot-list** — ``get_state_hotlist`` returns high-rated, highly-
+  reviewed businesses as a fallback for cold-start users.
+- **Click logging** — ``log_click`` records page-view events and
+  maintains a Redis counter for trending detection.
+- **Fetch orchestrator** — ``fetch_recommendations`` decides between
+  personalised and state-level recommendations, dispatching an async
+  Celery task if the user's cache is cold.
+"""
+
 import json
 import logging
 import random

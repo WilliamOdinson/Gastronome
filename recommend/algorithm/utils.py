@@ -1,3 +1,11 @@
+"""
+Shared utilities for recommendation algorithm training.
+
+Provides data-cleaning, sparse-matrix construction, bias decomposition,
+SGD training with bias correction, feature concatenation, and MSE
+evaluation helpers used by the ALS, SGD, and SVD recommenders.
+"""
+
 import pandas as pd
 import numpy as np
 from scipy.sparse import csr_matrix
@@ -9,6 +17,20 @@ def get_clean_df(df: pd.DataFrame,
                  cols: list[str],
                  min_user_review: int = 30,
                  min_res_review: int = 0) -> pd.DataFrame:
+    """
+    Filter a ratings DataFrame by keeping only users and items that meet
+    minimum review-count thresholds, then return the cleaned subset with
+    a reset index.
+
+    Args:
+        df: Raw ratings DataFrame.
+        cols: Column names ``[user_col, item_col, rating_col]``.
+        min_user_review: Minimum number of reviews a user must have.
+        min_res_review: Minimum number of reviews an item must have.
+
+    Returns:
+        Cleaned DataFrame with only qualifying users and items.
+    """
     df_new = df[cols].dropna()
 
     user_col = cols[0]
@@ -26,6 +48,13 @@ def get_clean_df(df: pd.DataFrame,
 
 
 def get_sparse_matrix(df):
+    """
+    Build a CSR sparse user-item rating matrix from a cleaned DataFrame.
+
+    Returns:
+        A dict with keys ``"matrix"`` (scipy CSR), ``"row_index"``
+        (user_id → row int), and ``"col_index"`` (business_id → col int).
+    """
     unique_users = list(df['user_id'].unique())
     unique_businesses = list(df['business_id'].unique())
 
@@ -49,6 +78,14 @@ def get_sparse_matrix(df):
 
 
 def compute_global_user_item_bias(rating_matrix):
+    """
+    Decompose a sparse rating matrix into user bias, item bias, and
+    the residual (bias-removed) dense matrix.
+
+    Returns:
+        A tuple ``(user_bias, item_bias, ratings_matrix_no_bias)`` where
+        biases are 2-D arrays broadcastable to the original shape.
+    """
     dense_matrix = rating_matrix.todense()
     mask_matrix = (dense_matrix > 0).astype(int)
 
@@ -82,6 +119,18 @@ def sgd_with_bias_correction(
     adaptive_lr: bool = False,
     lr_schedule: Optional[Callable[[int], float]] = None,
 ):
+    """
+    Train a bias-corrected matrix factorisation model using element-wise
+    stochastic gradient descent over observed (non-zero) entries.
+
+    Gradients are clipped to ``[-1, 1]`` for biases and ``[-10, 10]``
+    for latent vectors to ensure numerical stability. Final predictions
+    are clamped to the ``[0, 5]`` star-rating range.
+
+    Returns:
+        A tuple ``(predictions, error_array, user_vectors, item_vectors,
+        user_bias, item_bias)``.
+    """
     num_users, num_items = rating_matrix.shape
     error_array = np.zeros(iterations)
 
@@ -148,6 +197,11 @@ def sgd_with_bias_correction(
 
 
 def concatenate_user_item_vectors(user_vectors, item_vectors, rating_matrix):
+    """
+    For every observed rating, horizontally concatenate the corresponding
+    user vector, item vector, and actual rating into a single feature
+    matrix suitable for downstream regression or evaluation.
+    """
     non_zero_indices = rating_matrix.nonzero()
     user_vectors_non_zero = user_vectors[non_zero_indices[0]]
     item_vectors_non_zero = item_vectors[non_zero_indices[1]]
@@ -160,6 +214,10 @@ def concatenate_user_item_vectors(user_vectors, item_vectors, rating_matrix):
 
 
 def calculate_mse(predictions, actual_ratings):
+    """
+    Compute mean squared error between predictions and actual ratings,
+    considering only non-zero (observed) entries.
+    """
     non_zero_indices = actual_ratings.nonzero()
     predictions = predictions[non_zero_indices].flatten()
     actual_ratings = actual_ratings[non_zero_indices].flatten()

@@ -1,3 +1,12 @@
+"""
+Management command: ``build_knn_index``
+
+Reads business node2vec embeddings from a CSV, L2-normalises them, and
+builds a FAISS HNSW index with an ``IndexIDMap`` wrapper. Outputs two
+files: the serialised index and a NumPy array mapping integer IDs back
+to business_id strings.
+"""
+
 import numpy as np
 import pandas as pd
 import faiss

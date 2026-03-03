@@ -1,3 +1,19 @@
+"""
+Django admin configuration for the ``recommend`` application.
+
+Registers two proxy models:
+
+- ``BusinessState`` (proxy of ``Business``) — aggregates businesses by
+  US state and exposes actions to compute/flush state-level hot-list
+  caches and trigger the ``precache_recommendations`` Celery task.
+- ``PersonalRec`` (proxy of ``User``) — allows admins to trigger or
+  flush per-user personalised recommendation caches.
+
+The ``StateAggChangeList`` groups rows by state with AVG(stars) and
+SUM(review_count), using ``DummyPaginator`` so the admin pagination
+template renders correctly despite the non-standard queryset.
+"""
+
 import json
 import logging
 from types import SimpleNamespace

@@ -1,3 +1,13 @@
+"""
+Management command: ``build_memmap_embeddings``
+
+Converts the business embedding CSV into a memory-mapped float32 binary
+file (``biz_emb.f32``) and a companion ``biz_id.npy`` that records the
+row-order business IDs. The mem-map allows the recommendation service
+to access high-dimensional vectors without loading the entire matrix
+into RAM.
+"""
+
 import time
 import logging
 from pathlib import Path

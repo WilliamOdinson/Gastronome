@@ -1,3 +1,11 @@
+"""
+Django AppConfig for the ``recommend`` application.
+
+On Celery worker boot (``worker_ready`` signal), schedules a delayed
+``warmup_state_hotlists`` task so that the fallback recommendation
+caches are populated before any user request arrives.
+"""
+
 from django.apps import AppConfig
 
 

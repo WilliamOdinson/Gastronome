@@ -1,3 +1,15 @@
+"""
+Celery tasks for the ``recommend`` application.
+
+- ``warmup_state_hotlists`` — on worker startup, fetches state hot-lists
+  from the gRPC RecommendationService and writes them to Redis.
+- ``precache_recommendations`` — streams the full per-state prediction
+  matrix via gRPC and batch-writes personalised top-K lists to Redis
+  for all active users (≥ 10 reviews).
+- ``compute_user_recs`` — real-time single-user fallback: if a cache miss
+  occurs at request time, this task calls gRPC for that one user.
+"""
+
 import json
 import logging
 from typing import Dict, List
