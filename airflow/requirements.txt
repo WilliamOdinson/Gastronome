@@ -23,7 +23,7 @@ attrs==25.3.0
 babel==2.17.0
 billiard==4.2.1
 blinker==1.9.0
-cadwyn==5.3.3
+cadwyn==5.4.3
 celery==5.5.3
 certifi==2025.4.26
 cffi==1.17.1
