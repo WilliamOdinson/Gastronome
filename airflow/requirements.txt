@@ -145,7 +145,7 @@ typing_extensions==4.13.2
 tzdata==2025.2
 uc-micro-py==1.0.3
 universal_pathlib==0.2.6
-urllib3==2.4.0
+urllib3==2.6.3
 uuid6==2024.7.10
 uvicorn==0.34.3
 uvloop==0.21.0
